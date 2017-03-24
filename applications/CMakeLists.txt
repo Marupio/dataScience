@@ -23,14 +23,26 @@ include_directories(
 )
 
 add_executable(
-    testApp
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApp/testApp.cpp
+    testCard
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testCard/testCard.cpp
 )
 
-target_link_libraries(testApp core)
+target_link_libraries(testCard core)
 
 install_targets(
     ${BIN_DIR}
-    testApp
+    testCard
+)
+
+add_executable(
+    testHandRanker
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRanker.cpp
+)
+
+target_link_libraries(testHandRanker core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRanker
 )
 

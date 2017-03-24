@@ -1,6 +1,5 @@
 #include<cctype>
 #include<card.h>
-#include<error.h>
 
 short ds::card::charToValue(char value) {
     if (value > 49 && value < 58) {

@@ -1,6 +1,8 @@
 #ifndef error_h
 #define error_h
 
+#include<iostream>
+
 // Error handling macros
 #ifdef __GNUC__
     #define FUNCTION_NAME __PRETTY_FUNCTION__

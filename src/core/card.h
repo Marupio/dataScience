@@ -2,10 +2,9 @@
 #define card_h
 
 //#include<stdIostream.h>
-#include<iostream>
+#include<error.h>
 
-namespace ds
-{
+namespace ds {
 
 class card;
 std::ostream& operator<<(std::ostream& os, const card& c);
