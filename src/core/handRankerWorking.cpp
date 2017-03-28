@@ -1,11 +1,72 @@
 #include<handRanker.h>
 #include<iostream>
 
-int getRank(const cardSet& board, const cardSet& pocket){
+// I'm adding suited operator == to card and adding wild cards to card operators
+// Need to add deckMask, board, cardSet
+
+short getRank(const cardSet& board, const cardSet& pocket){
+    short rank = 0;
+    deckMask dm;
+    dm.remove(board);
+    dm.remove(pocket);
+    pocketMask(dm);
+
+    const valueSet& flushValues(board.sortedFlushValues());
+    const card::suitEnum flushSuit(board.flushSuit());
+    if (flushValues.size()) {
+        straightCompleters sc(flushValues);
+        for (
+            straightCompleters::const_iter scIter = sc.begin();
+            scIter != sc.end();
+            ++scIter
+        ) {
+            const pocketValues& sfpv(scIter->second);
+            cardSet sfPocket(sfpv, flushSuit);
+            if (sfPocket == pocket) {
+                // This will also match (0, 0)
+                return rank;
+            }
+            if (sfpv.second = 0) {
+                dm.remove(sfPocket[0]);
+                rank += dm.nRemaining() - board.size();
+            } else {
+                dm.remove(sfPocket);
+                ++rank;
+            }
+        }
+    }
+
+
     // set references
     const suitSet& ss(board.suitGroups());
         // board indices grouped by suit [s d h c]
         // structure is [[index index ...] [index index ...] etc.]
+
+    const valueSet& sv(board.sortedValues());
+    const valueSet& svo(board.sortedValuesCount());
+    
+    valueSet flushValues;
+    suitSet::const_iterator ssIter(ss.begin());
+    while (ssIter != ss.end()) {
+        if (ssIter->size() > 2) {
+            flushValues.resize(ssIter->size());
+            const boardIndexSet flushIndices(*ssIter);
+            boardIndexSet::const_iterator fiIter;
+            for (
+                fiIter = flushIndices.begin();
+                fiIter != flushIndices.end();
+                ++fiIter) {
+                flushValues.push_back(
+            }
+            break;
+        }
+        ++ssIter;
+    }
+    
+    if (flushPossible) {
+        flushValues.setSiz
+    }
+    
     const valueSet& recurrences(board.valueGroupsByGroupSize());
         // cards with matching number, sorted by:
         //  * number of cards (i.e. four of a kind, set, pair, single)

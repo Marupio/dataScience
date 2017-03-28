@@ -12,21 +12,8 @@
 #
 #include_directories(${DS_LIBRARY_INCLUDE_DIRS})
 
-message( STATUS "library includes = ${CMAKE_CURRENT_SOURCE_DIR}/greeter")
-
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/greeter
     ${CMAKE_CURRENT_SOURCE_DIR}/core
-)
-
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-  message(STATUS "dir='${dir}'")
-endforeach()
-
-add_library(
-    greeter SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/greeter/greeter.cpp
 )
 
 add_library(

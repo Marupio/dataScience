@@ -14,4 +14,8 @@
     << "    Function: " << FUNCTION_NAME << "\n" \
     << "    Location: " << __FILE__ << ":" << __LINE__ << "\n\n"
 
+#define Warning std::cerr << "\n\n*** Warning ***\n" \
+    << "    Function: " << FUNCTION_NAME << "\n" \
+    << "    Location: " << __FILE__ << ":" << __LINE__ << "\n\n"
+
 #endif

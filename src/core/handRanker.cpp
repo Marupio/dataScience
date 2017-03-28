@@ -7,7 +7,7 @@
 ds::straightCompleters ds::handRanker::findStraightCompleters (
     const valueSet& values
 ) {
-    // &&& Forgot to account for A2345
+    // &&& Optimize by looking at iter and iter+2 for diff of 5
     bool aceOnBoard = values.back() == 14;
     straightCompleters sc;
     valueSet::const_reverse_iterator altVsIter(values.rbegin());
@@ -29,7 +29,7 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
     short cursor = std::min((*altVsIter + 2), 14);
     short restartCursor = 0;
     altVsIter = values.rend();
-    pocketValues pocket(0, 0);
+    pocketValues pocket(15, 15);
     if (cursor == *vsIter) {
         ++vsIter;
     } else {
@@ -53,14 +53,14 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
         if (vsIter != values.rend() && *vsIter == cursor) {
             // Value is on the board
             ++vsIter;
-        } else if (pocket.first == 0) {
+        } else if (pocket.first == 15) {
             // There is room in the first pocket card
             pocket.first = cursor;
             
             // Set restart
             altVsIter = vsIter;
             restartCursor = cursor;
-        } else if (pocket.second == 0) {
+        } else if (pocket.second == 15) {
             // There is room in the second pocket card
             pocket.second = cursor;
         } else if (!(cursor == 1 && aceOnBoard)) {
@@ -86,15 +86,16 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
             // Account for low Ace value
             if (pocket.first == 1) {
                 if (aceOnBoard) {
-                    pocket.first = 0;
+                    pocket.first = 15;
                 } else {
                     pocket.first = 14;
                 }
             } else if (pocket.second == 1) {
                 if (aceOnBoard) {
-                    pocket.second = 0;
+                    pocket.second = 15;
                 } else {
-                    pocket.second = 14;
+                    std::swap(pocket.second, pocket.first);
+                    pocket.first = 14;
                 }
             }
             if (sc.second.back() != pocket) {
@@ -141,8 +142,8 @@ bool ds::handRanker::restart(
     cursor = restartCursor;
     // Edge case - one wild card
     if (
-        pocket.second == 0
-     && pocket.first != 0
+        pocket.second == 15
+     && pocket.first != 15
      && pocket.first < curStraightMax) {
         --cursor;
     }
@@ -161,9 +162,9 @@ bool ds::handRanker::restart(
     } else {
         altVsIter = values.rend();
         vsIter++;
-        pocket.first = 0;
+        pocket.first = 15;
     }
-    pocket.second = 0;
+    pocket.second = 15;
     if (std::distance(vsIter, values.rend()) < 2) {
         // No more possible straights
         return false;
