@@ -5,41 +5,10 @@
 
 using namespace ds;
 int main() {
-    short boardSize;
-    std::cout << "How many distinct values are on the board? ";
-    std::cin >> boardSize;
-    valueSet vs(boardSize);
-    valueSet::iterator it;
-    for (it = vs.begin(); it != vs.end(); ++it) {
-        std::cout << "Value " << it - vs.begin() + 1 << "? ";
-        std::cin >> *it;
-    }
-    std::sort (vs.begin(), vs.end());
-    std::cout << std::endl;    
-    std::cout << vs[0];
-    for (it = vs.begin() + 1; it != vs.end(); ++it) {
-        std::cout << " " << *it;
-    }
-    std::cout << ":" << std::endl;
-    straightCompleters sc(handRanker::findStraightCompleters(vs));
-    valueSet::const_iterator scvIt;
-    pocketValuesSet::const_iterator scpIt;
-    for (
-        scvIt = sc.first.begin(), scpIt = sc.second.begin();
-        scvIt != sc.first.end();
-        ++scvIt, ++scpIt
-    ) {
-        short maxVal = *scvIt;
-        short card1 = scpIt->first;
-        short card2 = scpIt->second;
-        std::cout << "    " << maxVal << ": (" << card1 << " "
-            << card2 << ")" << std::endl;
-    }
-
-/*    int nIters = 100000;
+    int nIters = 100000;
     for (int i = 0; i < nIters; ++i) {
         short boardSize = 3 + std::rand()%2;
-        short boardSize = 5;
+//        short boardSize = 5;
         valueSet vs(boardSize);
         bool duplicates = true;
         valueSet::iterator it;
@@ -64,7 +33,7 @@ int main() {
                 duplicates = false;
             }
         }
-        std::cout << vs[0];
+        std::cout << i << ": " << vs[0];
         for (it = vs.begin() + 1; it != vs.end(); ++it) {
             std::cout << " " << *it;
         }
@@ -83,6 +52,6 @@ int main() {
             std::cout << "    " << maxVal << ": (" << card1 << " "
                 << card2 << ")" << std::endl;
         }
-    }*/
+    }
     return 0;
 }

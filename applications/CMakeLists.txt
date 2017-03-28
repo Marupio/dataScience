@@ -19,14 +19,26 @@ install_targets(
 )
 
 add_executable(
-    testHandRanker
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRanker.cpp
+    testHandRankerRandom
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRandom.cpp
 )
 
-target_link_libraries(testHandRanker core)
+target_link_libraries(testHandRankerRandom core)
 
 install_targets(
     ${BIN_DIR}
-    testHandRanker
+    testHandRankerRandom
+)
+
+add_executable(
+    testHandRankerInput
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerInput.cpp
+)
+
+target_link_libraries(testHandRankerInput core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRankerInput
 )
 
