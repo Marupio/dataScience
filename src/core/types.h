@@ -1,25 +1,10 @@
 #ifndef types_h
 #define types_h
 
+#include<utility>
+#include<vector>
 
 namespace ds {
-
-// Forward declarations
-template<class T1, class T2> struct std::pair;
-
-template< class T > struct std::allocator;
-template<class T, class Allocator = std::allocator<T>> class std::vector;
-
-template< class Key > struct std::hash;
-template< class T > struct std::equal_to;
-template<
-    class Key,
-    class T,
-    class Hash = std::hash<Key>,
-    class KeyEqual = std::equal_to<Key>,
-    class Allocator = std::allocator< std::pair<const Key, T> >
-> class std::unordered_map;
-
 
 // Typedefs
 typedef short DeckInd;

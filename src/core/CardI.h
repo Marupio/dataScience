@@ -175,9 +175,4 @@ bool Card::operator!=(const Card& c1) {
     return !(operator==(c1));
 }
 
-
 } // end namespace ds
-
-#include<CardI.h>
-
-#endif

@@ -1,6 +1,6 @@
 #include<fstream>
 #include<string>
-#include<card.h>
+#include<Card.h>
 #include<dsConfig.h>
 #include<types.h>
 
@@ -9,18 +9,18 @@ int main()
 {
     std::cout << "Constructing from deckIndex..." << std::endl;
     for (short i = 0; i < 52; ++i) {
-        card diCard(i);
+        Card diCard(i);
         std::cout << i << ": " << diCard << std::endl;
     }
     std::string asStr("AS");
     std::cout << "Reading from string...";
-    card as(asStr);
+    Card as(asStr);
     std::cout << as << std::endl;
     std::cout << "Reading from char array...";
-    card as2("AS");
+    Card as2("AS");
     std::cout << as2 << std::endl;
     std::cout << "Reading from static const objects..." << std::endl;
-    card twoC(card::two, card::clubs);
+    Card twoC(Card::two, Card::clubs);
     std::cout << twoC << std::endl;
     std::cout << "Reading from file..." << std::endl;
     std::ifstream is("inputFile");
@@ -38,7 +38,7 @@ int main()
         else if (is.peek() == EOF) {
             break;
         }
-        card cr(is);
+        Card cr(is);
         std::cout << "Read '" << cr << "'" << std::endl;
     }
     return 0;

@@ -2,8 +2,6 @@
 #define HandRanker_h
 
 #include<types.h>
-#include<utility>
-#include<vector>
 
 namespace ds {
 

@@ -1,6 +1,7 @@
 #include<cctype>
 #include<Card.h>
 
+
 // Static data
 
 const ds::Suit ds::Card::unknownSuit(-1);
@@ -26,22 +27,22 @@ const ds::BinCardVal ds::Card::binKing(11);
 const ds::BinCardVal ds::Card::binAce(12);
 const ds::BinCardVal ds::Card::binWildValue(13);
 
-const CardVal ds::Card::unknownValue(0);
-const CardVal ds::Card::lowAce(1);
-const CardVal ds::Card::two(2);
-const CardVal ds::Card::three(3);
-const CardVal ds::Card::four(4);
-const CardVal ds::Card::five(5);
-const CardVal ds::Card::six(6);
-const CardVal ds::Card::seven(7);
-const CardVal ds::Card::eight(8);
-const CardVal ds::Card::nine(9);
-const CardVal ds::Card::ten(10);
-const CardVal ds::Card::jack(11);
-const CardVal ds::Card::queen(12);
-const CardVal ds::Card::king(13);
-const CardVal ds::Card::ace(14);
-const CardVal ds::Card::wildValue(15);
+const ds::CardVal ds::Card::unknownValue(0);
+const ds::CardVal ds::Card::lowAce(1);
+const ds::CardVal ds::Card::two(2);
+const ds::CardVal ds::Card::three(3);
+const ds::CardVal ds::Card::four(4);
+const ds::CardVal ds::Card::five(5);
+const ds::CardVal ds::Card::six(6);
+const ds::CardVal ds::Card::seven(7);
+const ds::CardVal ds::Card::eight(8);
+const ds::CardVal ds::Card::nine(9);
+const ds::CardVal ds::Card::ten(10);
+const ds::CardVal ds::Card::jack(11);
+const ds::CardVal ds::Card::queen(12);
+const ds::CardVal ds::Card::king(13);
+const ds::CardVal ds::Card::ace(14);
+const ds::CardVal ds::Card::wildValue(15);
 
 
 // *** Public member functions ***

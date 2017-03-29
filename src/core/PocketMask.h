@@ -1,61 +1,9 @@
 #ifndef pocketMask_h
 #define pocketMask_h
 
-#include<pocketCards.h>
-#include<error.h>
-
-/*
-    Has all the combinations of pocket cards by desk index
-        52x51=2652 entries
-    Has static tables for desk indices for given wilds
-        Case Val Suit | Val Suit    * = wild
-         A    *
-         B         *
-         C    *    *
-         D         *          *
-         E    *          *
-         F    *    *     *
-         G    *    *          *
-         H    *    *     *    *
-
-        ** A **
-            e.g. 2C *C
-            I don't think we will need this one
-
-        ** B **
-            e.g. 3S 4*
-            I don't think we will need this one
-
-        ** C ** oneCardTables
-            e.g. 4H ** ... i.e. remove all pocket combos with 4H
-            52 tables with 51 entries each = 2652
-            
-        ** D ** twoSuitTables
-            e.g. *C *C ... i.e. remove all suited clubs combos
-            only suited tables make any sense.
-            4 tables with 13x12 entries each = 4x156 = 624
-        
-        ** E ** twoValTables, pocketPairTables
-            e.g. 3* 4* ... i.e. suit doesn't matter, values do
-            dissimilar values:
-                13x12 tables with 16 entries each
-                    but we can reduce this by eliminating > 5 difference
-                    13x8 tables with 16 entries each, must account for low ace
-                        = 104x16 = 1664
-            identical values:
-                13 tables with 6 entries each = 78
-            
-        ** F ** oneSuitTables
-            e.g. ** *C ... i.e. one card needs a given suit
-            4 tables, 13x51 entries each = 4x663 = 2652
-            
-        ** G ** oneValTables
-            e.g. ** 4* ... i.e. one card needs a given value
-            13 tables, 4x51 entries each = 13x204 = 2652
-        Total 11647 shorts at 2 bytes each, 22 kb of static data
-*/
-
 #include<unordered_map>
+#include<PocketCards.h>
+#include<error.h>
 
 namespace ds {
 
