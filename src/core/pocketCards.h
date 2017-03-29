@@ -1,7 +1,6 @@
 #ifndef pocketCards_h
 #define pocketCards_h
 
-#include<utility>
 #include<card.H>
 #include<pocketValues.h>
 
@@ -23,23 +22,27 @@ public:
         //- Construct from cards
         pocketCards(const card& cardA, const card& cardB):
             std::pair<card>(std::pair<card>(cardA, cardB))
-//            hasWildValue_(cardA.hasWildValue() || cardB.hasWildValue()),
-//            hasWildSuit_(cardA.hasWildSuit() || cardB.hasWildSuit())
         {}
 
         //- Construct from values and suits
         pocketCards
         (
             short valA,
-            card::suitEnum suitA,
+            card::suitType suitA,
             short valB,
-            card::suitEnum suitB
+            card::suitType suitB
         ):
             std::pair(card(valA, suitA), card(valB, suitB))
-        {
-//            hasWildValue_(first.hasWildValue() || second.hasWildValue());
-//            hasWildSuit_(first.hasWildSuit() || second.hasWildSuit());
-        }
+        {}
+        
+        //- Construct from deck indices
+        pocketCards(short diA, short diB):
+            std::pair(card(diA), card(diB))
+        {}
+
+        pocketCards(std::istream& is):
+            std::pair(card(is), card(is))
+        {}
 
 
     //- Destructor
@@ -62,22 +65,9 @@ public:
             return !(operator==(pc));
         }
 
-
-private:
-
-    // Private member data
-    
-        //- True if one of my cards is wild value
-//        bool hasWildValue_;
-        
-        //- True if one of my cards is wild suited
-//        bool hasWildSuit_;
-        
-
-    // Private member functions
-    
-//////////
-
+    // Friend functions
+    friend std::ostream& operator<<(std::ostream& out, const pocketCards& c);
+    friend std::istream& operator>>(std::istream& in, pocketCards& c);
 };
 
 }

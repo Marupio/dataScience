@@ -1,99 +1,63 @@
 #include<cctype>
-#include<card.h>
+#include<pocketMask.h>
 
 // Static data
 
-const ds::suitType ds::card::unknownSuit(-1);
-const ds::suitType ds::card::clubs(0);
-const ds::suitType ds::card::diamonds(1);
-const ds::suitType ds::card::hearts(2);
-const ds::suitType ds::card::spades(3);
-const ds::suitType ds::card::wildSuit(4);
-
-const ds::binValueType ds::card::binUnknownValue(-1);
-const ds::binValueType ds::card::binTwo(0);
-const ds::binValueType ds::card::binThree(1);
-const ds::binValueType ds::card::binFour(2);
-const ds::binValueType ds::card::binFive(3);
-const ds::binValueType ds::card::binSix(4);
-const ds::binValueType ds::card::binSeven(5);
-const ds::binValueType ds::card::binEight(6);
-const ds::binValueType ds::card::binNine(7);
-const ds::binValueType ds::card::binTen(8);
-const ds::binValueType ds::card::binJack(9);
-const ds::binValueType ds::card::binQueen(10);
-const ds::binValueType ds::card::binKing(11);
-const ds::binValueType ds::card::binAce(12);
-const ds::binValueType ds::card::binWildValue(13);
-
-const short ds::card::unknownValue(0);
-const short ds::card::lowAce(1);
-const short ds::card::two(2);
-const short ds::card::three(3);
-const short ds::card::four(4);
-const short ds::card::five(5);
-const short ds::card::six(6);
-const short ds::card::seven(7);
-const short ds::card::eight(8);
-const short ds::card::nine(9);
-const short ds::card::ten(10);
-const short ds::card::jack(11);
-const short ds::card::queen(12);
-const short ds::card::king(13);
-const short ds::card::ace(14);
-const short ds::card::wildValue(15);
-
+#include<pocketMaskDeckIndices.h>
+#include<pocketMaskOneCardTables.h>
+#include<pocketMaskOneSuitTables.h>
+#include<pocketMaskOneValTables.h>
 
 // *** Constructors *** //
 
-ds::card::card():
+ds::pocketMask::pocketMask():
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {}
 
 
-ds::card::card(short value, suitType suit):
+ds::pocketMask::pocketMask(short value, suitType suit):
     binValue_(valueToBinValue(value)),
     suit_(suit)
 {}
 
 
-ds::card::card(binValueType value, suitType suit):
+ds::pocketMask::pocketMask(binValueType value, suitType suit):
     binValue_(value),
     suit_(suit)
 {}
 
 
-ds::card::card(const char* chStr):
+ds::pocketMask::pocketMask(const char* chStr):
     binValue_(readCharToBinValue(chStr[0])), 
     suit_(readCharToSuit(chStr[1]))
 {
     if (chStr[2] != '\0') {
-        FatalError << "Invalid card constructor char array: '" << chStr
+        FatalError << "Invalid pocketMask constructor char array: '" << chStr
             << "'" << std::endl;
         abort();
     }
 }
 
 
-ds::card::card(const std::string& str):
+ds::pocketMask::pocketMask(const std::string& str):
     binValue_(readCharToBinValue(str[0])), 
     suit_(readCharToSuit(str[1]))
 {
     if (str.size() > 2) {
-        FatalError << "Invalid card constructor string: '" << str
+        FatalError << "Invalid pocketMask constructor string: '" << str
             << "'" << std::endl;
         abort();
     }
 }
 
 
-ds::card::card(short di):
+ds::pocketMask::pocketMask(short di):
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {
     if (di < 0 || di > 51) {
-        FatalError << "Attempting to construct a card from deck index " << di
+        FatalError << "Attempting to construct a pocketMask from deck index " << di
             << std::endl;
         abort();
     }
@@ -102,7 +66,7 @@ ds::card::card(short di):
 }
 
 
-ds::card::card(std::istream& is):
+ds::pocketMask::pocketMask(std::istream& is):
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {
@@ -112,7 +76,7 @@ ds::card::card(std::istream& is):
 
 // *** Public member functions ***
 
-ds::binValueType ds::card::readCharToBinValue(char value) {
+ds::binValueType ds::pocketMask::readCharToBinValue(char value) {
     if (value > 49 && value < 58) {
         return value - 50;
     }
@@ -141,7 +105,7 @@ ds::binValueType ds::card::readCharToBinValue(char value) {
 }
 
 
-short ds::card::readCharToValue(char value) {
+short ds::pocketMask::readCharToValue(char value) {
     if (value > 49 && value < 58) {
         return value - 48;
     }
@@ -170,8 +134,8 @@ short ds::card::readCharToValue(char value) {
 }
 
 
-char ds::card::binValueToWriteChar(binValueType value) {
-    if (value >= card::binTwo && value < binTen) {
+char ds::pocketMask::binValueToWriteChar(binValueType value) {
+    if (value >= pocketMask::binTwo && value < binTen) {
         return value + 50;
     }
     switch (value)
@@ -191,14 +155,14 @@ char ds::card::binValueToWriteChar(binValueType value) {
         case binWildValue:
             return '*';
         default:
-            FatalError << "Unknown card value: '" << int(value) << "'"
+            FatalError << "Unknown pocketMask value: '" << int(value) << "'"
                 << std::endl;
             abort();
     }
 }
 
 
-char ds::card::valueToWriteChar(short value) {
+char ds::pocketMask::valueToWriteChar(short value) {
     if (value > lowAce && value < ten) {
         return value + 48;
     }
@@ -221,18 +185,18 @@ char ds::card::valueToWriteChar(short value) {
         case wildValue:
             return '*';
         default:
-            FatalError << "Unknown card value: (" << value << ")" << std::endl;
+            FatalError << "Unknown pocketMask value: (" << value << ")" << std::endl;
             abort();
     }
 }
 
 
-short ds::card::binValueToValue(binValueType value) {
+short ds::pocketMask::binValueToValue(binValueType value) {
     return value + 2;
 }
 
 
-ds::binValueType ds::card::valueToBinValue(short value) {
+ds::binValueType ds::pocketMask::valueToBinValue(short value) {
     if (value == lowAce) {
         return binAce;
     }
@@ -240,7 +204,7 @@ ds::binValueType ds::card::valueToBinValue(short value) {
 }
 
 
-ds::suitType ds::card::readCharToSuit(char suit) {
+ds::suitType ds::pocketMask::readCharToSuit(char suit) {
     char us(std::toupper(suit));
     if (us == '?') {
         return unknownSuit;
@@ -260,12 +224,12 @@ ds::suitType ds::card::readCharToSuit(char suit) {
     if (us == 'S') {
         return spades;
     }
-    FatalError << "Unknown card suit: '" << us << "'" << std::endl;
+    FatalError << "Unknown pocketMask suit: '" << us << "'" << std::endl;
     abort();
 }
 
 
-char ds::card::suitToWriteChar(suitType suit) {
+char ds::pocketMask::suitToWriteChar(suitType suit) {
     switch (suit)
     {
         case unknownSuit:
@@ -281,14 +245,14 @@ char ds::card::suitToWriteChar(suitType suit) {
         case spades:
             return 'S';
         default:
-            FatalError << "Unknown card suit stored internally: ("
+            FatalError << "Unknown pocketMask suit stored internally: ("
                 << int(suit) << ")" << std::endl;
             abort();
     }
 }
 
 
-short ds::card::cardToDeckIndex(const card& c) {
+short ds::pocketMask::cardToDeckIndex(const pocketMask& c) {
     if (c.hasWildValue() || c.hasWildSuit() || c.partsUnknown()) {
         return -1;
     }
@@ -296,31 +260,29 @@ short ds::card::cardToDeckIndex(const card& c) {
 }
 
 
-ds::card ds::card::cardToDeckIndex(short di) {
+ds::pocketMask ds::pocketMask::cardToDeckIndex(short di) {
     if (di < 0 || di > 51) {
-        return card();
+        return pocketMask();
     }
     binValueType value = di % 13;
     suitType suit = (di-value)/13;
 
-    return card(value, suit);
+    return pocketMask(value, suit);
 }
 
 
-// *** Global operators *** //
-
-std::ostream& ds::operator<<(std::ostream& os, const card& c) {
-    os << card::binValueToWriteChar(c.binValue_);
-    os << card::suitToWriteChar(c.suit_);
+std::ostream& ds::operator<<(std::ostream& os, const pocketMask& c) {
+    os << pocketMask::binValueToWriteChar(c.binValue_);
+    os << pocketMask::suitToWriteChar(c.suit_);
     return os;
 }
 
-std::istream& ds::operator>>(std::istream& in, card& c) {
+std::istream& ds::operator>>(std::istream& in, pocketMask& c) {
     char vc;
     in >> vc;
-    c.binValue_ = card::readCharToBinValue(vc);
+    c.binValue_ = pocketMask::readCharToBinValue(vc);
     char sc;
     in >> sc;
-    c.suit_ = card::readCharToSuit(sc);
+    c.suit_ = pocketMask::readCharToSuit(sc);
     return in;
 }
