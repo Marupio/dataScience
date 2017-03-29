@@ -7,6 +7,8 @@
 #include<pocketMaskOneCardTables.h>
 #include<pocketMaskOneSuitTables.h>
 #include<pocketMaskOneValTables.h>
+#include<pocketMaskTwoSuitTables.h>
+#include<pocketMaskTwoValTables.h>
 
 // *** Constructors *** //
 

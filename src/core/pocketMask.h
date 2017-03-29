@@ -84,25 +84,24 @@ public:
             //      i.e. one card needs a given value
             //      13 tables, 4x51 entries each = 13x204 = 2652
             static const std::vector<std::vector<short> > oneValTables;
-//// Left here
+
             //- Two suit tables, e.g. *H *H
             //      i.e. remove all pocket suited hearts pocket combos
             //      only suited pockets make sense
             //      4 tables with 13x12 entries each = 4x156 = 624
             static const std::vector<std::vector<short> > twoSuitTables;
 
-            //- Two (different) value tables, e.g. 3* 4*
+            //- Two value tables, e.g. 3* 4*
             //      i.e. suit doesn't matter, values do
-            //      13x12 tables with 16 entries each
-            //      but we can reduce this by eliminating > 5 difference
-            //      13x8 tables with 16 entries each, must account for low ace
-            //          = 104x16 = 1664
-            static const std::vector<std::vector<short> > twoValTables;
-
-            //- Two (same) value tables, e.g. 4* 4*
-            //      i.e. pocketPairs
-            //      13 tables with 6 entries each = 78
-            static const std::vector<std::vector<short> > pocketPairTables;
+            //      dissimilar numbers:
+            //          13x12 tables with 16 entries
+            //      pocket pairs:
+            //          13 tables with 6 entries
+            //  Structured as a hashTable with the key being the value pair
+            //  pair(valA, valB), valA >= valB
+            static const
+                std::unordered_map<std::pair<short>, std::vector<short>>
+                twoValTables;
 
 
     // Constructors
