@@ -1,15 +1,15 @@
 #include<iterator>
-#include<handRanker.h>
+#include<HandRanker.h>
 #include<error.h>
 
 // *** Public Member Functions *** //
 
-ds::straightCompleters ds::handRanker::findStraightCompleters (
-    const valueSet& values
+ds::StraightCompleters ds::HandRanker::findStraightCompleters (
+    const VecCardVal& values
 ) {
     // &&& Optimize by looking at iter and iter+2 for diff of 5
     bool aceOnBoard = values.back() == 14;
-    valueSet cValues;
+    VecCardVal cValues;
     if (aceOnBoard) {
         cValues.reserve(values.size() + 1);
         cValues.push_back(1);
@@ -18,12 +18,12 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
     }
     cValues.insert(cValues.end(), values.begin(), values.end());
 
-    straightCompleters sc;
-    valueSet::const_reverse_iterator altVsIter(cValues.rbegin());
+    StraightCompleters sc;
+    VecCardVal::const_reverse_iterator altVsIter(cValues.rbegin());
     if (altVsIter == cValues.rend()) {
         return sc;
     }
-    valueSet::const_reverse_iterator vsIter(altVsIter + 1);
+    VecCardVal::const_reverse_iterator vsIter(altVsIter + 1);
     if (vsIter == cValues.rend()) {
         return sc;
     }
@@ -40,9 +40,9 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
     sc.second.reserve(5);
     short cursor = std::min((*altVsIter + 2), 14);
     short restartCursor = cursor;
-    pocketValues pocket(15, 15);
+    PktVals pocket(15, 15);
     short curStraightSize(1);
-    short curStraightMax(cursor);
+    CardVal curStraightMax(cursor);
 
     bool started = restart(
         cValues,
@@ -81,7 +81,7 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
                 << "values. Must be sorted and contain no duplicates. Values "
                 << "are: " << std::endl;
             for (
-                valueSet::const_iterator it = values.begin();
+                VecCardVal::const_iterator it = values.begin();
                 it != values.end();
                 ++it
             ) {
@@ -128,15 +128,15 @@ ds::straightCompleters ds::handRanker::findStraightCompleters (
 
 // *** Private Member Functions *** //
 
-bool ds::handRanker::restart(
-    const valueSet& values,
+bool ds::HandRanker::restart(
+    const VecCardVal& values,
     short& cursor,
     short& restartCursor,
-    valueSet::const_reverse_iterator& vsIter,
-    valueSet::const_reverse_iterator& altVsIter,
+    VecCardVal::const_reverse_iterator& vsIter,
+    VecCardVal::const_reverse_iterator& altVsIter,
     short& curStraightSize,
-    short& curStraightMax,
-    pocketValues& pocket
+    CardVal& curStraightMax,
+    PktVals& pocket
 ) {
     if (altVsIter == values.rend()) {
         return false;

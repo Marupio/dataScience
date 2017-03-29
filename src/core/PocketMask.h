@@ -55,6 +55,8 @@
         Total 11647 shorts at 2 bytes each, 22 kb of static data
 */
 
+#include<unordered_map>
+
 namespace ds {
 
 class pocketMask:
@@ -62,34 +64,41 @@ class pocketMask:
 {
 public:
 
+    // Public typedefs
+
+    typedef std::unordered_map<PktDeckInd, DeckInd> DeckIndHashTable;
+    typedef std::unordered_map<PktDeckInd, VecDeckInd> TwoValHashTable;
+
     // Public static data
 
         //- Deck index pairs associated with this class' vector
         //      52x51 = 1325
-        static const std::vector<std::pair<short> > deckIndices;
+        static const VecPktDeckInd deckIndices_;
+
+        //- Hash table for quick lookup of 
 
         // Pre-indexed tables for wild value or wild suit matching
         
             //- One card tables, e.g. 4C **
             //      i.e. remove all pocket combos with 4C
             //      52 tables with 51 entries each = 2652
-            static const std::vector<std::vector<short> > oneCardTables;
+            static const VecVecDeckInd oneCardTables_;
             
             //- One suit tables, e.g. ** *C
             //      i.e. one card needs a given suit
             //      4 tables, 13x51 entries each = 4x663 = 2652
-            static const std::vector<std::vector<short> > oneSuitTables;
+            static const VecVecDeckInd oneSuitTables_;
             
             //- One value tables, e.g. ** 4*
             //      i.e. one card needs a given value
             //      13 tables, 4x51 entries each = 13x204 = 2652
-            static const std::vector<std::vector<short> > oneValTables;
+            static const VecVecDeckInd oneValTables_;
 
             //- Two suit tables, e.g. *H *H
             //      i.e. remove all pocket suited hearts pocket combos
             //      only suited pockets make sense
             //      4 tables with 13x12 entries each = 4x156 = 624
-            static const std::vector<std::vector<short> > twoSuitTables;
+            static const VecVecDeckInd twoSuitTables_;
 
             //- Two value tables, e.g. 3* 4*
             //      i.e. suit doesn't matter, values do
@@ -99,11 +108,9 @@ public:
             //          13 tables with 6 entries
             //  Structured as a hashTable with the key being the value pair
             //  pair(valA, valB), valA >= valB
-            static const
-                std::unordered_map<std::pair<short>, std::vector<short>>
-                twoValTables;
+            static const TwoValHashTable twoValTables_;
 
-
+/////////////////
     // Constructors
 
         //- Construct null    

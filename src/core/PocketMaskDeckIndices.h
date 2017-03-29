@@ -1,4 +1,4 @@
-const std::vector<std::pair<short> > ds::pocketMask::deckIndices =
+const VecPktDeckInd ds::PocketMask::deckIndices_ =
 {
 {1,0},
 {2,0},

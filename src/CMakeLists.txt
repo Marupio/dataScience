@@ -18,6 +18,6 @@ include_directories(
 
 add_library(
     core SHARED
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/card.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/core/handRanker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/Card.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/HandRanker.cpp
 )

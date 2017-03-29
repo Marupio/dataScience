@@ -1,65 +1,67 @@
 #include<cctype>
-#include<pocketMask.h>
+#include<PocketMask.h>
 
 // Static data
 
-#include<pocketMaskDeckIndices.h>
-#include<pocketMaskOneCardTables.h>
-#include<pocketMaskOneSuitTables.h>
-#include<pocketMaskOneValTables.h>
-#include<pocketMaskTwoSuitTables.h>
-#include<pocketMaskTwoValTables.h>
+#include<PocketMaskDeckIndices.h>
+#include<PocketMaskOneCardTables.h>
+#include<PocketMaskOneSuitTables.h>
+#include<PocketMaskOneValTables.h>
+#include<PocketMaskTwoSuitTables.h>
+#include<PocketMaskTwoValTables.h>
 
+
+/////////////////////////////
 // *** Constructors *** //
 
-ds::pocketMask::pocketMask():
+ds::PocketMask::PocketMask():
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {}
 
 
-ds::pocketMask::pocketMask(short value, suitType suit):
+ds::PocketMask::PocketMask(short value, suitType suit):
     binValue_(valueToBinValue(value)),
     suit_(suit)
 {}
 
 
-ds::pocketMask::pocketMask(binValueType value, suitType suit):
+ds::PocketMask::PocketMask(binValueType value, suitType suit):
     binValue_(value),
     suit_(suit)
 {}
 
 
-ds::pocketMask::pocketMask(const char* chStr):
+ds::PocketMask::PocketMask(const char* chStr):
     binValue_(readCharToBinValue(chStr[0])), 
     suit_(readCharToSuit(chStr[1]))
 {
     if (chStr[2] != '\0') {
-        FatalError << "Invalid pocketMask constructor char array: '" << chStr
+        FatalError << "Invalid PocketMask constructor char array: '" << chStr
             << "'" << std::endl;
         abort();
     }
 }
 
 
-ds::pocketMask::pocketMask(const std::string& str):
+ds::PocketMask::PocketMask(const std::string& str):
     binValue_(readCharToBinValue(str[0])), 
     suit_(readCharToSuit(str[1]))
 {
     if (str.size() > 2) {
-        FatalError << "Invalid pocketMask constructor string: '" << str
+        FatalError << "Invalid PocketMask constructor string: '" << str
             << "'" << std::endl;
         abort();
     }
 }
 
 
-ds::pocketMask::pocketMask(short di):
+ds::PocketMask::PocketMask(short di):
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {
     if (di < 0 || di > 51) {
-        FatalError << "Attempting to construct a pocketMask from deck index " << di
+        FatalError << "Attempting to construct a PocketMask from deck index " << di
             << std::endl;
         abort();
     }
@@ -68,7 +70,7 @@ ds::pocketMask::pocketMask(short di):
 }
 
 
-ds::pocketMask::pocketMask(std::istream& is):
+ds::PocketMask::PocketMask(std::istream& is):
     binValue_(binUnknownValue),
     suit_(unknownSuit)
 {
@@ -78,7 +80,7 @@ ds::pocketMask::pocketMask(std::istream& is):
 
 // *** Public member functions ***
 
-ds::binValueType ds::pocketMask::readCharToBinValue(char value) {
+ds::binValueType ds::PocketMask::readCharToBinValue(char value) {
     if (value > 49 && value < 58) {
         return value - 50;
     }
@@ -107,7 +109,7 @@ ds::binValueType ds::pocketMask::readCharToBinValue(char value) {
 }
 
 
-short ds::pocketMask::readCharToValue(char value) {
+short ds::PocketMask::readCharToValue(char value) {
     if (value > 49 && value < 58) {
         return value - 48;
     }
@@ -136,8 +138,8 @@ short ds::pocketMask::readCharToValue(char value) {
 }
 
 
-char ds::pocketMask::binValueToWriteChar(binValueType value) {
-    if (value >= pocketMask::binTwo && value < binTen) {
+char ds::PocketMask::binValueToWriteChar(binValueType value) {
+    if (value >= PocketMask::binTwo && value < binTen) {
         return value + 50;
     }
     switch (value)
@@ -157,14 +159,14 @@ char ds::pocketMask::binValueToWriteChar(binValueType value) {
         case binWildValue:
             return '*';
         default:
-            FatalError << "Unknown pocketMask value: '" << int(value) << "'"
+            FatalError << "Unknown PocketMask value: '" << int(value) << "'"
                 << std::endl;
             abort();
     }
 }
 
 
-char ds::pocketMask::valueToWriteChar(short value) {
+char ds::PocketMask::valueToWriteChar(short value) {
     if (value > lowAce && value < ten) {
         return value + 48;
     }
@@ -187,18 +189,18 @@ char ds::pocketMask::valueToWriteChar(short value) {
         case wildValue:
             return '*';
         default:
-            FatalError << "Unknown pocketMask value: (" << value << ")" << std::endl;
+            FatalError << "Unknown PocketMask value: (" << value << ")" << std::endl;
             abort();
     }
 }
 
 
-short ds::pocketMask::binValueToValue(binValueType value) {
+short ds::PocketMask::binValueToValue(binValueType value) {
     return value + 2;
 }
 
 
-ds::binValueType ds::pocketMask::valueToBinValue(short value) {
+ds::binValueType ds::PocketMask::valueToBinValue(short value) {
     if (value == lowAce) {
         return binAce;
     }
@@ -206,7 +208,7 @@ ds::binValueType ds::pocketMask::valueToBinValue(short value) {
 }
 
 
-ds::suitType ds::pocketMask::readCharToSuit(char suit) {
+ds::suitType ds::PocketMask::readCharToSuit(char suit) {
     char us(std::toupper(suit));
     if (us == '?') {
         return unknownSuit;
@@ -226,12 +228,12 @@ ds::suitType ds::pocketMask::readCharToSuit(char suit) {
     if (us == 'S') {
         return spades;
     }
-    FatalError << "Unknown pocketMask suit: '" << us << "'" << std::endl;
+    FatalError << "Unknown PocketMask suit: '" << us << "'" << std::endl;
     abort();
 }
 
 
-char ds::pocketMask::suitToWriteChar(suitType suit) {
+char ds::PocketMask::suitToWriteChar(suitType suit) {
     switch (suit)
     {
         case unknownSuit:
@@ -247,14 +249,14 @@ char ds::pocketMask::suitToWriteChar(suitType suit) {
         case spades:
             return 'S';
         default:
-            FatalError << "Unknown pocketMask suit stored internally: ("
+            FatalError << "Unknown PocketMask suit stored internally: ("
                 << int(suit) << ")" << std::endl;
             abort();
     }
 }
 
 
-short ds::pocketMask::cardToDeckIndex(const pocketMask& c) {
+short ds::PocketMask::cardToDeckIndex(const PocketMask& c) {
     if (c.hasWildValue() || c.hasWildSuit() || c.partsUnknown()) {
         return -1;
     }
@@ -262,29 +264,29 @@ short ds::pocketMask::cardToDeckIndex(const pocketMask& c) {
 }
 
 
-ds::pocketMask ds::pocketMask::cardToDeckIndex(short di) {
+ds::PocketMask ds::PocketMask::cardToDeckIndex(short di) {
     if (di < 0 || di > 51) {
-        return pocketMask();
+        return PocketMask();
     }
     binValueType value = di % 13;
     suitType suit = (di-value)/13;
 
-    return pocketMask(value, suit);
+    return PocketMask(value, suit);
 }
 
 
-std::ostream& ds::operator<<(std::ostream& os, const pocketMask& c) {
-    os << pocketMask::binValueToWriteChar(c.binValue_);
-    os << pocketMask::suitToWriteChar(c.suit_);
+std::ostream& ds::operator<<(std::ostream& os, const PocketMask& c) {
+    os << PocketMask::binValueToWriteChar(c.binValue_);
+    os << PocketMask::suitToWriteChar(c.suit_);
     return os;
 }
 
-std::istream& ds::operator>>(std::istream& in, pocketMask& c) {
+std::istream& ds::operator>>(std::istream& in, PocketMask& c) {
     char vc;
     in >> vc;
-    c.binValue_ = pocketMask::readCharToBinValue(vc);
+    c.binValue_ = PocketMask::readCharToBinValue(vc);
     char sc;
     in >> sc;
-    c.suit_ = pocketMask::readCharToSuit(sc);
+    c.suit_ = PocketMask::readCharToSuit(sc);
     return in;
 }

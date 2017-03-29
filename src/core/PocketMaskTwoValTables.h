@@ -1,6 +1,5 @@
 static const
-    std::unordered_map<std::pair<short>, std::vector<short>>
-    ds::pocketMask::twoValTables =
+    TwoValHashTable ds::PocketMask::twoValTables_ =
 {
 {{2,2},{12,25,38,597,610,1013}},
 {{3,3,63,76,89,635,648,1038}},

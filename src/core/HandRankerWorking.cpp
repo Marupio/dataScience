@@ -1,4 +1,4 @@
-#include<handRanker.h>
+#include<HandRanker.h>
 #include<iostream>
 
 // I'm adding suited operator == to card and adding wild cards to card operators
