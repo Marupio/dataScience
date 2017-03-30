@@ -138,5 +138,3 @@ short ds::PktMask::removeFromVecDeckInd(
         operator[](*it) = 0;
     }
 }
-
-

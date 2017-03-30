@@ -87,6 +87,10 @@ public:
         }
 
 
+    //- Destructor
+    ~PktMask() {}
+
+
     // Member functions
 
         // Access

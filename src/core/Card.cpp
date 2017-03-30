@@ -4,6 +4,8 @@
 
 // Static data
 
+const short ds::Card::nSuits(4);
+
 const ds::Suit ds::Card::unknownSuit(-1);
 const ds::Suit ds::Card::clubs(0);
 const ds::Suit ds::Card::diamonds(1);
