@@ -20,4 +20,5 @@ add_library(
     core SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/core/Card.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core/HandRanker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/Board.cpp
 )

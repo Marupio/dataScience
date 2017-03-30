@@ -99,7 +99,7 @@ private:
     // Private member functions
 
         //- Dealer interface
-
+public:
             //- Deliver flop
             void flop(const VecDeckInd& vd);
             
@@ -108,7 +108,7 @@ private:
             
             //- Deliver river
             void river(DeckInd di);
-
+private:
         //- Reserve space in derived data
         void reserveSpace();
     

@@ -1,3 +1,4 @@
+#include<algorithm>
 #include<Board.h>
 
 
@@ -43,7 +44,7 @@ ds::Board::Board(std::istream& is) {
 void ds::Board::flop(const VecDeckInd& vd) {
     if (cards_.size()) {
         FatalError << "Flop delivered to non-empty board.  Board cards are:\n"
-            << cards_ << "\nAnd delivered cards are:\n"
+            << *this << "\nAnd delivered cards are:\n"
             << vd << std::endl;
         abort();
     }
@@ -62,7 +63,7 @@ void ds::Board::flop(const VecDeckInd& vd) {
 void ds::Board::turn(DeckInd di) {
     if (cards_.size() != flopSize_) {
         FatalError << "Turn delivered out-of-sequence.  Board cards are:\n"
-            << cards_ << "\nAnd delivered card is: " << di << std::endl;
+            << *this << "\nAnd delivered card is: " << di << std::endl;
         abort();
     }
     cards_.push_back(Card(di));
@@ -73,7 +74,7 @@ void ds::Board::turn(DeckInd di) {
 void ds::Board::river(DeckInd di) {
     if (cards_.size() != sizeBeforeRiver_) {
         FatalError << "River delivered out-of-sequence.  Board cards are:\n"
-            << cards_ << "\nAnd delivered card is: " << di << std::endl;
+            << *this << "\nAnd delivered card is: " << di << std::endl;
         abort();
     }
     cards_.push_back(Card(di));
@@ -94,12 +95,12 @@ void ds::Board::updateDerivedData() {
     sortedUniqueValCounts_.clear();
     suitCounts_.assign(Card::nSuits, 0);
 
-    if (!cards.size()) {
+    if (!cards_.size()) {
         return;
     }
 
     VecCardVal allVals;
-    allVals.reserve(cards.size());
+    allVals.reserve(cards_.size());
     for (VecCard::const_iterator it=cards_.begin(); it != cards_.end(); ++it) {
         allVals.push_back(it->value());
         suitCounts_[it->suit()]++;
@@ -110,13 +111,13 @@ void ds::Board::updateDerivedData() {
         sortedUniqueValCounts_.push_back(1);
     }
     for (
-        VecCardVal::const_iterator it = allVals.begin(),
-            VecCardVal::const_iterator itNext = it + 1;
-        itNext != allVals.end();
-        ++it, ++itNext
+        std::pair<VecCardVal::const_iterator, VecCardVal::const_iterator> it(
+            allVals.begin(), allVals.begin() + 1);
+        it.second != allVals.end();
+        ++it.first, ++it.second
     ) {
-        if (*it != *itNext) {
-            sortedUniqueVals_.push_back(*itNext);
+        if (*it.first != *it.second) {
+            sortedUniqueVals_.push_back(*it.second);
             sortedUniqueValCounts_.push_back(1);
         } else {
             sortedUniqueValCounts_.back()++;
@@ -127,23 +128,26 @@ void ds::Board::updateDerivedData() {
 
 // ****** Global operators ****** //
 
-std::ostream& ds::operator<<(std::ostream& os, const Board& c) {
-    os << "(" << cards_.front();
-    for (
-        VecCard::const_iterator it = cards_.begin();
-        it != cards_.end();
-        ++it
-    ) {
-        os << " " << *it;
+std::ostream& ds::operator<<(std::ostream& os, const Board& b) {
+    os << "(";
+    if (b.cards_.size()) {
+        os << b.cards_.front();
+        for (
+            VecCard::const_iterator it = b.cards_.begin() + 1;
+            it != b.cards_.end();
+            ++it
+        ) {
+            os << " " << *it;
+        }
     }
     os << ")";
     return os;
 }
 
-std::istream& ds::operator>>(std::istream& is, Board& c) {
-    if (cards_.size()) {
+std::istream& ds::operator>>(std::istream& is, Board& b) {
+    if (b.cards_.size()) {
         FatalError << "Reading into non-empty board. Board cards are:\n"
-            << cards_ << std::endl;
+            << b << std::endl;
         abort();
     }
     char firstChar(is.get());
@@ -163,10 +167,10 @@ std::istream& ds::operator>>(std::istream& is, Board& c) {
             break;
         } else if (nxt == EOF) {
             FatalError << "Unexpected EOF while reading board. Successfully "
-                << "read cards:\n" << cards_ << std::endl;
+                << "read cards:\n" << b << std::endl;
             abort();
         }
-        cards_.push_back(Card(is));
+        b.cards_.push_back(Card(is));
     }
     return is;
 }

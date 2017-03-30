@@ -42,3 +42,14 @@ install_targets(
     testHandRankerInput
 )
 
+add_executable(
+    testBoard
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testBoard/testBoard.cpp
+)
+
+target_link_libraries(testBoard core)
+
+install_targets(
+    ${BIN_DIR}
+    testBoard
+)

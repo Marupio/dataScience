@@ -71,32 +71,25 @@ public:
     // Constructors
 
         //- Construct null
-        //  --> CardI.h
-        Card();
+        inline Card();
 
         //- Construct from integer value and suit
-        //  --> CardI.h
-        Card(CardVal value, Suit suit);
+        inline Card(CardVal value, Suit suit);
 
         //- Construct from bin values
-        //  --> CardI.h
-        Card(BinCardVal value, Suit suit);
+        inline Card(BinCardVal value, Suit suit);
         
         //- Construct from human-readable char array
-        //  --> CardI.h
-        Card(const char* chStr);
+        inline Card(const char* chStr);
 
         //- Construct from human-readable string
-        //  --> CardI.h
-        Card(const std::string& str);
+        inline Card(const std::string& str);
 
         //- Construct from deck index
-        //  --> CardI.h
-        Card(DeckInd di);
+        inline Card(DeckInd di);
         
         //- Construct from istream
-        //  --> CardI.h
-        Card(std::istream& is);
+        inline Card(std::istream& is);
     
 
     //- Destructor
@@ -122,12 +115,10 @@ public:
                 static char valueToWriteChar(CardVal value);
 
                 //- Convert internal value to card value
-                //  --> CardI.h
-                static CardVal binValueToValue(BinCardVal value);
+                inline static CardVal binValueToValue(BinCardVal value);
 
                 //- Convert integer value to internal value
-                //  --> CardI.h
-                static BinCardVal valueToBinValue(CardVal value);
+                inline static BinCardVal valueToBinValue(CardVal value);
 
 
             // Conversions for card suit
@@ -140,64 +131,49 @@ public:
 
 
             //- Convert given card to deck indexing
-            //  --> CardI.h
-            static DeckInd cardToDeckIndex(const Card& c);
+            inline static DeckInd cardToDeckIndex(const Card& c);
 
             //- Convert deck index to card
-            //  --> CardI.h
-            static Card deckIndexToCard(DeckInd di);
+            inline static Card deckIndexToCard(DeckInd di);
 
 
         // Access
 
             //- Return card value
-            //  --> CardI.h
-            CardVal value() const;
+            inline CardVal value() const;
 
             //- Return internal bin value
-            //  --> CardI.h
-            BinCardVal binValue() const;
+            inline BinCardVal binValue() const;
             
             //- Return suit
-            //  --> CardI.h
-            Suit suit() const;
+            inline Suit suit() const;
             
             //- True if value is wild
-            //  --> CardI.h
-            bool hasWildValue() const;
+            inline bool hasWildValue() const;
             
             //- True if suit is wild
-            //  --> CardI.h
-            bool hasWildSuit() const;
+            inline bool hasWildSuit() const;
 
             //- True if value or suit is unknown
-            //  --> CardI.h
-            bool partsUnknown() const;
+            inline bool partsUnknown() const;
 
             //- Return my deck index
-            //  --> CardI.h
-            DeckInd deckIndex() const;
+            inline DeckInd deckIndex() const;
 
 
     // Operators
     
-        //  --> CardI.h
-        bool operator<(const Card& c1);
+        inline bool operator<(const Card& c1);
 
-        //  --> CardI.h
-        bool operator<=(const Card& c1);
+        inline bool operator<=(const Card& c1);
         
-        //  --> CardI.h
-        bool operator>(const Card& c1);
+        inline bool operator>(const Card& c1);
         
-        //  --> CardI.h
-        bool operator>=(const Card& c1);
+        inline bool operator>=(const Card& c1);
         
-        //  --> CardI.h
-        bool operator==(const Card& c1);
+        inline bool operator==(const Card& c1);
 
-        //  --> CardI.h
-        bool operator!=(const Card& c1);
+        inline bool operator!=(const Card& c1);
 
 
     // Friend functions
