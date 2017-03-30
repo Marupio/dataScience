@@ -129,6 +129,11 @@ bool Card::partsUnknown() const {
 }
 
 
+ds::DeckInd ds::Card::deckIndex() const {
+    return cardToDeckIndex(*this);
+}
+
+
 // *** Member Operators *** //
 
 bool Card::operator<(const Card& c1) {

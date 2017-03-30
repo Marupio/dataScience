@@ -155,6 +155,9 @@ public:
             //- True if value or suit is unknown
             bool partsUnknown() const;
 
+            //- Return my deck index
+            DeckInd deckIndex() const;
+
 
     // Operators
     

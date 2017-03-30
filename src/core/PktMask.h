@@ -1,13 +1,13 @@
-#ifndef pocketMask_h
-#define pocketMask_h
+#ifndef PktMask_h
+#define PktMask_h
 
 #include<unordered_map>
-#include<PocketCards.h>
+#include<PktCards.h>
 #include<error.h>
 
 namespace ds {
 
-class pocketMask:
+class PktMask:
     public std::vector<signed char>
 {
 public:
@@ -23,7 +23,8 @@ public:
         //      52x51 = 1325
         static const VecPktDeckInd deckIndices_;
 
-        //- Hash table for quick lookup of 
+        //- Hash table for quick lookup of PktMask indices
+        static const DeckIndHashTable deckIndicesHashTable_;
 
         // Pre-indexed tables for wild value or wild suit matching
         
@@ -32,12 +33,12 @@ public:
             //      52 tables with 51 entries each = 2652
             static const VecVecDeckInd oneCardTables_;
             
-            //- One suit tables, e.g. ** *C
+            //- One suit tables, e.g. *C **
             //      i.e. one card needs a given suit
             //      4 tables, 13x51 entries each = 4x663 = 2652
             static const VecVecDeckInd oneSuitTables_;
             
-            //- One value tables, e.g. ** 4*
+            //- One value tables, e.g. 4* **
             //      i.e. one card needs a given value
             //      13 tables, 4x51 entries each = 13x204 = 2652
             static const VecVecDeckInd oneValTables_;
@@ -58,14 +59,75 @@ public:
             //  pair(valA, valB), valA >= valB
             static const TwoValHashTable twoValTables_;
 
-/////////////////
     // Constructors
 
         //- Construct null    
-        pocketMask();
+        PktMask():
+            std::vector<signed char>(1326, 1),
+            nRemaining_(1326)
+        {}
+
+        //- Construct from Board
+        PktMask(const Board& b):
+            std::vector<signed char>(1326, 1),
+            nRemaining(1326)
+        {
+            remove(b);
+        }
+
+        //- Construct from Board and player's PocketCards
+        //  Note: players pocket cards are removed individually
+        PktMask(const Board& b, const PktCards pc):
+            std::vector<signed char>(1326, 1),
+            nRemaining(1326)
+        {
+            remove(b);
+            remove(pc.first());
+            remove(pc.second());
+        }
+
+
+    // Member functions
+
+        // Access
+        
+            //- Return nRemaining
+            short nRemaining() const {
+                return nRemaining_
+            }
+
+        // Removal functions
+        
+            //- Remove any combinations with the given board cards
+            short remove(const Board& b);
+
+            //- Remove given pocket cards from possibilities
+            //  Pocket cards must be sorted
+            short remove(const PktCards& pc);
+
+            //- Remove any combinations with the given card
+            short remove(const Card& c);
+
+
+private:
+
+    // Private data
+    
+        //- Number of possibilities remaining
+        short nRemaining_;
+
+
+    // Private member functions
+    
+        //- Helper for remove(PktCards)
+        short ds::PktMask::removeFromVecDeckInd(
+            const VecDeckInd& table
+        );
+
+///////
 
         //- Construct from integer value and suit
-        pocketMask(short value, suitType suit);
+        pocketMask(short value, suitType suit)
 
         //- Construct from bin values
         pocketMask(binValueType value, suitType suit);

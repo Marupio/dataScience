@@ -1,15 +1,15 @@
-#ifndef PocketCards_h
-#define PocketCards_h
+#ifndef PktCards_h
+#define PktCards_h
 
 #include<Card.H>
 
 namespace ds {
 
-class PocketCards;
-std::ostream& operator<<(std::ostream& os, const PocketCards& c);
-std::istream& operator>>(std::istream& in, PocketCards& c);
+class PktCards;
+std::ostream& operator<<(std::ostream& os, const PktCards& c);
+std::istream& operator>>(std::istream& in, PktCards& c);
 
-class PocketCards
+class PktCards
 :
     public std::pair<Card>
 {
@@ -19,12 +19,12 @@ public:
     // Constructors
 
         //- Construct from cards
-        PocketCards(const Card& cardA, const Card& cardB):
+        PktCards(const Card& cardA, const Card& cardB):
             std::pair<Card>(std::pair<Card>(cardA, cardB))
         {}
 
         //- Construct from values and suits
-        PocketCards
+        PktCards
         (
             CardVal valA,
             Suit suitA,
@@ -35,23 +35,23 @@ public:
         {}
         
         //- Construct from deck indices
-        PocketCards(DeckInd diA, DeckInd diB):
+        PktCards(DeckInd diA, DeckInd diB):
             std::pair(Card(diA), Card(diB))
         {}
 
-        PocketCards(std::istream& is):
+        PktCards(std::istream& is):
             std::pair(Card(is), Card(is))
         {}
 
 
     //- Destructor
-    ~PocketCards() {}
+    ~PktCards() {}
 
 
     // Member operators
     
         //- True if both pocket cards are the same as the given
-        bool operator==(const PocketCards& pc) {
+        bool operator==(const PktCards& pc) {
             return (
                 first == pc.first && second == pc.second
             ) || (
@@ -60,13 +60,13 @@ public:
         }
 
         //- False if either pocket cards differ from given
-        bool operator!=(const PocketCards& pc) {
+        bool operator!=(const PktCards& pc) {
             return !(operator==(pc));
         }
 
     // Friend functions
-    friend std::ostream& operator<<(std::ostream& out, const PocketCards& c);
-    friend std::istream& operator>>(std::istream& in, PocketCards& c);
+    friend std::ostream& operator<<(std::ostream& out, const PktCards& c);
+    friend std::istream& operator>>(std::istream& in, PktCards& c);
 };
 
 }

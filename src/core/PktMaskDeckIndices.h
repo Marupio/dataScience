@@ -1,4 +1,4 @@
-const VecPktDeckInd ds::PocketMask::deckIndices_ =
+const ds::VecPktDeckInd ds::PktMask::deckIndices_ =
 {
 {1,0},
 {2,0},
