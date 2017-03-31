@@ -3,6 +3,8 @@
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src/core
+    ${CMAKE_SOURCE_DIR}/src/gameMechanics
+    ${CMAKE_SOURCE_DIR}/src/algorithm
     ${PROJECT_BINARY_DIR}
 )
 
