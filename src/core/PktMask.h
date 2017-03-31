@@ -3,7 +3,6 @@
 
 #include<unordered_map>
 #include<PktCards.h>
-#include<error.h>
 
 namespace ds {
 

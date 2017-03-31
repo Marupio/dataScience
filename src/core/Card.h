@@ -2,7 +2,6 @@
 #define Card_h
 
 #include<string>
-#include<error.h>
 #include<types.h>
 
 namespace ds {
@@ -11,8 +10,6 @@ class Card;
 std::ostream& operator<<(std::ostream& os, const Card& c);
 std::istream& operator>>(std::istream& in, Card& c);
 
-typedef std::pair<Card, Card> PktCards;
-typedef std::vector<PktCards> VecPktCards;
 typedef std::vector<Card> VecCard;
 
 class Card

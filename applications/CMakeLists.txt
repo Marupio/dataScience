@@ -19,6 +19,18 @@ install_targets(
 )
 
 add_executable(
+    testPktCard
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testPktCard/testPktCard.cpp
+)
+
+target_link_libraries(testPktCard core)
+
+install_targets(
+    ${BIN_DIR}
+    testPktCard
+)
+
+add_executable(
     testHandRankerRandom
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRandom.cpp
 )

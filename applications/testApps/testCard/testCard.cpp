@@ -22,24 +22,25 @@ int main()
     std::cout << "Reading from static const objects..." << std::endl;
     Card twoC(Card::two, Card::clubs);
     std::cout << twoC << std::endl;
-    std::cout << "Reading from file..." << std::endl;
-    std::ifstream is("inputFile");
-    if (!is.is_open())
     {
-        std::cerr << "Error! File cannot be opened." << std::endl;
-        std::abort();
-    }
-    bool eofReached = false;
-    while (1){
-        if (std::isspace(is.peek())) {
-            is.get();
-            continue;
+        std::cout << "Reading from file..." << std::endl;
+        std::ifstream is("inputFile");
+        if (!is.is_open())
+        {
+            std::cerr << "Error! File cannot be opened." << std::endl;
+            std::abort();
         }
-        else if (is.peek() == EOF) {
-            break;
+        while (1){
+            if (std::isspace(is.peek())) {
+                is.get();
+                continue;
+            }
+            else if (is.peek() == EOF) {
+                break;
+            }
+            Card cr(is);
+            std::cout << "Read '" << cr << "'" << std::endl;
         }
-        Card cr(is);
-        std::cout << "Read '" << cr << "'" << std::endl;
     }
     return 0;
 }

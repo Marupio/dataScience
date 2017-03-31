@@ -44,7 +44,7 @@ ds::Board::Board(std::istream& is) {
 void ds::Board::flop(const VecDeckInd& vd) {
     if (cards_.size()) {
         FatalError << "Flop delivered to non-empty board.  Board cards are:\n"
-            << *this << "\nAnd delivered cards are:\n"
+            << cards_ << "\nAnd delivered cards are:\n"
             << vd << std::endl;
         abort();
     }
@@ -63,7 +63,7 @@ void ds::Board::flop(const VecDeckInd& vd) {
 void ds::Board::turn(DeckInd di) {
     if (cards_.size() != flopSize_) {
         FatalError << "Turn delivered out-of-sequence.  Board cards are:\n"
-            << *this << "\nAnd delivered card is: " << di << std::endl;
+            << cards_ << "\nAnd delivered card is: " << di << std::endl;
         abort();
     }
     cards_.push_back(Card(di));
@@ -74,7 +74,7 @@ void ds::Board::turn(DeckInd di) {
 void ds::Board::river(DeckInd di) {
     if (cards_.size() != sizeBeforeRiver_) {
         FatalError << "River delivered out-of-sequence.  Board cards are:\n"
-            << *this << "\nAnd delivered card is: " << di << std::endl;
+            << cards_ << "\nAnd delivered card is: " << di << std::endl;
         abort();
     }
     cards_.push_back(Card(di));
@@ -129,18 +129,7 @@ void ds::Board::updateDerivedData() {
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Board& b) {
-    os << "(";
-    if (b.cards_.size()) {
-        os << b.cards_.front();
-        for (
-            VecCard::const_iterator it = b.cards_.begin() + 1;
-            it != b.cards_.end();
-            ++it
-        ) {
-            os << " " << *it;
-        }
-    }
-    os << ")";
+    os << b.cards_;
     return os;
 }
 
@@ -150,27 +139,6 @@ std::istream& ds::operator>>(std::istream& is, Board& b) {
             << b << std::endl;
         abort();
     }
-    char firstChar(is.get());
-    if (firstChar != '(') {
-        FatalError << "Expecting '(' from istream.  Got '" << firstChar
-            << "', which is int " << short(firstChar) << "." << std::endl;
-        abort();
-    }
-    while (1) {
-        int nxt(is.peek());
-        if (std::isspace(nxt)) {
-            is.get();
-            continue;
-        }
-        else if (char(nxt) == ')') {
-            is.get();
-            break;
-        } else if (nxt == EOF) {
-            FatalError << "Unexpected EOF while reading board. Successfully "
-                << "read cards:\n" << b << std::endl;
-            abort();
-        }
-        b.cards_.push_back(Card(is));
-    }
+    is >> b.cards_;
     return is;
 }

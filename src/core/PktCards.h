@@ -1,17 +1,19 @@
 #ifndef PktCards_h
 #define PktCards_h
 
-#include<Card.H>
+#include<Card.h>
 
 namespace ds {
 
 class PktCards;
-std::ostream& operator<<(std::ostream& os, const PktCards& c);
-std::istream& operator>>(std::istream& in, PktCards& c);
+//std::ostream& operator<<(std::ostream& os, const PktCards& c);
+//std::istream& operator>>(std::istream& in, PktCards& c);
+
+typedef std::vector<PktCards> VecPktCards;
 
 class PktCards
 :
-    public std::pair<Card>
+    public std::pair<Card, Card>
 {
 public:
 
@@ -20,7 +22,7 @@ public:
 
         //- Construct from cards
         PktCards(const Card& cardA, const Card& cardB):
-            std::pair<Card>(std::pair<Card>(cardA, cardB))
+            std::pair<Card, Card>(std::pair<Card, Card>(cardA, cardB))
         {}
 
         //- Construct from values and suits
@@ -31,17 +33,17 @@ public:
             CardVal valB,
             Suit suitB
         ):
-            std::pair(Card(valA, suitA), Card(valB, suitB))
+            std::pair<Card, Card>(Card(valA, suitA), Card(valB, suitB))
         {}
         
         //- Construct from deck indices
         PktCards(DeckInd diA, DeckInd diB):
-            std::pair(Card(diA), Card(diB))
+            std::pair<Card, Card>(Card(diA), Card(diB))
         {}
 
-        PktCards(std::istream& is):
-            std::pair(Card(is), Card(is))
-        {}
+        PktCards(std::istream& is) {
+            is >> *this;
+        }
 
 
     //- Destructor
@@ -65,9 +67,9 @@ public:
         }
 
     // Friend functions
-    friend std::ostream& operator<<(std::ostream& out, const PktCards& c);
-    friend std::istream& operator>>(std::istream& in, PktCards& c);
+//    friend std::ostream& operator<<(std::ostream& out, const PktCards& c);
+//    friend std::istream& operator>>(std::istream& in, PktCards& c);
 };
 
-}
+} // End namespace ds
 #endif

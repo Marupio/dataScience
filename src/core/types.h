@@ -1,8 +1,8 @@
 #ifndef types_h
 #define types_h
 
-#include<utility>
-#include<vector>
+#include<pair.h>
+#include<vector.h>
 
 namespace ds {
 
@@ -23,5 +23,6 @@ typedef std::pair<VecCardVal, VecPktVals> StraightCompleters;
 typedef signed char Suit;
 typedef signed char BinCardVal;
 
-}
+} // end namespace ds
+
 #endif
