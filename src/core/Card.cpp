@@ -2,7 +2,7 @@
 #include<Card.h>
 
 
-// Static data
+// ****** Static data ****** //
 
 const short ds::Card::nSuits(4);
 
@@ -47,7 +47,7 @@ const ds::CardVal ds::Card::ace(14);
 const ds::CardVal ds::Card::wildValue(15);
 
 
-// *** Public member functions ***
+// ****** Public member functions ******
 
 ds::BinCardVal ds::Card::readCharToBinValue(char value) {
     if (value > 49 && value < 58) {
@@ -212,7 +212,7 @@ char ds::Card::suitToWriteChar(Suit suit) {
 }
 
 
-// *** Global operators *** //
+// ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Card& c) {
     os << Card::binValueToWriteChar(c.binValue_);
