@@ -67,6 +67,17 @@ public:
             const std::vector<short>& suitCounts() const {
                 return suitCounts_;
             }
+
+            //- Return flush suit
+            Suit flushSuit() const {
+                return flushSuit_;
+            }
+
+            //- Return sorted flush values, non-empty if 3 suited are on the
+            //  board
+            const VecCardVal& sortedFlushVals() const {
+                return sortedFlushVals_;
+            }
         
 
     // Operators
@@ -85,15 +96,24 @@ private:
 
         // Data derived from cards_
         
-            //- Values on board, sorted lowest to highest with duplicates removed
+            //- Values on board, sorted lowest to highest with duplicates
+            //  removed
             VecCardVal sortedUniqueVals_;
             
-            //- Indexed by sortedUniqueValues, gives the number of occurrences of each
-            //  value
+            //- Indexed by sortedUniqueValues, gives the number of occurrences
+            //  of each value
             std::vector<short> sortedUniqueValCounts_;
 
             //- Suit counts, indexed by suit
             std::vector<short> suitCounts_;
+
+            //- If board has three suited cards, this is the suit, otherwise
+            //  unknownSuit
+            Suit flushSuit_;
+            
+            //- If one suit has 3 or more represented, this vector will contain
+            //  their sorted values
+            VecCardVal sortedFlushVals_;
 
 
     // Private member functions

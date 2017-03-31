@@ -87,6 +87,7 @@ void ds::Board::reserveSpace() {
     sortedUniqueVals_.reserve(maxCardsOnBoard_);
     sortedUniqueValCounts_.reserve(maxCardsOnBoard_);
     suitCounts_.resize(Card::nSuits, 0);
+    sortedFlushVals_.reserve(maxCardsOnBoard_);
 }
 
 
@@ -94,6 +95,8 @@ void ds::Board::updateDerivedData() {
     sortedUniqueVals_.clear();
     sortedUniqueValCounts_.clear();
     suitCounts_.assign(Card::nSuits, 0);
+    flushSuit_ = Card::unknownSuit;
+    sortedFlushVals_.clear();
 
     if (!cards_.size()) {
         return;
@@ -121,6 +124,26 @@ void ds::Board::updateDerivedData() {
             sortedUniqueValCounts_.push_back(1);
         } else {
             sortedUniqueValCounts_.back()++;
+        }
+    }
+    for (
+        std::vector<short>::const_iterator it = suitsCounts_.begin();
+        it != suitCounts_.end();
+        ++it
+    ) {
+        if (*it > 2) {
+            flushSuit_ = it - suits.begin();
+            for (
+                VecCard::const_iterator it=cards_.begin();
+                it != cards_.end();
+                ++it
+            ) {
+                if (it->suit() == flushSuit_) {
+                    sortedFlushVals_.pushBack(it->value());
+                }
+            }
+            std::sort(sortedFlushVals_.begin(), sortedFlushVals_.end());
+            break;
         }
     }
 }

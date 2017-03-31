@@ -4,12 +4,39 @@
 // I'm adding suited operator == to card and adding wild cards to card operators
 // Need to add deckMask, board, cardSet
 
-short getRank(const cardSet& board, const cardSet& pocket){
+short getRank(const Board& brd, const PktCards& pkt){
     short rank = 0;
-    deckMask dm;
-    dm.remove(board);
-    dm.remove(pocket);
-    pocketMask(dm);
+    pocketMask mask(brd, pkt);
+
+    // Check for straight flushes
+    const Suit flushSuit = brd.flushSuit();
+    const VecCardVal& flushVals(brd.sortedFlushVals());
+    if (flushSuit != Card::unknownSuit) {
+        const StraightCompleters straightFlushes(
+            findStraightCompleters(flushVals)
+        );
+        for (
+            StraightCompleters::const_iterator sfit = straightFlushes.begin();
+            sfit != straightFlushes.end();
+            ++sfit
+        ) {
+            for (
+                VecPktVals::const_iterator vit = sfit->begin();
+                vit != sfit->end();
+                ++vit
+            ) {
+                PktCards testPkt(vit->first, flushSuit, vit->second, flushSuit);
+                if (testPkt == pkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+            }
+        }
+    }
+
+    // Check for four-of-a-kind
+    
 
     const valueSet& flushValues(board.sortedFlushValues());
     const card::suitEnum flushSuit(board.flushSuit());
