@@ -86,6 +86,7 @@ void ds::Board::reserveSpace() {
     cards_.reserve(maxCardsOnBoard_);
     sortedUniqueVals_.reserve(maxCardsOnBoard_);
     sortedUniqueValCounts_.reserve(maxCardsOnBoard_);
+    sortedUniqueValSuits_.reserve(maxCardsOnBoard_);
     suitCounts_.resize(Card::nSuits, 0);
     sortedFlushVals_.reserve(maxCardsOnBoard_);
 }
@@ -94,6 +95,7 @@ void ds::Board::reserveSpace() {
 void ds::Board::updateDerivedData() {
     sortedUniqueVals_.clear();
     sortedUniqueValCounts_.clear();
+    sortedUniqueValSuits_.clean();
     suitCounts_.assign(Card::nSuits, 0);
     flushSuit_ = Card::unknownSuit;
     sortedFlushVals_.clear();
@@ -102,28 +104,31 @@ void ds::Board::updateDerivedData() {
         return;
     }
 
-    VecCardVal allVals;
-    allVals.reserve(cards_.size());
+    VecCard allCards;
+    allCards.reserve(cards_.size());
     for (VecCard::const_iterator it=cards_.begin(); it != cards_.end(); ++it) {
-        allVals.push_back(it->value());
+        allCards.push_back(*it);
         suitCounts_[it->suit()]++;
     }
-    std::sort(allVals.begin(), allVals.end());
-    if (allVals.size()) {
-        sortedUniqueVals_.push_back(allVals.front());
+    std::sort(allCards.begin(), allCards.end());
+    if (allCards.size()) {
+        sortedUniqueVals_.push_back(allCards.front().value());
         sortedUniqueValCounts_.push_back(1);
+        sortedUniqueValSuits_.push_back(VecSuit(1, allCards.front().suit()));
     }
     for (
-        std::pair<VecCardVal::const_iterator, VecCardVal::const_iterator> it(
-            allVals.begin(), allVals.begin() + 1);
-        it.second != allVals.end();
+        std::pair<VecCard::const_iterator, VecCard::const_iterator> it(
+            allCards.begin(), allCards.begin() + 1);
+        it.second != allCards.end();
         ++it.first, ++it.second
     ) {
-        if (*it.first != *it.second) {
-            sortedUniqueVals_.push_back(*it.second);
+        if (it->first.value() != it->second.value()) {
+            sortedUniqueVals_.push_back(it->second.value());
             sortedUniqueValCounts_.push_back(1);
+            sortedUniqueValSuits_.push_back(VecSuit(1, it->second.suit()));
         } else {
             sortedUniqueValCounts_.back()++;
+            sortedUniqueValSuits_.back().push_back(it->second.suit());
         }
     }
     for (

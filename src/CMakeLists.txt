@@ -21,6 +21,7 @@ include_directories(
 add_library(
     core SHARED
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Card.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Suit.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Board.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/HandRanker.cpp
 )

@@ -20,7 +20,6 @@ typedef std::vector<PktVals> VecPktVals;
 
 typedef std::pair<VecCardVal, VecPktVals> StraightCompleters;
 
-typedef signed char Suit;
 typedef signed char BinCardVal;
 
 } // end namespace ds

@@ -63,6 +63,11 @@ public:
                 return sortedUniqueValCounts_;
             }
 
+            //- Return suits of sorted unique values
+            const VecVecSuit& sortedUniqueValSuits() const {
+                return sortedUniqueValSuits_;
+            }
+
             //- Return suit counts
             const std::vector<short>& suitCounts() const {
                 return suitCounts_;
@@ -103,6 +108,11 @@ private:
             //- Indexed by sortedUniqueValues, gives the number of occurrences
             //  of each value
             std::vector<short> sortedUniqueValCounts_;
+
+            //- Sorted unique value suits
+            //      sortedUniqueValSuits[index of sortedUniqueVal][i] =
+            //      suit of the ith duplicate value.  For pairs, i = 0..1
+            VecVecSuit sortedUniqueValSuits_;
 
             //- Suit counts, indexed by suit
             std::vector<short> suitCounts_;
