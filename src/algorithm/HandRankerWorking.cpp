@@ -48,6 +48,10 @@ short getRank(const Board& bd, const PktCards& pkt){
             // (valA valA) suits known
             // then (valB valB) suits known, if second pair is present
             // Continue
+
+    // Check for four-of-a-kind (FOAK)
+    for (std::pair<VecCardVal::const_it
+
         // Check TOAK and pairs for highest value
             // TOAK - rank extra pocket card higher first, then wild
             // pairs - specific pkt only
@@ -99,9 +103,44 @@ short getRank(const Board& bd, const PktCards& pkt){
                 // (valA valA) only
                 // Contiune
     // Check for two pair
-        // If two pairs on board valA > valB
-            // Run valC through Ace..valB+1
-                // If valC is a pair
+        // Two pairs: valA > valB
+        // One of the pairs must be made from board.values
+        // ValA:
+            // Run through Ace .. lowest board value (for pairA)
+            // If valA is paired on board:
+                // Run from valB=valA-1 .. 2
+                // If valB is paired on board:
+                    // Run kicker from A..highest on board not valA (kicker wild)
+                    // Then exit (wild wild)
+                // If valB is single on board:
+                    // Run kicker from A..highest on board not valA (valB kicker)
+                    // Then remove (valB wild), and Continue
+                // If valB is not on board:
+                    // remove (valB valB) and Continue
+            // If valA is single on board:
+                // Run valB over other board.values
+                    // If valB is pair:
+                        // Run kicker from A..highest on board not valA (valA kicker)
+                        // Then remove (valA wild) and continue
+                    // if valB is single:
+                        // remove (valA valB) and continue
+            // If valA is not on board:
+                // If no pairs are present on board, no two pair exists
+                // If pairs exist on board, remove (valA valA) and continue
+    // Check for pair
+        // We know no two pairs exist at this point
+        // If a pair is on the board:
+            // Look for two values that beat top three non-paired board cards
+            // Remove them: (valA valB)
+            // Look for single values that beat top three non-paired board cards
+            // Remove it: (valA wild)
+            // exit with (wild wild)
+    // Check for high card
+        // boardA > boardB are lowest two values on board
+        // Look for two value hands that beat both first and remove them (valA valB)
+        // Look for single value hands that beats boardB (valA>boardB wild)
+        // exit (wild wild)
+
     const valueSet& flushValues(board.sortedFlushValues());
     const card::suitEnum flushSuit(board.flushSuit());
     if (flushValues.size()) {

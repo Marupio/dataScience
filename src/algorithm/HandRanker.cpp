@@ -7,7 +7,19 @@
 ds::StraightCompleters ds::HandRanker::findStraightCompleters (
     const VecCardVal& values
 ) {
-    // &&& Optimize by looking at iter and iter+2 for diff of 5
+    #ifdef DSDEBUG
+    if (values.size() > 1) {
+        if (values.front() > values.back()) {
+            FatalError << "Values are not sorted lowest to highest.  Values "
+                << "are:\n" << values << std::endl;
+            abort();
+        }
+    } else {
+        FatalError << "Insufficient values provided.  Values are:\n"
+            << values << std::endl;
+        abort();
+    }
+    #endif
     bool aceOnBoard = values.back() == 14;
     VecCardVal cValues;
     if (aceOnBoard) {

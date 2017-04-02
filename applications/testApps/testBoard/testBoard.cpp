@@ -3,6 +3,7 @@
 #include<Board.h>
 #include<dsConfig.h>
 #include<types.h>
+#include <HandRanker.h>
 
 using namespace ds;
 
@@ -39,12 +40,27 @@ void writeDetails(const Board(b1))
     std::cout << "\n          Pairs: ["
         << Card::valueToWriteChar(b1Pairs.first) << " "
         << Card::valueToWriteChar(b1Pairs.second) << "]";
+    StraightCompleters sc(HandRanker::findStraightCompleters(b1v));
+    VecCardVal::const_iterator scvIt;
+    VecPktVals::const_iterator scpIt;
+    std::cout << "\n      Straights:\n";
+    for (
+        scvIt = sc.first.begin(), scpIt = sc.second.begin();
+        scvIt != sc.first.end();
+        ++scvIt, ++scpIt
+    ) {
+        CardVal maxVal = *scvIt;
+        CardVal card1 = scpIt->first;
+        CardVal card2 = scpIt->second;
+        std::cout << "    " << maxVal << ": (" << card1 << " "
+            << card2 << ")" << std::endl;
+    }
 }
 
 
 int main()
 {
-    int nIters = 100000;
+    int nIters = 1000;
     for (int i = 0; i < nIters; ++i) {
         Board b1;
         

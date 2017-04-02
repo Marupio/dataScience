@@ -16,11 +16,12 @@ int main() {
     }
     std::sort (vs.begin(), vs.end());
     std::cout << std::endl;    
-    std::cout << vs[0];
-    for (it = vs.begin() + 1; it != vs.end(); ++it) {
-        std::cout << " " << *it;
-    }
-    std::cout << ":" << std::endl;
+    std::cout << vs << std::endl;
+//    std::cout << vs[0];
+//    for (it = vs.begin() + 1; it != vs.end(); ++it) {
+//        std::cout << " " << *it;
+//    }
+//    std::cout << ":" << std::endl;
     StraightCompleters sc(HandRanker::findStraightCompleters(vs));
     VecCardVal::const_iterator scvIt;
     VecPktVals::const_iterator scpIt;
