@@ -54,22 +54,22 @@ public:
             }
 
             //- Return sorted unique values
-            const VecCardVal& sortedUniqueVals() const {
-                return sortedUniqueVals_;
+            const VecCardVal& values() const {
+                return values_;
             }
             
             //- Return counts of each value
-            const std::vector<short>& sortedUniqueValCounts() const {
-                return sortedUniqueValCounts_;
+            const std::vector<short>& valueCounts() const {
+                return valueCounts_;
             }
 
             //- Return suits of sorted unique values
-            const VecVecSuit& sortedUniqueValSuits() const {
-                return sortedUniqueValSuits_;
+            const VecVecSuit& valueSuits() const {
+                return valueSuits_;
             }
 
             //- Return suit counts
-            const std::vector<short>& suitCounts() const {
+            const SuitCount& suitCounts() const {
                 return suitCounts_;
             }
 
@@ -80,8 +80,24 @@ public:
 
             //- Return sorted flush values, non-empty if 3 suited are on the
             //  board
-            const VecCardVal& sortedFlushVals() const {
-                return sortedFlushVals_;
+            const VecCardVal& flushVals() const {
+                return flushVals_;
+            }
+
+            //- Has a value if board contains four of a kind
+            CardVal foak() const {
+                return foak_;
+            }
+
+            //- Has a value if board contains three of a kind, but not foak
+            CardVal toak() const {
+                return toak_;
+            }
+            
+            //- If board contains one pair, first will have the value,
+            //  if board contains two pairs, second will have lower value
+            const PktVals& pairs() const {
+                return pairs_;
             }
         
 
@@ -103,19 +119,19 @@ private:
         
             //- Values on board, sorted lowest to highest with duplicates
             //  removed
-            VecCardVal sortedUniqueVals_;
+            VecCardVal values_;
             
-            //- Indexed by sortedUniqueValues, gives the number of occurrences
+            //- Indexed by values, gives the number of occurrences
             //  of each value
-            std::vector<short> sortedUniqueValCounts_;
+            std::vector<short> valueCounts_;
 
             //- Sorted unique value suits
-            //      sortedUniqueValSuits[index of sortedUniqueVal][i] =
+            //      valueSuits[index of values_][i] =
             //      suit of the ith duplicate value.  For pairs, i = 0..1
-            VecVecSuit sortedUniqueValSuits_;
+            VecVecSuit valueSuits_;
 
             //- Suit counts, indexed by suit
-            std::vector<short> suitCounts_;
+            SuitCount suitCounts_;
 
             //- If board has three suited cards, this is the suit, otherwise
             //  unknownSuit
@@ -123,7 +139,17 @@ private:
             
             //- If one suit has 3 or more represented, this vector will contain
             //  their sorted values
-            VecCardVal sortedFlushVals_;
+            VecCardVal flushVals_;
+
+            //- Has a value if board contains four of a kind
+            CardVal foak_;
+
+            //- Has a value if board contains three of a kind, but not foak
+            CardVal toak_;
+            
+            //- If board contains one pair, first will have the value,
+            //  if board contains two pairs, second will have lower value
+            PktVals pairs_;
 
 
     // Private member functions

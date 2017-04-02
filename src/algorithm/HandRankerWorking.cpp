@@ -4,13 +4,13 @@
 // I'm adding suited operator == to card and adding wild cards to card operators
 // Need to add deckMask, board, cardSet
 
-short getRank(const Board& brd, const PktCards& pkt){
+short getRank(const Board& bd, const PktCards& pkt){
     short rank = 0;
-    pocketMask mask(brd, pkt);
+    pocketMask mask(bd, pkt);
 
     // Check for straight flushes
-    const Suit flushSuit = brd.flushSuit();
-    const VecCardVal& flushVals(brd.sortedFlushVals());
+    const Suit flushSuit = bd.flushSuit();
+    const VecCardVal& flushVals(bd.flushVals());
     if (flushSuit != Card::unknownSuit) {
         const StraightCompleters straightFlushes(
             findStraightCompleters(flushVals)
@@ -36,8 +36,72 @@ short getRank(const Board& brd, const PktCards& pkt){
     }
 
     // Check for four-of-a-kind
-    
-
+        // If FOAK showing on board:
+            // rank by cards higher than fifth card (val wild)
+            // then exit (wild wild)
+        // If TOAK showing on board (valA):
+            // If pkt ! have valA, remove (valA, wild)
+            // Otherwise:
+                // Rank extra pocket card A..lowest on board (valA, val)
+                // Below that (valA, wild)
+        // If one or more pairs showing on board (valA) > (valB)
+            // (valA valA) suits known
+            // then (valB valB) suits known, if second pair is present
+            // Continue
+        // Check TOAK and pairs for highest value
+            // TOAK - rank extra pocket card higher first, then wild
+            // pairs - specific pkt only
+    // Check for full house
+        // TOAK or pair must be present
+        // Only sets possible are present in bd.values
+        // Start with the highest and move down
+        // If it's a TOAK
+            // Run through all other cards for pair:
+                // (val val) if not present on board
+                // (val wild) if present as a single
+                // Exit with (wild wild) if present as a pair
+        // If two pairs, then start with highest (call it valA)
+            // Run through all other bd.values as (valA, val)
+            // Once you reach the other pair, it's (valA, wild)
+            // Then repeat with (valB)
+        // If one pair
+            // Run through bd.values for set first (valA)
+                // If it is the pair:
+                    // then run through bd.values for pair (valA val)
+                // If it is single:
+                    // pocket pairs only (valB valB)
+        // Continue
+    // Check for flush
+        // Five flush
+            // Run through all higher (card card), then (card, wild), then
+            // exit with (wild, wild)
+        // Four flush
+            // If player doesn't have (suit), remove (suit, wild)
+            // Else Run through all higher (card card), then (card, wild)
+            // Continue
+        // Three flush
+            // If player doesn't have (suit, suit), then remove (suit, suit)
+            // and move on
+            // Else move through existing ranks
+            // Continue
+    // Check for straight
+    // Check for sets
+        // Run through all bd.value
+            // If exists as TOAK:
+                // Run through (valA, valB) higher than lowest two on board
+                // Then through (valA wild) higher than lowest on board
+                // Then exit (wild wild)
+            // If exists as pair (valA)
+                // If pkt ! have valA, remove (valA, wild)
+                // Otherwise run through (valA valB) valB > lowest on board
+                // Continue
+            // If exists as single (valA)
+                // (valA valA) only
+                // Contiune
+    // Check for two pair
+        // If two pairs on board valA > valB
+            // Run valC through Ace..valB+1
+                // If valC is a pair
     const valueSet& flushValues(board.sortedFlushValues());
     const card::suitEnum flushSuit(board.flushSuit());
     if (flushValues.size()) {

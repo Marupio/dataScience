@@ -75,6 +75,10 @@ ds::BinCardVal ds::Card::readCharToBinValue(char value) {
     if (uv == 'A') {
         return binAce;
     }
+    FatalError << "Read unknown BinCardValue: '" << value << "', which is "
+        << "int " << int(value) << std::endl;
+    abort();
+    return binUnknownValue;
 }
 
 
@@ -104,6 +108,10 @@ ds::CardVal ds::Card::readCharToValue(char value) {
     if (uv == 'A') {
         return ace;
     }
+    FatalError << "Read unknown CardValue: '" << value << "', which is "
+        << "int " << int(value) << std::endl;
+    abort();
+    return unknownValue;
 }
 
 
