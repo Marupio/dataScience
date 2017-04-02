@@ -14,7 +14,7 @@ int main() {
         std::cout << "Value " << it - vs.begin() + 1 << "? ";
         std::cin >> *it;
     }
-    std::sort (vs.begin(), vs.end());
+    std::sort (vs.rbegin(), vs.rend());
     std::cout << std::endl;    
     std::cout << vs << std::endl;
 //    std::cout << vs[0];

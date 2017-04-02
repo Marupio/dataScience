@@ -14,9 +14,9 @@ int main() {
         VecCardVal::iterator it;
         while (duplicates) {
             for (it = vs.begin(); it != vs.end(); ++it) {
-                *it = std::rand()%12 + 2;
+                *it = std::rand()%13 + 2;
             }
-            std::sort (vs.begin(), vs.end());
+            std::sort (vs.rbegin(), vs.rend());
             VecCardVal::iterator itNext;
             bool noDuplicates = true;
             for (

@@ -9,42 +9,34 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
 ) {
     #ifdef DSDEBUG
     if (values.size() > 1) {
-        if (values.front() > values.back()) {
-            FatalError << "Values are not sorted lowest to highest.  Values "
+        if (values.front() < values.back()) {
+            FatalError << "Values are not sorted highest to lowest.  Values "
                 << "are:\n" << values << std::endl;
             abort();
         }
-    } else {
-        FatalError << "Insufficient values provided.  Values are:\n"
-            << values << std::endl;
-        abort();
     }
     #endif
-    bool aceOnBoard = values.back() == 14;
-    VecCardVal cValues;
+    bool aceOnBoard = values.front() == 14;
+    VecCardVal cValues(values);
     if (aceOnBoard) {
-        cValues.reserve(values.size() + 1);
         cValues.push_back(1);
-    } else {
-        cValues.reserve(values.size());
     }
-    cValues.insert(cValues.end(), values.begin(), values.end());
 
     StraightCompleters sc;
-    VecCardVal::const_reverse_iterator altVsIter(cValues.rbegin());
-    if (altVsIter == cValues.rend()) {
+    VecCardVal::const_iterator altVsIter(cValues.begin());
+    if (altVsIter == cValues.end()) {
         return sc;
     }
-    VecCardVal::const_reverse_iterator vsIter(altVsIter + 1);
-    if (vsIter == cValues.rend()) {
+    VecCardVal::const_iterator vsIter(altVsIter + 1);
+    if (vsIter == cValues.end()) {
         return sc;
     }
     ++vsIter;
-    while (vsIter != cValues.rend() && (*altVsIter - *vsIter > 4)) {
+    while (vsIter != cValues.end() && (*altVsIter - *vsIter > 4)) {
         altVsIter++;
         vsIter++;
     }
-    if (vsIter == cValues.rend()) {
+    if (vsIter == cValues.end()) {
         return sc;
     }
     vsIter = altVsIter;
@@ -73,7 +65,7 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         --cursor;
         ++curStraightSize;
         // check if next value is on board or there is room in pocket
-        if (vsIter != cValues.rend() && *vsIter == cursor) {
+        if (vsIter != cValues.end() && *vsIter == cursor) {
             // Value is on the board
             ++vsIter;
         } else if (pocket.first == 15) {
@@ -144,13 +136,13 @@ bool ds::HandRanker::restart(
     const VecCardVal& values,
     short& cursor,
     short& restartCursor,
-    VecCardVal::const_reverse_iterator& vsIter,
-    VecCardVal::const_reverse_iterator& altVsIter,
+    VecCardVal::const_iterator& vsIter,
+    VecCardVal::const_iterator& altVsIter,
     short& curStraightSize,
     CardVal& curStraightMax,
     PktVals& pocket
 ) {
-    if (altVsIter == values.rend()) {
+    if (altVsIter == values.end()) {
         return false;
     }
     cursor = restartCursor;
@@ -166,12 +158,12 @@ bool ds::HandRanker::restart(
     // but it is faster to check for duplicate pocket cards when recording
     // a straight
     vsIter = altVsIter;
-    if (vsIter != values.rbegin() && *(vsIter - 1) - cursor == 1) {
+    if (vsIter != values.begin() && *(vsIter - 1) - cursor == 1) {
         --cursor;
     }
     // Increment altVsIter to two ahead
     ++altVsIter;
-    if (altVsIter == values.rend()) {
+    if (altVsIter == values.end()) {
         return false;
     }
     ++altVsIter;
@@ -179,7 +171,7 @@ bool ds::HandRanker::restart(
         // Search for next good start point
 
         // Are there enough board cards and is the cursor high enough?
-        if (altVsIter == values.rend() || cursor < 5) {
+        if (altVsIter == values.end() || cursor < 5) {
             // No more straights
             return false;
         }
@@ -197,7 +189,7 @@ bool ds::HandRanker::restart(
         }
         --cursor;
     }
-    altVsIter = values.rend();
+    altVsIter = values.end();
     curStraightSize = 1;
     curStraightMax = cursor;
     if (*vsIter != cursor) {
@@ -205,7 +197,7 @@ bool ds::HandRanker::restart(
         altVsIter = vsIter;
         restartCursor = cursor - 1;
     } else {
-        altVsIter = values.rend();
+        altVsIter = values.end();
         vsIter++;
         pocket.first = 15;
     }

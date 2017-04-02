@@ -119,8 +119,7 @@ void ds::Board::updateDerivedData() {
         allCards.push_back(*it);
         suitCounts_[it->suit()]++;
     }
-    std::sort(allCards.begin(), allCards.end());
-std::cout << "allCards: " << allCards << std::endl;
+    std::sort(allCards.rbegin(), allCards.rend());
     if (allCards.size()) {
         values_.push_back(allCards.front().value());
         valueCounts_.push_back(1);

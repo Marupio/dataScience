@@ -21,8 +21,8 @@ private:
         const VecCardVal& values,
         short& cursor,
         short& restartCursor,
-        VecCardVal::const_reverse_iterator& vsIter,
-        VecCardVal::const_reverse_iterator& altVsIter,
+        VecCardVal::const_iterator& vsIter,
+        VecCardVal::const_iterator& altVsIter,
         short& curStraightSize,
         CardVal& curStraightMax,
         PktVals& pocket

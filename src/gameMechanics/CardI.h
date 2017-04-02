@@ -137,7 +137,7 @@ ds::DeckInd ds::Card::deckIndex() const {
 // *** Member Operators *** //
 
 bool Card::operator<(const Card& c1) {
-    return c1.binValue_ < binValue_;
+    return binValue_ < c1.binValue_;
 }
 
 
@@ -145,12 +145,12 @@ bool Card::operator<=(const Card& c1) {
     if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
         return true;
     }
-    return c1.binValue_ <= binValue_;
+    return binValue_ <= c1.binValue_;
 }
         
 
 bool Card::operator>(const Card& c1) {
-    return c1.binValue_ > binValue_;
+    return binValue_ > c1.binValue_;
 }
 
 
@@ -158,7 +158,7 @@ bool Card::operator>=(const Card& c1) {
     if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
         return true;
     }
-    return c1.binValue_ >= binValue_;
+    return binValue_ >= c1.binValue_;
 }
 
         
