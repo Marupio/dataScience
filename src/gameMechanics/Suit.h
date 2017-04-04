@@ -14,6 +14,8 @@ namespace ds {
     typedef std::array<char, 4> SuitCount;
     typedef std::vector<SuitCount> VecSuitCount;
 
+    typedef std::pair<Suit, Suit> PktSuits;
+
 // Global functions
 
     void writeVecSuit(const VecSuit& vs, std::ostream& os);

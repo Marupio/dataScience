@@ -99,47 +99,27 @@ void ds::Board::reserveSpace() {
 
 
 void ds::Board::updateDerivedData() {
-    values_.clear();
-    valueCounts_.clear();
-    valueSuits_.clear();
+    stats_.clear();
+    stats_ = VecValStats(cards_);
     suitCounts_.fill(0);
     flushSuit_ = Card::unknownSuit;
     flushVals_.clear();
     foak_ = Card::unknownValue;
     toak_ = Card::unknownValue;
-    pairs_ = {Card::unknownValue, Card::unknownValue};
+    toakMissingSuit_ = Card::unknownSuit;
+    pairA_ = Card::unknownValue;
+    pairAMissingSuits_ = {Card::unknownSuit, Card::unknownSuit};
+    pairB_ = Card::unknownValue;
+    pairBMissingSuits_ = {Card::unknownSuit, Card::unknownSuit};
 
     if (!cards_.size()) {
         return;
     }
 
-    VecCard allCards;
-    allCards.reserve(cards_.size());
     for (VecCard::const_iterator it=cards_.begin(); it != cards_.end(); ++it) {
-        allCards.push_back(*it);
         suitCounts_[it->suit()]++;
     }
-    std::sort(allCards.rbegin(), allCards.rend());
-    if (allCards.size()) {
-        values_.push_back(allCards.front().value());
-        valueCounts_.push_back(1);
-        valueSuits_.push_back(VecSuit(1, allCards.front().suit()));
-    }
-    for (
-        std::pair<VecCard::const_iterator, VecCard::const_iterator> it(
-            allCards.begin(), allCards.begin() + 1);
-        it.second != allCards.end();
-        ++it.first, ++it.second
-    ) {
-        if (it.first->value() != it.second->value()) {
-            values_.push_back(it.second->value());
-            valueCounts_.push_back(1);
-            valueSuits_.push_back(VecSuit(1, it.second->suit()));
-        } else {
-            valueCounts_.back()++;
-            valueSuits_.back().push_back(it.second->suit());
-        }
-    }
+
     for (
         SuitCount::const_iterator it = suitCounts_.begin();
         it != suitCounts_.end();
@@ -148,38 +128,37 @@ void ds::Board::updateDerivedData() {
         if (*it > 2) {
             flushSuit_ = it - suitCounts_.begin();
             for (
-                VecCard::const_iterator it=cards_.begin();
-                it != cards_.end();
-                ++it
+                VecValStats::const_iterator itS = stats_.begin();
+                itS != stats_.end();
+                ++itS
             ) {
-                if (it->suit() == flushSuit_) {
-                    flushVals_.push_back(it->value());
+                if (itS->suits()[flushSuit_] > 0) {
+                    flushVals_.push_back(itS->value());
                 }
             }
-            std::sort(flushVals_.begin(), flushVals_.end());
             break;
         }
     }
     for (
-        std::pair<
-            std::vector<short>::const_iterator,
-            VecCardVal::const_iterator
-        > itPair(valueCounts_.begin(), values_.begin());
-        itPair.first != valueCounts_.end();
-        ++itPair.first, ++itPair.second
+        VecValStats::const_iterator itS = stats_.begin();
+        itS != stats_.end();
+        ++itS
     ) {
-        switch(*itPair.first) {
+        switch(*itS.nCards()) {
         case 4:
-            foak_ = *itPair.second;
+            foak_ = itS->value();
             break;
         case 3:
-            toak_ = *itPair.second;
+            toak_ = itS->value();
+            // &&& identify toakMissingCard_
             break;
         case 2:
-            if (pairs_.first == Card::unknownValue) {
-                pairs_.first = *itPair.second;
+            if (pairA_ == Card::unknownValue) {
+                pairA_ = itS->value();
+                // &&& identify missingSuits
             } else {
-                pairs_.second = *itPair.second;
+                pairB_ = itS->value();
+                // &&& identify missingSuits
             }
         default:
             break;

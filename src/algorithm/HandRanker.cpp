@@ -16,9 +16,8 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         }
     }
     #endif
-    bool aceOnBoard = values.front() == 14;
     VecCardVal cValues(values);
-    if (aceOnBoard) {
+    if (values.front() == 14) {
         cValues.push_back(1);
     }
 

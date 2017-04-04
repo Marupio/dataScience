@@ -14,6 +14,8 @@ std::istream& operator>>(std::istream& in, Card& c);
 typedef std::vector<Card> VecCard;
 typedef std::vector<Suit> VecSuit;
 
+static const Card wildCard;
+
 class Card
 {
 public:
@@ -152,6 +154,19 @@ public:
             
             //- True if suit is wild
             inline bool hasWildSuit() const;
+
+            //- True if value or suit is wild
+            inline bool hasWild() const;
+
+            //- True if value and suit are wild
+            inline bool wild() const;
+
+            //- Checks validity of card and returns true if valid
+            inline bool valid() const;
+            
+            //- True if card represents a physical card with no wild components
+            //  and does not have a lowAce value
+            inline bool real() const;
 
             //- True if value or suit is unknown
             inline bool partsUnknown() const;

@@ -35,6 +35,26 @@ public:
         ):
             std::pair<Card, Card>(Card(valA, suitA), Card(valB, suitB))
         {}
+
+        //- Construct from card, value and suit
+        PktCards
+        (
+            const Card& CardA,
+            CardVal valB,
+            Suit suitB
+        ):
+            std::pair<Card, Card>(CardA, Card(valB, suitB))
+        {}
+
+        //- Construct from value, suit and card
+        PktCards
+        (
+            CardVal valA,
+            Suit suitA,
+            const Card& CardB
+        ):
+            std::pair<Card, Card>(Card(valA, suitA), CardB)
+        {}
         
         //- Construct from deck indices
         PktCards(DeckInd diA, DeckInd diB):
@@ -65,6 +85,12 @@ public:
         bool operator!=(const PktCards& pc) {
             return !(operator==(pc));
         }
+        
+        //- Cast to VecCard
+        operator VecCard() {
+            return VecCard(first, second);
+        }
+
 
     // Friend functions
 //    friend std::ostream& operator<<(std::ostream& out, const PktCards& c);

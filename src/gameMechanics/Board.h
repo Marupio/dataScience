@@ -11,6 +11,7 @@ std::istream& operator>>(std::istream& in, Board& c);
 
 class Dealer;
 
+
 class Board
 {
 public:
@@ -48,24 +49,9 @@ public:
                 return cards_;
             }
 
-            //- Number of cards on the board
-            VecCard::size_type size() const {
-                return cards_.size();
-            }
-
-            //- Return sorted unique values
-            const VecCardVal& values() const {
-                return values_;
-            }
-            
-            //- Return counts of each value
-            const std::vector<short>& valueCounts() const {
-                return valueCounts_;
-            }
-
-            //- Return suits of sorted unique values
-            const VecVecSuit& valueSuits() const {
-                return valueSuits_;
+            //- Return stats of cards on the board
+            const VecValStats& stats() const {
+                return stats_;
             }
 
             //- Return suit counts
@@ -84,20 +70,39 @@ public:
                 return flushVals_;
             }
 
-            //- Has a value if board contains four of a kind
+            //- Has a value if board contains four of-a-kind
             CardVal foak() const {
                 return foak_;
             }
 
-            //- Has a value if board contains three of a kind, but not foak
+            //- Has a value if board contains three of-a-kind, but not foak
             CardVal toak() const {
                 return toak_;
             }
+
+            //- Returns suit missing from three-of-a-kind
+            Suit toakMissingSuit() const {
+                return toakMissingSuit_;
+            }
+
+            //- If board has a pair, this will contains its value
+            CardVal pairA() const {
+                return pairA_;
+            }
             
-            //- If board contains one pair, first will have the value,
-            //  if board contains two pairs, second will have lower value
-            const PktVals& pairs() const {
-                return pairs_;
+            //- Returns suits that are not represented in pairA
+            const PktSuits& pairAMissingSuits() {
+                pairAMissingSuits_
+            }
+
+            //- If board has a second pair, this will contains its value
+            CardVal pairB() const {
+                return pairB_;
+            }
+            
+            //- Returns suits that are not represented in pairB
+            const PktSuits& pairBMissingSuits() {
+                pairBMissingSuits_
             }
         
 
@@ -117,18 +122,8 @@ private:
 
         // Data derived from cards_
         
-            //- Values on board, sorted lowest to highest with duplicates
-            //  removed
-            VecCardVal values_;
-            
-            //- Indexed by values, gives the number of occurrences
-            //  of each value
-            std::vector<short> valueCounts_;
-
-            //- Sorted unique value suits
-            //      valueSuits[index of values_][i] =
-            //      suit of the ith duplicate value.  For pairs, i = 0..1
-            VecVecSuit valueSuits_;
+            //- Contains sorted unique values, associated counts and suits.
+            VecValStats stats_;
 
             //- Suit counts, indexed by suit
             SuitCount suitCounts_;
@@ -141,15 +136,28 @@ private:
             //  their sorted values
             VecCardVal flushVals_;
 
-            //- Has a value if board contains four of a kind
+            //- Has a value if board contains four of-a-kind
             CardVal foak_;
 
-            //- Has a value if board contains three of a kind, but not foak
+            //- Has a value if board contains three of-a-kind, but not foak
             CardVal toak_;
+
+            //- Suit missing from three-of-a-kind
+            Suit toakMissingSuit_;
             
-            //- If board contains one pair, first will have the value,
-            //  if board contains two pairs, second will have lower value
-            PktVals pairs_;
+            // Pair data
+
+                //- If board contains one pair, its value will be in here
+                CardVal pairA_;
+                
+                //- Shows suits that are NOT represented in pairA
+                PktSuits pairAMissingSuits_;
+                
+                // If board contains a second pair, its value will be here
+                CardVal pairB_;
+                
+                //- Shows suits that are NOT represented in pairB
+                PktSuits pairBMissingSuits_;
 
 
     // Private member functions

@@ -50,7 +50,73 @@ short getRank(const Board& bd, const PktCards& pkt){
             // Continue
 
     // Check for four-of-a-kind (FOAK)
-    for (std::pair<VecCardVal::const_it
+    const VecCardVal& vals(bd.values());
+    const std::vector<short>& valCounts(bd.valueCounts());
+    const VecVecSuit& valSuits(bd.valueSuits());
+    typedef std::tuple<
+        VecCardVal::const_iterator,
+        std::vector<short>::const_iterator,
+        VecVecSuit::const_iterator
+        > itValsCountsSuits;
+    for (
+        itValsCountsSuits itTrp(
+            vals.begin(),
+            valCounts.begin(),
+            valSuits.begin()
+        );
+        itTrp.get<0> != vals.end();
+    ) {
+        ++itTrp.get<0>;
+        ++itTrp.get<1>;
+        ++itTrp.get<2>;
+        switch (*it.second) {
+        case 4: {
+            // FOAK is on the board
+            // rank by cards higher than fifth card (val wild)
+            // then exit (wild wild)
+            const CardVal foakVal = *it.first;
+            CardVal lowKicker = vals.front();
+            if (lowKicker = foakVal) {
+                lowKicker = *(it.first + 1)
+            }
+            for (CardVal kicker = Card::ace; kicker > lowKicker; --kicker) {
+                PktCards testPkt(kicker, Card::wildSuit, wildCard);
+                if (testPkt == pkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+            }
+            return rank + 1;
+            break;
+        }
+        case 3: {
+            const CardVal toakVal = *it.first;
+            
+            CardVal lowKicker = vals.front();
+            if (lowKicker = toakVal) {
+                lowKicker = *(it.first + 1)
+            }
+            for (CardVal kicker = Card::ace; kicker > lowKicker; --kicker) {
+                PktCards testPkt(kicker, Card::wildSuit, wildCard);
+                if (testPkt == pkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+            }
+            return rank + 1;
+            // TOAK is on the board
+            break;
+        }
+        case 2: {
+            // pair
+            break;
+        }
+        default: {
+            break;
+        }
+        }
 
         // Check TOAK and pairs for highest value
             // TOAK - rank extra pocket card higher first, then wild

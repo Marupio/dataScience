@@ -108,21 +108,49 @@ CardVal Card::value() const {
     return binValueToValue(binValue_);
 }
 
+
 BinCardVal Card::binValue() const {
     return binValue_;
 }
+
 
 Suit Card::suit() const {
     return suit_;
 }
 
+
 bool Card::hasWildValue() const {
     return binValue_ == binWildValue;
 }
 
+
 bool Card::hasWildSuit() const {
     return suit_ == wildSuit;
 }
+
+
+bool Card::hasWild() const {
+    return hasWildSuit() || hasWildValue()
+}
+
+
+bool Card::wild() const {
+    return hasWildSuit() && hasWildValue()
+}
+
+
+bool Card::valid() const {
+    return 
+        binValue_ <= 13 && binValue_ >= 0
+     && suit_  <= 4 && suit_ >= 0;
+}
+
+bool Card::real() const {
+    return 
+        binValue_ <= 13 && binValue_ >= 2
+     && suit_  <= 3 && suit_ >= 0;
+}
+
 
 bool Card::partsUnknown() const {
     return binValue_ == binUnknownValue || suit_ == unknownSuit;
