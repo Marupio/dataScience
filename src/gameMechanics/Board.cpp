@@ -150,15 +150,41 @@ void ds::Board::updateDerivedData() {
             break;
         case 3:
             toak_ = itS->value();
-            // &&& identify toakMissingCard_
+            const VecSuit missingSuits = getMissingSuits(itS->suits());
+            #ifdef DSDEBUG
+            if (missingSuits.size()) != 1) {
+                FatalError << "Expecting only one missing suit from: "
+                    << itS->suits() << std::endl;
+                abort();
+            }
+            #endif
+            toakMissingCard_ = missingSuits.front();
             break;
         case 2:
             if (pairA_ == Card::unknownValue) {
                 pairA_ = itS->value();
-                // &&& identify missingSuits
+                const VecSuit missingSuits = getMissingSuits(itS->suits());
+                #ifdef DSDEBUG
+                if (missingSuits.size()) != 2) {
+                    FatalError << "Expecting two missing suit from: "
+                        << itS->suits() << std::endl;
+                    abort();
+                }
+                #endif
+                pairAMissingSuits_ =
+                    {missingSuits.front(), missingSuits.back()};
             } else {
                 pairB_ = itS->value();
-                // &&& identify missingSuits
+                const VecSuit missingSuits = getMissingSuits(itS->suits());
+                #ifdef DSDEBUG
+                if (missingSuits.size()) != 2) {
+                    FatalError << "Expecting two missing suit from: "
+                        << itS->suits() << std::endl;
+                    abort();
+                }
+                #endif
+                pairBMissingSuits_ =
+                    {missingSuits.front(), missingSuits.back()};
             }
         default:
             break;

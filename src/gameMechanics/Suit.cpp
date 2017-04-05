@@ -260,4 +260,15 @@ ds::VecSuitCount ds::readVecSuitCount(std::istream& is) {
     return vsc;
 }
 
+ds::VecSuit ds::getMissingSuits(const SuitCount& sc) {
+    VecSuit missing;
+    missing.reserve(2);
+    for (SuitCount::const_iterator it = sc.begin(); it != sc.end(); ++it) {
+        if (*it == 0) {
+            missing.push_back(it - sc.begin());
+        }
+    }
+    return missing;
+}
+
 // ****** End ****** //

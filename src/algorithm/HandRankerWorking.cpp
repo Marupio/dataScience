@@ -48,79 +48,102 @@ short getRank(const Board& bd, const PktCards& pkt){
             // (valA valA) suits known
             // then (valB valB) suits known, if second pair is present
             // Continue
+        // Check TOAK and pairs for highest value
+            // TOAK - rank extra pocket card higher first, then wild
+            // pairs - specific pkt only
 
     // Check for four-of-a-kind (FOAK)
-    const VecCardVal& vals(bd.values());
-    const std::vector<short>& valCounts(bd.valueCounts());
-    const VecVecSuit& valSuits(bd.valueSuits());
-    typedef std::tuple<
-        VecCardVal::const_iterator,
-        std::vector<short>::const_iterator,
-        VecVecSuit::const_iterator
-        > itValsCountsSuits;
-    for (
-        itValsCountsSuits itTrp(
-            vals.begin(),
-            valCounts.begin(),
-            valSuits.begin()
-        );
-        itTrp.get<0> != vals.end();
-    ) {
-        ++itTrp.get<0>;
-        ++itTrp.get<1>;
-        ++itTrp.get<2>;
-        switch (*it.second) {
+    const VecValStats& stats(bd.stats());
+    for (const auto it = stats.begin(); it != stats.end(); ++it) {
+        switch(it->nCards()) {
         case 4: {
             // FOAK is on the board
             // rank by cards higher than fifth card (val wild)
             // then exit (wild wild)
-            const CardVal foakVal = *it.first;
-            CardVal lowKicker = vals.front();
+            const CardVal foakVal = it->value();
+            CardVal lowKicker = stats.front().value();
             if (lowKicker = foakVal) {
-                lowKicker = *(it.first + 1)
+                lowKicker = (it + 1)->value();
             }
             for (CardVal kicker = Card::ace; kicker > lowKicker; --kicker) {
-                PktCards testPkt(kicker, Card::wildSuit, wildCard);
+                PktCards testPkt(kicker, Card::wildSuit, Card::wildCard);
                 if (testPkt == pkt) {
                     return rank;
                 } else {
                     rank += mask.remove(testPkt);
                 }
             }
-            return rank + 1;
+            // else all remaining hands rank the same
+            return rank;
             break;
         }
         case 3: {
-            const CardVal toakVal = *it.first;
-            
-            CardVal lowKicker = vals.front();
-            if (lowKicker = toakVal) {
-                lowKicker = *(it.first + 1)
-            }
-            for (CardVal kicker = Card::ace; kicker > lowKicker; --kicker) {
-                PktCards testPkt(kicker, Card::wildSuit, wildCard);
-                if (testPkt == pkt) {
-                    return rank;
-                } else {
-                    rank += mask.remove(testPkt);
-                }
-            }
-            return rank + 1;
             // TOAK is on the board
+            const toakCard(it->value(), bd.toakMissingSuit());
+            PktCards foakPkt(toakCard, Card::wildCard);
+            if (pkt == foakPkt) {
+                // Player has FOAK
+                CardVal lowKicker = stats.front().value();
+                if (lowKicker = toakVal) {
+                    lowKicker = (it + 1)->value();
+                }
+                for (CardVal kicker = Card::ace; kicker > lowKicker; --kicker) {
+                    PktCards testPkt(toakCard, kicker, Card::wildSuit);
+                    if (testPkt == pkt) {
+                        return rank;
+                    } else {
+                        rank += mask.remove(testPkt);
+                    }
+                }
+                // Since pkt == foakPkt
+                return rank;
+            } else {
+                // Player does not have FOAK
+                rank += mask.remove(foakPkt);
+            }
             break;
         }
         case 2: {
-            // pair
+            // Pair is on the board
+            PktCards foakPkt;
+            if (it->value() == bd.pairA()) {
+                foakPkt = PktCards(
+                    it->value(),
+                    bd.pairAMissingSuits().first,
+                    it->value(),
+                    bd.pairAMissingSuits().second
+                );
+            } else {
+                // Must be pairB
+                #ifdef DSDEBUG
+                    if (it->value() != bd.pairB()) {
+                        FatalError << "Board stats and derived data do not "
+                            << "agree. Pair value " << it->value() << " "
+                            << "expected, but board pairA = " << bd.pairA
+                            << ", and pairB = " << bd.pairB << std::endl;
+                        abort();
+                    }
+                #endif
+                foakPkt = PktCards(
+                    it->value(),
+                    bd.pairBMissingSuits().first,
+                    it->value(),
+                    bd.pairBMissingSuits().second
+                );
+            }
+            if (foakPkt == pkt) {
+                return rank;
+            } else {
+                rank += mask.remove(foakPkt);
+            }
             break;
         }
         default: {
             break;
-        }
-        }
+        } // end default
+        } // end switch
+    }    
 
-        // Check TOAK and pairs for highest value
-            // TOAK - rank extra pocket card higher first, then wild
-            // pairs - specific pkt only
     // Check for full house
         // TOAK or pair must be present
         // Only sets possible are present in bd.values
@@ -141,6 +164,133 @@ short getRank(const Board& bd, const PktCards& pkt){
                 // If it is single:
                     // pocket pairs only (valB valB)
         // Continue
+
+    // Check for full house
+    if (
+        bd.pairA() != unknownValue
+     || bd.pairB() != unknownValue
+     || bd.toak() != unknownValue
+    ) {
+        // Full house is possible
+        for (const auto it = stats.begin(); it != stats.end(); ++it) {
+            // Look for highest set
+            switch(it->nCards()) {
+            case 3: {
+                // FH set is on the board, pocket is free
+                const auto itp = stats.begin();
+                for (CardVal pairVal = Card::ace; pairVal > lowAce; --pairVal) {
+                    if (pairVal == it->value()) {
+                        // Pair value can't be set value
+                        ++itp;
+                        continue;
+                    }
+                    if (pairVal == itp->value()) {
+                        // best pair is a value on the board
+                        if (itp->nCards() >= 2) {
+                            // best pair is already paired on the board
+                            // all remaining hands the same
+                            return rank;
+                        } else {
+                            // It is a single
+                            PktCards testPocket(
+                                pairVal,
+                                Card::wildSuit,
+                                Card::wildCard
+                            );
+                            if (pkt == testPocket) {
+                                return rank;
+                            } else {
+                                rank += mask.remove(testPkt);
+                            }
+                        }
+                    } else {
+                        // Not on the board, must be pocket paired
+                        PktCards testPocket(
+                            pairVal,
+                            Card::wildSuit,
+                            pairVal,
+                            Card::wildSuit
+                        );
+                        if (pkt == testPocket) {
+                            return rank;
+                        } else {
+                            rank += mask.remove(testPkt);
+                        }
+                    }
+                }
+                break;
+            }
+            case 2: {
+                // FH set uses a pair on the board, needs one card in hand
+                // setVal = it->value
+                for (const auto itp = stats.begin(); itp != stats.end(); ++it) {
+                    if (itp == it) {
+                        continue;
+                    }
+                    if (itp->nCards() >= 2) {
+                        // Pair is on the board
+                        PktCards testPkt(
+                            it->value(),
+                            Card::wildSuit,
+                            Card::wildCard
+                        );
+                        if (pkt == testPocket) {
+                            return rank;
+                        } else {
+                            rank += mask.remove(testPkt);
+                        }
+                    } else {
+                        // FH pair uses single from the board
+                        PktCards testPkt(
+                            it->value(),
+                            Card::wildSuit,
+                            itp->value(),
+                            Card::wildSuit
+                        );
+                        if (pkt == testPocket) {
+                            return rank;
+                        } else {
+                            rank += mask.remove(testPkt);
+                        }
+                    }
+                }
+                break;
+            }
+            case 1: {
+                // single is the set, needs pocket pairs and pair on the board                
+                for (const auto itp = stats.begin(); itp != stats.end(); ++it) {
+                    if (itp == it) {
+                        continue;
+                    }
+                    switch (itp->nCards()) {
+                    case 3: // fall through
+                    case 2: {
+                        PktCards testPkt(
+                            it->value(),
+                            Card::wildSuit,
+                            it->value(),
+                            Card::wildSuit
+                        );
+                        if (pkt == testPocket) {
+                            return rank;
+                        } else {
+                            rank += mask.remove(testPkt);
+                        }
+                    }
+                    default: {
+                        break;
+                    } // end default
+                    } // end switch
+                }
+                break;
+            }
+            default: {
+                break;
+            } // end break
+            } // end switch
+        }
+    }
+
     // Check for flush
         // Five flush
             // Run through all higher (card card), then (card, wild), then

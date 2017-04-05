@@ -69,6 +69,29 @@ public:
     //- Destructor
     ~PktCards() {}
 
+    
+    // Member functions
+    
+        //- Returns true if pocket has given card
+        bool has(const Card& cd) {
+            return first == cd || second == cd;
+        }
+        
+        //- Returns true if pocket has given value
+        bool has(CardVal cv) {
+            return first.value() == cv || second.value() == cv;
+        }
+        
+        //- Returns true if pocket has given suit
+        bool has(Suit st) {
+            return first.suit() == st || second.suit() == st;
+        }
+
+        //- Returns true if pocket is suited with given suit
+        bool suited(Suit st) {
+            return first.suit() == st && second.suit() == st;
+        }
+
 
     // Member operators
     

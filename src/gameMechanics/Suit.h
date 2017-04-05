@@ -11,7 +11,7 @@ namespace ds {
     typedef signed char Suit;
     typedef std::vector<Suit> VecSuit;
     typedef std::vector<VecSuit> VecVecSuit;
-    typedef std::array<char, 4> SuitCount;
+    typedef std::array<Suit, 4> SuitCount;
     typedef std::vector<SuitCount> VecSuitCount;
 
     typedef std::pair<Suit, Suit> PktSuits;
@@ -29,6 +29,8 @@ namespace ds {
 
     void writeVecSuitCount(const VecSuitCount& vsc, std::ostream& os);
     VecSuitCount readVecSuitCount(std::istream& is);
+
+    VecSuit getMissingSuits(const SuitCount& sc);
 } // end namespace ds
 
 #endif

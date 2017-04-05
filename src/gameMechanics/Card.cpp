@@ -4,7 +4,7 @@
 
 // ****** Static data ****** //
 
-const ds::Card wildCard(Card::wildValue, Card::wildSuit);
+const ds::Card ds::Card::wildCard(Card::wildValue, Card::wildSuit);
 
 const short ds::Card::nSuits(4);
 

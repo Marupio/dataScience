@@ -14,14 +14,15 @@ std::istream& operator>>(std::istream& in, Card& c);
 typedef std::vector<Card> VecCard;
 typedef std::vector<Suit> VecSuit;
 
-static const Card wildCard;
-
 class Card
 {
 public:
 
 
     // Static data
+
+        //- Static card data
+        static const Card wildCard;
     
         //- Static suit data
         static const short nSuits;
