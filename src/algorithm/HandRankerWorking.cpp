@@ -1,9 +1,6 @@
 #include<HandRanker.h>
 #include<iostream>
 
-// I'm adding suited operator == to card and adding wild cards to card operators
-// Need to add deckMask, board, cardSet
-
 short getRank(const Board& bd, const PktCards& pkt){
     short rank = 0;
     pocketMask mask(bd, pkt);
@@ -401,7 +398,7 @@ short getRank(const Board& bd, const PktCards& pkt){
                 }
             }
         } else {
-            PktVals testPkt(Card::wildValue, flushSuit, Card::wildCard);
+            PktCards testPkt(Card::wildValue, flushSuit, Card::wildCard);
             rank += mask.remove(testPkt);
         }
         break;
@@ -442,7 +439,7 @@ short getRank(const Board& bd, const PktCards& pkt){
                 }
             }
         } else {
-            PktVals testPkt(
+            PktCards testPkt(
                 Card::wildValue,
                 flushSuit,
                 Card::wildValue,
@@ -533,6 +530,9 @@ short getRank(const Board& bd, const PktCards& pkt){
                     ++itA;
                     continue;
                 }
+                if (kicker = it->value()) {
+                    continue;
+                }
                 const auto itB = stats.begin();
                 for (
                     CardVal kickerB = Card::king;
@@ -541,6 +541,9 @@ short getRank(const Board& bd, const PktCards& pkt){
                 ) {
                     if (itB != stats.end() && kickerB == itB->value()) {
                         ++itB;
+                        continue;
+                    }
+                    if (kickerB == it->value()) {
                         continue;
                     }
                     PktCards testPkt(
@@ -807,11 +810,123 @@ short getRank(const Board& bd, const PktCards& pkt){
             // Look for single values that beat top three non-paired board cards
             // Remove it: (valA wild)
             // exit with (wild wild)
+
+    // Check for a pair
+    {
+        const auto it = stats.start();
+        for (CardVal pairVal = Card::ace; pairVal > Card::lowAce; --pairVal) {
+            if (it != stats.end() && pairVal == it->value()) {
+                // Pair card is on the board, look for kicker
+                const auto itR = stats.rbegin();
+                CardVal lowVal = itR->value();
+                if (lowVal == pairVal) {
+                    itR++;
+                    lowVal = itR->value();
+                }
+                const auto itK = stats.begin();
+                for (CardVal kicker = Card::ace; kicker > lowVal) {
+                    if (itK != stats.end() && kicker == *itK) {
+                        ++itK;
+                        continue;
+                    }
+                    if (kicker == pairVal) {
+                        continue;
+                    }
+                    PktCards testPkt(
+                        pairVal,
+                        Card::wildSuit,
+                        kicker,
+                        Card::wildSuit
+                    );
+                    if (testPkt == pkt) {
+                        return rank;
+                    } else {
+                        rank += mask.remove(testPkt);
+                    }
+                }
+                // No kicker
+                PktCards testPkt(pairVal, Card::wildSuit, Card::wildCard);
+                if (testPkt == pkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+                ++it;
+            } else {
+                // Pair val is not on the board, must be pocket pairs
+                PocketCards testPkt(
+                    pairVal,
+                    Card::wildSuit,
+                    pairVal,
+                    Card::wildCard
+                );
+                if (testPkt == pkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+            }
+        }
+    }
+
     // Check for high card
         // boardA > boardB are lowest two values on board
         // Look for two value hands that beat both first and remove them (valA valB)
         // Look for single value hands that beats boardB (valA>boardB wild)
         // exit (wild wild)
 
+    // Check for high card
+    {
+        // First check for two kickers
+        const auto itR = stats.rbegin();
+        const CardVal lowValA = itR->value();
+        ++itR;
+        const CardVal lowValB = itR->value();
+        const auto itA = stats.begin();
+        for (CardVal kickerA = Card::ace; kickerA > lowValB; --kickerA) {
+            if (itA != stats.end() && kickerA == itA->value()) {
+                ++itA;
+                continue;
+            }
+            const auto itB = stats.begin();
+            for (
+                CardVal kickerB = Card::king;
+                kickerB > lowValA;
+                --kickerB
+            ) {
+                if (itB != stats.end() && kickerB == itB->value()) {
+                    ++itB;
+                    continue;
+                }
+                PktCards testPkt(
+                    kickerA,
+                    Card::wildSuit,
+                    kickerB,
+                    Card::wildSuit
+                );
+                if (pkt == testPkt) {
+                    return rank;
+                } else {
+                    rank += mask.remove(testPkt);
+                }
+            }
+        }
+        // Didn't find two kickers, look for one kicker
+        itA = stats.begin();
+        for (CardVal kicker = Card::ace; kicker > lowValA; --kicker) {
+            if (itA != stats.end() && kicker == itA->value()) {
+                ++itA;
+                continue;
+            }
+            PktCards testPkt(kickerA, Card::wildSuit, Card::wildCard);
+            if (pkt == testPkt) {
+                return rank;
+            } else {
+                rank += mask.remove(testPkt);
+            }
+        }
+        // Didn't find one kicker, all remaining hands the same
+        return rank;
+    }
 }
 

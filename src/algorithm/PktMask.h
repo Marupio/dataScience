@@ -27,28 +27,33 @@ public:
 
         // Pre-indexed tables for wild value or wild suit matching
         
-            //- One card tables, e.g. 4C **
+            //- VS **
+            //  One card tables, e.g. 4C **
             //      i.e. remove all pocket combos with 4C
             //      52 tables with 51 entries each = 2652
             static const VecVecDeckInd oneCardTables_;
             
-            //- One suit tables, e.g. *C **
+            //- *S **
+            //  One suit tables, e.g. *C **
             //      i.e. one card needs a given suit
             //      4 tables, 13x51 entries each = 4x663 = 2652
             static const VecVecDeckInd oneSuitTables_;
             
-            //- One value tables, e.g. 4* **
+            //- V* **
+            //  One value tables, e.g. 4* **
             //      i.e. one card needs a given value
             //      13 tables, 4x51 entries each = 13x204 = 2652
             static const VecVecDeckInd oneValTables_;
 
-            //- Two suit tables, e.g. *H *H
+            //- *S *S
+            //  Two suit tables, e.g. *H *H
             //      i.e. remove all pocket suited hearts pocket combos
             //      only suited pockets make sense
             //      4 tables with 13x12 entries each = 4x156 = 624
             static const VecVecDeckInd twoSuitTables_;
 
-            //- Two value tables, e.g. 3* 4*
+            //- V* V*
+            //  Two value tables, e.g. 3* 4*
             //      i.e. suit doesn't matter, values do
             //      dissimilar numbers:
             //          13x12 tables with 16 entries
@@ -57,6 +62,15 @@ public:
             //  Structured as a hashTable with the key being the value pair
             //  pair(valA, valB), valA >= valB
             static const TwoValHashTable twoValTables_;
+
+            //- V* **
+            //- *S **
+            //- VS **
+            //- V* V*
+            //- *S *S
+            //- Missing but required:
+            //  VS V*
+            //  
 
     // Constructors
 
