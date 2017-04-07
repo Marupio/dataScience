@@ -1,8 +1,14 @@
+#ifndef VecValStats_h
+#define VecValStats_h
+
 #include<ValStats.h>
+#include<PktCards.h>
 
 // Contains meta data about a set of cards, organized by card value.
 // Does not contain references to set of cards, and therefore cannot update
 // values if these change.  It must be reconstructed.
+
+namespace ds {
 
 // Forward declarations
 class Board;
@@ -13,14 +19,17 @@ public:
 
     // Public type data
     
-        typedef std::Vector<ValStats>::const_iterator const_iterator;
-        typedef std::Vector<ValStats>::const_reverse_iterator
+        typedef std::vector<ValStats>::const_iterator const_iterator;
+        typedef std::vector<ValStats>::const_reverse_iterator
             const_reverse_iterator;
-        typedef std::Vector<ValStats>::size_type size_type;
-        typedef std::Vector<ValStats>::difference_type difference_type;
+        typedef std::vector<ValStats>::size_type size_type;
+        typedef std::vector<ValStats>::difference_type difference_type;
 
 
     // Constructors
+    
+        //- Construct null
+        VecValStats();
     
         //- Construct from vector of cards
         VecValStats(const VecCard& cards);
@@ -45,22 +54,22 @@ public:
         
             //- const_iterator begin
             const_iterator cbegin() const noexcept {
-                return const_iterator(data_.cbegin());
+                return data_.cbegin();
             }
 
             //- const_iterator end
             const_iterator cend() const noexcept {
-                return const_iterator(data_.cend());
+                return data_.cend();
             }
 
             //- const_reverse_iterator begin
-            const_iterator crbegin() const noexcept {
-                return const_iterator(data_.crbegin());
+            const_reverse_iterator crbegin() const noexcept {
+                return data_.crbegin();
             }
 
             //- const_iterator end
-            const_iterator crend() const noexcept {
-                return const_iterator(data_.crend());
+            const_reverse_iterator crend() const noexcept {
+                return data_.crend();
             }
 
             //- Return size
@@ -81,7 +90,7 @@ private:
         //  <0> CardVal:     card value
         //  <1> short:       number of cards with this card value
         //  <2> SuitCount:   suits represented
-        std::Vector<ValStats> data_;
+        std::vector<ValStats> data_;
 
 
     // Private functions
@@ -89,3 +98,7 @@ private:
         //- Make meta data
         void makeMetaData(const VecCard& vc);
 };
+
+} // end namespace ds
+
+#endif

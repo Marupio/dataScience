@@ -1,7 +1,11 @@
+#include<algorithm>
 #include<VecValStats.h>
 #include<Board.h>
 
 // ****** Constructors ****** //
+
+ds::VecValStats::VecValStats() {}
+
 
 ds::VecValStats::VecValStats(const VecCard& cards) {
     makeMetaData(cards);
@@ -53,7 +57,7 @@ void ds::VecValStats::makeMetaData(const VecCard& vc) {
     suits.reserve(4);
         
     VecCard allCards = vc;
-    std::sort(vc.rbegin(); vc.rend());
+    std::sort(allCards.rbegin(), allCards.rend());
     for (
         std::pair<VecCard::const_iterator, VecCard::const_iterator> itPair(
             allCards.begin(), allCards.begin() + 1);
@@ -66,7 +70,7 @@ void ds::VecValStats::makeMetaData(const VecCard& vc) {
                 << "or out-of-range components.  Failing cards is one of "
                 << "these:\n    " << *itPair.first << " " << *itPair.second
                 << std::endl;
-            abort()
+            abort();
         }
         #endif
         if (itPair.first->value() != itPair.second->value()) {
@@ -74,7 +78,7 @@ void ds::VecValStats::makeMetaData(const VecCard& vc) {
             counts.push_back(1);
             SuitCount sc;
             sc.fill(0);
-            sc[it.Pair.second->suit()] = 1;
+            sc[itPair.second->suit()] = 1;
             suits.push_back(sc);
         } else {
             counts.back()++;
@@ -95,20 +99,20 @@ void ds::VecValStats::makeMetaData(const VecCard& vc) {
             counts.begin(),
             suits.begin()
         );
-        itTrp.get<0> != values.end();
+        std::get<0>(itTrp) != values.end();
     ) {
-        ++itTrp.get<0>;
-        ++itTrp.get<1>;
-        ++itTrp.get<2>;
-        data_.push_back(
-            std::forward_as_tuple(
-                itTrp.get<0>++
-                itTrp.get<1>++
-                itTrp.get<2>++
-            )
+        SuitCount st(*std::get<2>(itTrp));
+        ValStats vs(
+            *std::get<0>(itTrp),
+            *std::get<1>(itTrp),
+            st
         );
+        data_.push_back(vs);
+        std::get<0>(itTrp)++;
+        std::get<1>(itTrp)++;
+        std::get<2>(itTrp)++;
     }
 }
 
 
-} // ****** End ****** //
+// ****** End ****** //

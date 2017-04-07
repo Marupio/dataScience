@@ -113,7 +113,13 @@ short remove(const PktCards& pc) {
         //  1. two vals         V* V*
         //  X. not allowed      VS V*, V* VS
         //  X. already checked  VS VS
-        const VecDeckInd& myTable = twoValTables_[PktDeckInd(diA, diB)];
+        short index = (ca.value() - 2) + (cb.value() - 2)*12;
+        const VecDeckInd& myTable = twoValTables_[index];
+        #ifdef DSDEBUG
+            FatalError << "Encountered empty entry in twoValTables with cards "
+                << ca << ", " << cb << std::endl;
+            abort();
+        #endif
         nRemoved += removeFromVeckDeckInd(myTable);
     }
     
@@ -138,3 +144,5 @@ short ds::PktMask::removeFromVecDeckInd(
         operator[](*it) = 0;
     }
 }
+
+// ****** END ******

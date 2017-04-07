@@ -111,7 +111,7 @@ public:
         
         //- Cast to VecCard
         operator VecCard() {
-            return VecCard(first, second);
+            return {first, second};
         }
 
 

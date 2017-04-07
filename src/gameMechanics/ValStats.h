@@ -1,7 +1,14 @@
+#ifndef ValStats_h
+#define ValStats_h
+
+
+#include<tuple>
 #include<Card.h>
 
 // Contains meta data about a single card value within a set of cards
 // Includes the number of cards represented and the suits represented
+
+namespace ds {
 
 // Forward declarations
 //class ValStats;
@@ -43,31 +50,35 @@ public:
         
             //- Access the card value
             CardVal& value() {
-                return get<0>;
+                return std::get<0>(*this);
             }
             
             //- Return the card value
             CardVal value() const {
-                return get<0>;
+                return std::get<0>(*this);
             }
             
             //- Access the card count
             short& valueCount() {
-                return get<1>;
+                return std::get<1>(*this);
             }
 
             //- Return the card count
             short nCards() const {
-                return get<1>;
+                return std::get<1>(*this);
             }
             
             //- Access the suit count
             SuitCount& suits() {
-                return get<2>;
+                return std::get<2>(*this);
             }
 
             //- Access the suit count
             const SuitCount& suits() const {
-                return get<2>;
+                return std::get<2>(*this);
             }
 };
+
+} // end namespace ds
+
+#endif

@@ -178,17 +178,17 @@ public:
 
     // Operators
     
-        inline bool operator<(const Card& c1);
+        inline bool operator<(const Card& c1) const;
 
-        inline bool operator<=(const Card& c1);
+        inline bool operator<=(const Card& c1) const;
         
-        inline bool operator>(const Card& c1);
+        inline bool operator>(const Card& c1) const;
         
-        inline bool operator>=(const Card& c1);
+        inline bool operator>=(const Card& c1) const;
         
-        inline bool operator==(const Card& c1);
+        inline bool operator==(const Card& c1) const;
 
-        inline bool operator!=(const Card& c1);
+        inline bool operator!=(const Card& c1) const;
 
 
     // Friend functions

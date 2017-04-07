@@ -40,8 +40,6 @@ ds::Board::Board(std::istream& is) {
 
 // ****** Public member functions ****** //
 
-// ****** Private member functions ****** //
-
 void ds::Board::flop(const VecDeckInd& vd) {
     if (cards_.size()) {
         FatalError << "Flop delivered to non-empty board.  Board cards are:\n"
@@ -83,23 +81,15 @@ void ds::Board::river(DeckInd di) {
 }
 
 
+// ****** Private member functions ****** //
+
 void ds::Board::reserveSpace() {
     cards_.reserve(maxCardsOnBoard_);
-    values_.reserve(maxCardsOnBoard_);
-    valueCounts_.reserve(maxCardsOnBoard_);
-    valueSuits_.reserve(maxCardsOnBoard_);
     flushVals_.reserve(maxCardsOnBoard_);
-
-    suitCounts_.fill(0);
-    flushSuit_ = Card::unknownSuit;
-    foak_ = Card::unknownValue;
-    toak_ = Card::unknownValue;
-    pairs_ = PktVals(Card::unknownValue, Card::unknownValue);
 }
 
 
 void ds::Board::updateDerivedData() {
-    stats_.clear();
     stats_ = VecValStats(cards_);
     suitCounts_.fill(0);
     flushSuit_ = Card::unknownSuit;
@@ -128,8 +118,8 @@ void ds::Board::updateDerivedData() {
         if (*it > 2) {
             flushSuit_ = it - suitCounts_.begin();
             for (
-                VecValStats::const_iterator itS = stats_.begin();
-                itS != stats_.end();
+                VecValStats::const_iterator itS = stats_.cbegin();
+                itS != stats_.cend();
                 ++itS
             ) {
                 if (itS->suits()[flushSuit_] > 0) {
@@ -140,34 +130,38 @@ void ds::Board::updateDerivedData() {
         }
     }
     for (
-        VecValStats::const_iterator itS = stats_.begin();
-        itS != stats_.end();
+        VecValStats::const_iterator itS = stats_.cbegin();
+        itS != stats_.cend();
         ++itS
     ) {
-        switch(*itS.nCards()) {
-        case 4:
+        switch(itS->nCards()) {
+        case 4: {
             foak_ = itS->value();
             break;
-        case 3:
+        }
+        case 3: {
             toak_ = itS->value();
             const VecSuit missingSuits = getMissingSuits(itS->suits());
             #ifdef DSDEBUG
-            if (missingSuits.size()) != 1) {
-                FatalError << "Expecting only one missing suit from: "
-                    << itS->suits() << std::endl;
+            if (missingSuits.size() != 1) {
+                FatalError << "Expecting only one missing suit from: ";
+                writeSuitCount(itS->suits(), std::cerr);
+                std::cerr << std::endl;
                 abort();
             }
             #endif
-            toakMissingCard_ = missingSuits.front();
+            toakMissingSuit_ = missingSuits.front();
             break;
-        case 2:
+        }
+        case 2: {
             if (pairA_ == Card::unknownValue) {
                 pairA_ = itS->value();
                 const VecSuit missingSuits = getMissingSuits(itS->suits());
                 #ifdef DSDEBUG
-                if (missingSuits.size()) != 2) {
-                    FatalError << "Expecting two missing suit from: "
-                        << itS->suits() << std::endl;
+                if (missingSuits.size() != 2) {
+                    FatalError << "Expecting two missing suit from: ";
+                    writeSuitCount(itS->suits(), std::cerr);
+                    std::cerr << std::endl;
                     abort();
                 }
                 #endif
@@ -177,18 +171,21 @@ void ds::Board::updateDerivedData() {
                 pairB_ = itS->value();
                 const VecSuit missingSuits = getMissingSuits(itS->suits());
                 #ifdef DSDEBUG
-                if (missingSuits.size()) != 2) {
-                    FatalError << "Expecting two missing suit from: "
-                        << itS->suits() << std::endl;
+                if (missingSuits.size() != 2) {
+                    FatalError << "Expecting two missing suit from: ";
+                    writeSuitCount(itS->suits(), std::cerr);
+                    std::cerr << std::endl;
                     abort();
                 }
                 #endif
                 pairBMissingSuits_ =
                     {missingSuits.front(), missingSuits.back()};
             }
-        default:
-            break;
         }
+        default: {
+            break;
+        } // end break
+        } // end switch
     }
 }
 

@@ -2,6 +2,7 @@
 #define Board_h
 
 #include<Card.h>
+#include<VecValStats.h>
 
 namespace ds {
 
@@ -9,14 +10,19 @@ class Board;
 std::ostream& operator<<(std::ostream& os, const Board& c);
 std::istream& operator>>(std::istream& in, Board& c);
 
-class Dealer;
-
 
 class Board
 {
 public:
 
-    friend class Dealer;
+    // Public type data
+    
+        typedef VecCard::const_iterator const_iterator;
+        typedef VecCard::const_reverse_iterator
+            const_reverse_iterator;
+        typedef VecCard::size_type size_type;
+        typedef VecCard::difference_type difference_type;
+
 
     // Static data
 
@@ -41,6 +47,33 @@ public:
 
 
     // Member functions
+
+        // Iterator access
+
+            //- const_iterator begin
+            const_iterator cbegin() const noexcept {
+                return cards_.cbegin();
+            }
+
+            //- const_iterator end
+            const_iterator cend() const noexcept {
+                return cards_.cend();
+            }
+
+            //- const_reverse_iterator begin
+            const_reverse_iterator crbegin() const noexcept {
+                return cards_.crbegin();
+            }
+
+            //- const_iterator end
+            const_reverse_iterator crend() const noexcept {
+                return cards_.crend();
+            }
+
+            //- Return size
+            size_type size() const noexcept {
+                return cards_.size();
+            }
 
         // Access
         
@@ -92,7 +125,7 @@ public:
             
             //- Returns suits that are not represented in pairA
             const PktSuits& pairAMissingSuits() {
-                pairAMissingSuits_
+                return pairAMissingSuits_;
             }
 
             //- If board has a second pair, this will contains its value
@@ -102,8 +135,19 @@ public:
             
             //- Returns suits that are not represented in pairB
             const PktSuits& pairBMissingSuits() {
-                pairBMissingSuits_
+                return pairBMissingSuits_;
             }
+
+        //- Dealer interface
+
+            //- Deliver flop
+            void flop(const VecDeckInd& vd);
+            
+            //- Deliver turn
+            void turn(DeckInd di);
+            
+            //- Deliver river
+            void river(DeckInd di);
         
 
     // Operators
@@ -162,17 +206,6 @@ private:
 
     // Private member functions
 
-        //- Dealer interface
-public:
-            //- Deliver flop
-            void flop(const VecDeckInd& vd);
-            
-            //- Deliver turn
-            void turn(DeckInd di);
-            
-            //- Deliver river
-            void river(DeckInd di);
-private:
         //- Reserve space in derived data
         void reserveSpace();
     

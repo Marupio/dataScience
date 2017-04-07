@@ -130,12 +130,12 @@ bool Card::hasWildSuit() const {
 
 
 bool Card::hasWild() const {
-    return hasWildSuit() || hasWildValue()
+    return hasWildSuit() || hasWildValue();
 }
 
 
 bool Card::wild() const {
-    return hasWildSuit() && hasWildValue()
+    return hasWildSuit() && hasWildValue();
 }
 
 
@@ -164,12 +164,12 @@ ds::DeckInd ds::Card::deckIndex() const {
 
 // *** Member Operators *** //
 
-bool Card::operator<(const Card& c1) {
+bool Card::operator<(const Card& c1) const {
     return binValue_ < c1.binValue_;
 }
 
 
-bool Card::operator<=(const Card& c1) {
+bool Card::operator<=(const Card& c1) const {
     if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
         return true;
     }
@@ -177,12 +177,12 @@ bool Card::operator<=(const Card& c1) {
 }
         
 
-bool Card::operator>(const Card& c1) {
+bool Card::operator>(const Card& c1) const {
     return binValue_ > c1.binValue_;
 }
 
 
-bool Card::operator>=(const Card& c1) {
+bool Card::operator>=(const Card& c1) const {
     if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
         return true;
     }
@@ -190,7 +190,7 @@ bool Card::operator>=(const Card& c1) {
 }
 
         
-bool Card::operator==(const Card& c1) {
+bool Card::operator==(const Card& c1) const {
     return
         (
             (c1.binValue_ == binValue_)
@@ -204,7 +204,7 @@ bool Card::operator==(const Card& c1) {
 }
 
 
-bool Card::operator!=(const Card& c1) {
+bool Card::operator!=(const Card& c1) const {
     return !(operator==(c1));
 }
 
