@@ -4,7 +4,7 @@
 // Static data
 
 #include<PktMaskDeckIndices.h>
-#include<PktMaskDeckIndicesHashTable.h>
+#include<PktMaskDeckIndicesToPocketMask.h>
 #include<PktMaskOneCardTables.h>
 #include<PktMaskOneSuitTables.h>
 #include<PktMaskOneValTables.h>
@@ -17,7 +17,7 @@
 
 short ds::PktMask::remove(const Board& b) {
     short nRemoved = 0;
-    for (Board::const_iterator it = Board.begin(); it != Board.end(); ++it) {
+    for (Board::const_iterator it = b.cbegin(); it != b.cend(); ++it) {
         const Card& c = *it;
         nRemoved += remove(c);
     }
@@ -26,17 +26,15 @@ short ds::PktMask::remove(const Board& b) {
 }
 
 
-short remove(const PktCards& pc) {
+short ds::PktMask::remove(const PktCards& pc) {
     short nRemoved = 0;
-    const Card& ca(pc.first());
-    const Card& cb(pc.second());
+    const Card& ca(pc.first);
+    const Card& cb(pc.second);
     
     bool wildValA(ca.hasWildValue());
     bool wildValB(cb.hasWildValue());
     bool wildSuitA(ca.hasWildSuit());
     bool wildSuitB(cb.hasWildSuit());
-    const DeckInd diA(ca.deckIndex());
-    const DeckInd diB(ca.deckIndex());
     
     #ifdef DSDEBUG
         if (ca.partsUnknown() || cb.partsUnknown()) {
@@ -51,7 +49,23 @@ short remove(const PktCards& pc) {
         }
     #endif
     if (!wildValA && !wildSuitA && !wildValB && !wildSuitB) {
-        short maskIndex = deckIndicesHashTable_[PktDeckInd(diA, diB)];
+        const DeckInd diA(ca.deckIndex());
+        const DeckInd diB(ca.deckIndex());
+        short hashIndex;
+        if (diA > diB) {
+            hashIndex = diA + diB*51;
+        } else {
+            hashIndex = diB + diA*51;
+        }
+        short maskIndex = deckIndicesToPocketMask_[hashIndex];
+        #ifdef DSDEBUG
+        if (maskIndex < 0) {
+            FatalError << "Attempting to remove cards with deck indices: ("
+                << diA << " " << diB << "), but the mask index in not "
+                << "positive." << std::endl;
+            abort();
+        }
+        #endif
         nRemoved = operator[](maskIndex);
         operator[](maskIndex) = 0;
     }
@@ -66,7 +80,7 @@ short remove(const PktCards& pc) {
             // oneSuit tables
             const Suit s = ca.suit() + cb.suit() - Card::wildSuit;
             const VecDeckInd& myTable = oneSuitTables_[s];
-            nRemoved += removeFromVeckDeckInd(myTable);
+            nRemoved += removeFromVecDeckInd(myTable);
         } else if (!wildSuitA) {
             #ifdef DSDEBUG
                 if (ca.suit() != cb.suit()) {
@@ -77,7 +91,7 @@ short remove(const PktCards& pc) {
             // twoSuitTables
             const Suit s = ca.suit();
             const VecDeckInd& myTable = twoSuitTables_[s];
-            nRemoved += removeFromVeckDeckInd(myTable);
+            nRemoved += removeFromVecDeckInd(myTable);
         } else {
             // all wild
             // no need to set mask to zero, algorithms should keep count
@@ -99,13 +113,14 @@ short remove(const PktCards& pc) {
         // wildSuitB is implied
         if (wildSuitA) {
             // one value tables
-            const BinCardVal bv = ca.binCardValue();
-            const VecDeckInd& myTable = oneValueTables_[bv];
-            nRemoved += removeFromVeckDeckInd(myTable);
+            const BinCardVal bv = ca.binValue();
+            const VecDeckInd& myTable = oneValTables_[bv];
+            nRemoved += removeFromVecDeckInd(myTable);
         } else {
             // one card tables
+            const DeckInd diA(ca.deckIndex());
             const VecDeckInd& myTable = oneCardTables_[diA];
-            nRemoved += removeFromVeckDeckInd(myTable);
+            nRemoved += removeFromVecDeckInd(myTable);
         }
     } else {
         // We know V? V?
@@ -120,15 +135,19 @@ short remove(const PktCards& pc) {
                 << ca << ", " << cb << std::endl;
             abort();
         #endif
-        nRemoved += removeFromVeckDeckInd(myTable);
+        nRemoved += removeFromVecDeckInd(myTable);
     }
     
     nRemaining_ -= nRemoved;
     return nRemoved;
 }
 
-//- Remove any combinations with the given card
-short remove(const Card& c);
+
+short ds::PktMask::remove(const Card& c) {
+    const DeckInd diA(c.deckIndex());
+    const VecDeckInd& myTable = oneCardTables_[diA];
+    return removeFromVecDeckInd(myTable);
+}
 
 
 short ds::PktMask::removeFromVecDeckInd(
@@ -143,6 +162,7 @@ short ds::PktMask::removeFromVecDeckInd(
         nRemoved += operator[](*it);
         operator[](*it) = 0;
     }
+    return nRemoved;
 }
 
 // ****** END ******

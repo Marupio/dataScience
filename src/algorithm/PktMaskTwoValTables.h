@@ -157,4 +157,4 @@ const ds::VecVecDeckInd ds::PktMask::twoValTables_ =
 {},
 {},
 {558,571,584,987,1000,1247},
-}
+};

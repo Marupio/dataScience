@@ -14,7 +14,7 @@ public:
 
     // Public typedefs
 
-    typedef std::unordered_map<PktDeckInd, DeckInd> DeckIndHashTable;
+//    typedef std::unordered_map<PktDeckInd, DeckInd> DeckIndHashTable;
 
     // Public static data
 
@@ -22,8 +22,11 @@ public:
         //      52x51 = 1325
         static const VecPktDeckInd deckIndices_;
 
-        //- Hash table for quick lookup of PktMask indices
-        static const DeckIndHashTable deckIndicesHashTable_;
+        //- Given two known cards with deck indices diA > diB,
+        //      deckIndicesToPocketMask[hash] = pocketMaskIndex of this pair
+        //      where:
+        //          hash = diA + diB*51
+        static const VecDeckInd deckIndicesToPocketMask_;
 
         // Pre-indexed tables for wild value or wild suit matching
         
