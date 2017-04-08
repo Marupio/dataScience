@@ -124,7 +124,7 @@ public:
             }
             
             //- Returns suits that are not represented in pairA
-            const PktSuits& pairAMissingSuits() {
+            const PktSuits& pairAMissingSuits() const {
                 return pairAMissingSuits_;
             }
 
@@ -134,9 +134,10 @@ public:
             }
             
             //- Returns suits that are not represented in pairB
-            const PktSuits& pairBMissingSuits() {
+            const PktSuits& pairBMissingSuits() const {
                 return pairBMissingSuits_;
             }
+
 
         //- Dealer interface
 

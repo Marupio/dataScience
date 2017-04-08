@@ -146,8 +146,8 @@ bool Card::valid() const {
 }
 
 bool Card::real() const {
-    return 
-        binValue_ <= 13 && binValue_ >= 2
+    return
+        binValue_ <= 13 && binValue_ >= 0
      && suit_  <= 3 && suit_ >= 0;
 }
 

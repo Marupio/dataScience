@@ -59,7 +59,7 @@ public:
             }
             
             //- Access the card count
-            short& valueCount() {
+            short& nCards() {
                 return std::get<1>(*this);
             }
 

@@ -7,54 +7,35 @@
 
 using namespace ds;
 
-void writeDetails(const Board(b1))
+void writeDetails(const Board& bd)
 {
-    const VecCardVal& b1v(b1.values());
-    const std::vector<short>& b1vCounts(b1.valueCounts());
-    const VecVecSuit& b1vSuits(b1.valueSuits());
-    const SuitCount& b1SuitCounts(b1.suitCounts());
-    Suit fSuit(b1.flushSuit());
-    const VecCardVal& fVals(b1.flushVals());
-    CardVal b1Foak(b1.foak());
-    CardVal b1Toak(b1.toak());
-    const PktVals& b1Pairs(b1.pairs());
+    std::cout << "        Values: " << bd.cards() << std::endl;
+    for (auto it = bd.stats().cbegin(); it != bd.stats().cend(); ++it) {
+        std::cout << "              : " << it->value() << " ("
+            << it->nCards() << ") ";
+        writeSuitCount(it->suits(), std::cout);
+        std::cout << "\n";
+    }
 
-    std::cout << "        Values: " << b1v;
-    std::cout << "\n  Value counts: (";
-    if (b1v.size()) {
-        std::cout << b1vCounts[0];
-    }
-    for (short i = 1; i < b1v.size(); ++i) {
-        std::cout << " " << b1vCounts[i];
-    }
-    std::cout << ")\n         Suits: ";
-    writeVecVecSuit(b1vSuits, std::cout);
-    std::cout << "   Suit counts: ";
-    writeSuitCount(b1SuitCounts, std::cout);
+    Suit fSuit(bd.flushSuit());
+    const VecCardVal& fVals(bd.flushVals());
+    CardVal bdFoak(bd.foak());
+    Card bdToak(bd.toak(), bd.toakMissingSuit());
+    PktCards bdPairA(
+        bd.pairA(), bd.pairAMissingSuits().first,
+        bd.pairA(), bd.pairAMissingSuits().second
+    );
+    PktCards bdPairB(
+        bd.pairB(), bd.pairBMissingSuits().first,
+        bd.pairB(), bd.pairBMissingSuits().second
+    );
+    std::cout << "          FOAK: " << Card::valueToWriteChar(bdFoak);
+    std::cout << "\n          TOAK: " << bdToak;
+    std::cout << "\n         PairA: " << bdPairA;
+    std::cout << "\n         PairB: " << bdPairB;
     std::cout << "\n    Flush suit: " << Card::suitToWriteChar(fSuit);
     std::cout << "\n   Flush values: " << fVals;
-    std::cout << "\n Four of a kind: "
-        << Card::valueToWriteChar(b1Foak);
-    std::cout << "\nThree of a kind: "
-        << Card::valueToWriteChar(b1Toak);
-    std::cout << "\n          Pairs: ["
-        << Card::valueToWriteChar(b1Pairs.first) << " "
-        << Card::valueToWriteChar(b1Pairs.second) << "]";
-    StraightCompleters sc(HandRanker::findStraightCompleters(b1v));
-    VecCardVal::const_iterator scvIt;
-    VecPktVals::const_iterator scpIt;
-    std::cout << "\n      Straights:\n";
-    for (
-        scvIt = sc.first.begin(), scpIt = sc.second.begin();
-        scvIt != sc.first.end();
-        ++scvIt, ++scpIt
-    ) {
-        CardVal maxVal = *scvIt;
-        CardVal card1 = scpIt->first;
-        CardVal card2 = scpIt->second;
-        std::cout << "    " << maxVal << ": (" << card1 << " "
-            << card2 << ")" << std::endl;
-    }
+    std::cout << std::endl;
 }
 
 
@@ -62,11 +43,11 @@ int main()
 {
     int nIters = 1000;
     for (int i = 0; i < nIters; ++i) {
-        Board b1;
+        Board bd;
         
-        std::cout << i << ":\n    Empty: " << b1 << "\n";
+        std::cout << i << ":\n    Empty: " << bd << "\n";
         {
-//            writeDetails(b1);
+//            writeDetails(bd);
         }
         std::cout << std::endl;
         
@@ -76,26 +57,26 @@ int main()
             for (it = di.begin(); it != di.end(); ++it) {
                 *it = std::rand()%52;
             }
-            b1.flop(di);
+            bd.flop(di);
         }
 
-        std::cout << ":\n    Flop: " << b1 << "\n";
+        std::cout << ":\n    Flop: " << bd << "\n";
         {
-//            writeDetails(b1);
-        }
-        std::cout << std::endl;
-
-        b1.turn(std::rand()%52);
-        std::cout << ":\n    Turn: " << b1 << "\n";
-        {
-//            writeDetails(b1);
+//            writeDetails(bd);
         }
         std::cout << std::endl;
 
-        b1.river(std::rand()%52);
-        std::cout << ":\n    River: " << b1 << "\n";
+        bd.turn(std::rand()%52);
+        std::cout << ":\n    Turn: " << bd << "\n";
         {
-            writeDetails(b1);
+//            writeDetails(bd);
+        }
+        std::cout << std::endl;
+
+        bd.river(std::rand()%52);
+        std::cout << ":\n    River: " << bd << "\n";
+        {
+            writeDetails(bd);
         }
         std::cout << "\n---------------------------------------\n" << std::endl;
     }
