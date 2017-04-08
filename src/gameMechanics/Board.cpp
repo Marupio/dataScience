@@ -14,6 +14,7 @@ const short ds::Board::sizeBeforeRiver_(4);
 ds::Board::Board()
 {
     reserveSpace();
+    updateDerivedData();
 }
 
 ds::Board::Board(VecDeckInd vd) {

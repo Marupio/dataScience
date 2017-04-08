@@ -35,7 +35,8 @@ public:
         static const Suit wildSuit;         // 4
 
         //- Static binary value data
-        static const BinCardVal binUnknownValue;  // -1
+        static const BinCardVal binUnknownValue;  // -2
+        static const BinCardVal binLowAce;        // -1
         static const BinCardVal binTwo;           // 0
         static const BinCardVal binThree;         // 1
         static const BinCardVal binFour;          // 2

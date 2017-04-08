@@ -49,6 +49,9 @@ ds::VecValStats::VecValStats(const VecDeckInd& vdi) {
 // ****** Private Functions ****** //
 
 void ds::VecValStats::makeMetaData(const VecCard& vc) {
+    if (!vc.size()) {
+        return;
+    }
     VecCardVal values;
     values.reserve(4);
     std::vector<short> counts;
@@ -58,6 +61,16 @@ void ds::VecValStats::makeMetaData(const VecCard& vc) {
         
     VecCard allCards = vc;
     std::sort(allCards.rbegin(), allCards.rend());
+
+    {
+        values.push_back(allCards.front().value());
+        counts.push_back(1);
+        SuitCount sc;
+        sc.fill(0);
+        sc[allCards.front().suit()] = 1;
+        suits.push_back(sc);
+    }
+
     for (
         std::pair<VecCard::const_iterator, VecCard::const_iterator> itPair(
             allCards.begin(), allCards.begin() + 1);

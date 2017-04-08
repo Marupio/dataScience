@@ -15,7 +15,8 @@ const ds::Suit ds::Card::hearts(2);
 const ds::Suit ds::Card::spades(3);
 const ds::Suit ds::Card::wildSuit(4);
 
-const ds::BinCardVal ds::Card::binUnknownValue(-1);
+const ds::BinCardVal ds::Card::binUnknownValue(-2);
+const ds::BinCardVal ds::Card::binLowAce(-1);
 const ds::BinCardVal ds::Card::binTwo(0);
 const ds::BinCardVal ds::Card::binThree(1);
 const ds::BinCardVal ds::Card::binFour(2);
@@ -133,6 +134,7 @@ char ds::Card::binValueToWriteChar(BinCardVal value) {
             return 'Q';
         case binKing:
             return 'K';
+        case binLowAce: // fall through
         case binAce:
             return 'A';
         case binWildValue:

@@ -16,10 +16,11 @@ void writeDetails(const Board& bd)
         writeSuitCount(it->suits(), std::cout);
         std::cout << "\n";
     }
-
     Suit fSuit(bd.flushSuit());
     const VecCardVal& fVals(bd.flushVals());
     CardVal bdFoak(bd.foak());
+std::cout << "bd.toak() = " << bd.toak() << std::endl;
+std::cout << "bd.toakMissingSuit() = " << int(bd.toakMissingSuit()) << std::endl;
     Card bdToak(bd.toak(), bd.toakMissingSuit());
     PktCards bdPairA(
         bd.pairA(), bd.pairAMissingSuits().first,
