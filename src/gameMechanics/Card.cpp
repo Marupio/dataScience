@@ -209,13 +209,13 @@ char ds::Card::suitToWriteChar(Suit suit) {
         case wildSuit:
             return '*';
         case clubs:
-            return 'C';
+            return 'c';
         case diamonds:
-            return 'D';
+            return 'd';
         case hearts:
-            return 'H';
+            return 'h';
         case spades:
-            return 'S';
+            return 's';
         default:
             FatalError << "Unknown card suit stored internally: ("
                 << int(suit) << ")" << std::endl;

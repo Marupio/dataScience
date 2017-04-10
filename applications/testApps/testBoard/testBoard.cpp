@@ -1,6 +1,7 @@
 #include<fstream>
 #include<string>
 #include<Board.h>
+#include<Deck.h>
 #include<dsConfig.h>
 #include<types.h>
 #include <HandRanker.h>
@@ -19,8 +20,6 @@ void writeDetails(const Board& bd)
     Suit fSuit(bd.flushSuit());
     const VecCardVal& fVals(bd.flushVals());
     CardVal bdFoak(bd.foak());
-std::cout << "bd.toak() = " << bd.toak() << std::endl;
-std::cout << "bd.toakMissingSuit() = " << int(bd.toakMissingSuit()) << std::endl;
     Card bdToak(bd.toak(), bd.toakMissingSuit());
     PktCards bdPairA(
         bd.pairA(), bd.pairAMissingSuits().first,
@@ -45,6 +44,8 @@ int main()
     int nIters = 1000;
     for (int i = 0; i < nIters; ++i) {
         Board bd;
+        Deck dk;
+        dk.shuffle();
         
         std::cout << i << ":\n    Empty: " << bd << "\n";
         {
@@ -52,14 +53,15 @@ int main()
         }
         std::cout << std::endl;
         
-        {
-            VecDeckInd di(3);
-            VecDeckInd::iterator it;
-            for (it = di.begin(); it != di.end(); ++it) {
-                *it = std::rand()%52;
-            }
-            bd.flop(di);
-        }
+        bd.flop(dk.draw(3));
+//        {
+//            VecDeckInd di(3);
+//            VecDeckInd::iterator it;
+//            for (it = di.begin(); it != di.end(); ++it) {
+//                *it = std::rand()%52;
+//            }
+//            bd.flop(di);
+//        }
 
         std::cout << ":\n    Flop: " << bd << "\n";
         {
@@ -67,14 +69,16 @@ int main()
         }
         std::cout << std::endl;
 
-        bd.turn(std::rand()%52);
+//        bd.turn(std::rand()%52);
+        bd.turn(dk.draw());        
         std::cout << ":\n    Turn: " << bd << "\n";
         {
 //            writeDetails(bd);
         }
         std::cout << std::endl;
 
-        bd.river(std::rand()%52);
+//        bd.river(std::rand()%52);
+        bd.river(dk.draw());
         std::cout << ":\n    River: " << bd << "\n";
         {
             writeDetails(bd);
