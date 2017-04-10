@@ -1,14 +1,18 @@
 #include<cstdlib>
 #include<numeric>
 #include<algorithm>
+#include<ctime>
 #include<Deck.h>
 
 
 // ****** Constructors ****** //
 
-ds::Deck::Deck() {
+ds::Deck::Deck(bool randomise) {
     std::iota(cards_.begin(), cards_.end(), 0);
     drawIt_ = cards_.begin();
+    if (randomise) {
+        std::srand(std::time(0));
+    }
 }
 
 
@@ -16,12 +20,6 @@ ds::Deck::Deck() {
 
 void ds::Deck::shuffle() {
     std::random_shuffle(cards_.begin(), cards_.end());
-}
-
-
-void ds::Deck::shuffle(unsigned int seed) {
-    std::srand(seed);
-    shuffle();
 }
 
 

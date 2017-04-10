@@ -25,7 +25,9 @@ public:
     // Constructors
 
         //- Construct null
-        Deck();
+        //  Randomise - when true, resets the standard randomisation seed
+        //  to the clock time
+        Deck(bool randomise = false);
 
 //        //- Construct from istream
 //        Deck(std::istream& is);
@@ -40,9 +42,6 @@ public:
         //- Shuffle the cards
         void shuffle();
 
-        //- Shuffle the cards, given the randomisation seed
-        void shuffle(unsigned int seed);
-        
         //- Draw one card
         DeckInd draw();
         

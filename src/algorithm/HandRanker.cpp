@@ -2,7 +2,7 @@
 #include<HandRanker.h>
 #include<error.h>
 
-// *** Public Member Functions *** //
+// ****** Public Member Functions ****** //
 
 ds::StraightCompleters ds::HandRanker::findStraightCompleters (
     const VecCardVal& values
@@ -129,7 +129,7 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
     return sc;
 }
 
-// *** Private Member Functions *** //
+// ****** Private Member Functions ****** //
 
 bool ds::HandRanker::restart(
     const VecCardVal& values,
@@ -204,3 +204,6 @@ bool ds::HandRanker::restart(
     return true;
 }
 
+#include<HandRankerRank.cpp>
+
+// ****** END ****** //

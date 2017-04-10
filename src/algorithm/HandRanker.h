@@ -2,6 +2,8 @@
 #define HandRanker_h
 
 #include<types.h>
+#include<Board.h>
+#include<PktCards.h>
 
 namespace ds {
 
@@ -10,9 +12,14 @@ class HandRanker
 
 public:
 
+    //- Return the exact ranking of the pocket cards among all possibilities
+    //  *** Located in HandRankerRank.cpp
+    static short getRank(const Board& bd, const PktCards& pkt);
+
     //- Find pocket cards that complete a straight for a given set of values
     //  Values must be sorted and unique, it doesn't check
     static StraightCompleters findStraightCompleters(const VecCardVal& values);
+
 
 private:
 

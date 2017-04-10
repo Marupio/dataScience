@@ -22,6 +22,7 @@ public:
     // Static data
 
         //- Static card data
+        static const Card unknownCard;
         static const Card wildCard;
     
         //- Static suit data

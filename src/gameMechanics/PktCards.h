@@ -20,9 +20,14 @@ public:
 
     // Constructors
 
+        //- Construct null
+        PktCards():
+            std::pair<Card, Card>(Card::unknownCard, Card::unknownCard)
+        {}
+
         //- Construct from cards
         PktCards(const Card& cardA, const Card& cardB):
-            std::pair<Card, Card>(std::pair<Card, Card>(cardA, cardB))
+            std::pair<Card, Card>(cardA, cardB)
         {}
 
         //- Construct from values and suits
@@ -73,22 +78,22 @@ public:
     // Member functions
     
         //- Returns true if pocket has given card
-        bool has(const Card& cd) {
+        bool has(const Card& cd) const {
             return first == cd || second == cd;
         }
         
         //- Returns true if pocket has given value
-        bool has(CardVal cv) {
+        bool has(CardVal cv) const {
             return first.value() == cv || second.value() == cv;
         }
         
         //- Returns true if pocket has given suit
-        bool has(Suit st) {
+        bool has(Suit st) const {
             return first.suit() == st || second.suit() == st;
         }
 
         //- Returns true if pocket is suited with given suit
-        bool suited(Suit st) {
+        bool suited(Suit st) const {
             return first.suit() == st && second.suit() == st;
         }
 
@@ -96,7 +101,7 @@ public:
     // Member operators
     
         //- True if both pocket cards are the same as the given
-        bool operator==(const PktCards& pc) {
+        bool operator==(const PktCards& pc) const {
             return (
                 first == pc.first && second == pc.second
             ) || (

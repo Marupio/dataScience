@@ -4,6 +4,7 @@
 
 // ****** Static data ****** //
 
+const ds::Card ds::Card::unknownCard(Card::unknownValue, Card::unknownSuit);
 const ds::Card ds::Card::wildCard(Card::wildValue, Card::wildSuit);
 
 const short ds::Card::nSuits(4);
