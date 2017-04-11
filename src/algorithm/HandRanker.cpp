@@ -39,8 +39,7 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         return sc;
     }
     vsIter = altVsIter;
-    sc.first.reserve(5);
-    sc.second.reserve(5);
+    sc.reserve(5);
     short cursor = std::min((*altVsIter + 2), 14);
     short restartCursor = cursor;
     PktVals pocket(15, 15);
@@ -103,11 +102,12 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
                 std::swap(pocket.second, pocket.first);
                 pocket.first = 14;
             }
-            if (sc.second.back() != pocket) {
+            if (sc.size() && sc.back().second != pocket) {
                 // Conditional accounts for connected pocket with a higher
                 // straight value
-                sc.first.push_back(curStraightMax);
-                sc.second.push_back(pocket);
+                sc.push_back(
+                    std::pair<CardVal, PktVals>(curStraightMax, pocket)
+                );
             }
 
             bool restarted = restart(
@@ -204,6 +204,8 @@ bool ds::HandRanker::restart(
     return true;
 }
 
+#include<HandRankerGetHandType.cpp>
 #include<HandRankerRank.cpp>
+
 
 // ****** END ****** //

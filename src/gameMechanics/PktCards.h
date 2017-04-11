@@ -66,6 +66,20 @@ public:
             std::pair<Card, Card>(Card(diA), Card(diB))
         {}
 
+        //- Construct from VecDeckInd
+        PktCards(VecDeckInd vdi):
+            std::pair<Card, Card>(Card::unknownCard, Card::unknownCard)
+        {
+            if (vdi.size() != 2) {
+                FatalError << "Attempting to construct PktCards from "
+                    << "VecDeckInd with size " << vdi.size() << std::endl;
+                abort();
+            }
+            first = Card(vdi.front());
+            second = Card(vdi.back());
+        }
+
+        //- Construct from istream
         PktCards(std::istream& is) {
             is >> *this;
         }
@@ -92,9 +106,24 @@ public:
             return first.suit() == st || second.suit() == st;
         }
 
+        //- Returns true if pocket is suited
+        bool suited() const {
+            return first.suit() == second.suit();
+        }
+
         //- Returns true if pocket is suited with given suit
         bool suited(Suit st) const {
             return first.suit() == st && second.suit() == st;
+        }
+
+        //- Returns true if pocket is a pair
+        bool pairs() const {
+            return first.value() == second.value();
+        }
+
+        //- Returns true if pocket pair value is given value
+        bool pairs(CardVal cv) const {
+            return first.value() == cv && second.value() == cv;
         }
 
 

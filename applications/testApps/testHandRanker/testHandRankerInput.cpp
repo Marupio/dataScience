@@ -23,18 +23,9 @@ int main() {
 //    }
 //    std::cout << ":" << std::endl;
     StraightCompleters sc(HandRanker::findStraightCompleters(vs));
-    VecCardVal::const_iterator scvIt;
-    VecPktVals::const_iterator scpIt;
-    for (
-        scvIt = sc.first.begin(), scpIt = sc.second.begin();
-        scvIt != sc.first.end();
-        ++scvIt, ++scpIt
-    ) {
-        CardVal maxVal = *scvIt;
-        CardVal card1 = scpIt->first;
-        CardVal card2 = scpIt->second;
-        std::cout << "    " << maxVal << ": (" << card1 << " "
-            << card2 << ")" << std::endl;
+    for (auto scvIt = sc.cbegin(); scvIt != sc.cend(); ++scvIt) {
+        std::cout << "    " << scvIt->first << ": (" << scvIt->second.first
+            << " " << scvIt->second.second << ")" << std::endl;
     }
     return 0;
 }

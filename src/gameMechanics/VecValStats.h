@@ -50,6 +50,22 @@ public:
 
     // Public member functions
 
+        //- Return nCards
+        short nCards() const {
+            return nCards_;
+        }
+
+        //- Access to front of vector
+        const ValStats& front() const {
+            return data_.front();
+        }
+
+        //- Access to back of vector
+        const ValStats& back() const {
+            return data_.back();
+        }
+
+
         // Iterator access
         
             //- const_iterator begin

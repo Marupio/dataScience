@@ -1,57 +1,72 @@
-#include <algorithm>
-#include <dsConfig.h>
-#include <HandRanker.h>
-#include <error.h>
+#include<algorithm>
+#include<dsConfig.h>
+#include<HandRanker.h>
+#include<Deck.h>
+#include<PktCards.h>
+#include<error.h>
 
 using namespace ds;
 int main() {
-    int nIters = 100000;
+    int nIters = 10000;
     for (int i = 0; i < nIters; ++i) {
-        short boardSize = 3 + std::rand()%2;
-//        short boardSize = 5;
-        VecCardVal vs(boardSize);
-        bool duplicates = true;
-        VecCardVal::iterator it;
-        while (duplicates) {
-            for (it = vs.begin(); it != vs.end(); ++it) {
-                *it = std::rand()%13 + 2;
-            }
-            std::sort (vs.rbegin(), vs.rend());
-            VecCardVal::iterator itNext;
-            bool noDuplicates = true;
-            for (
-                it = vs.begin(), itNext = it+1;
-                itNext != vs.end();
-                ++it, ++itNext
-            ) {
-                if (*it == *itNext) {
-                    noDuplicates = false;
-                    break;
-                }
-            }
-            if (noDuplicates) {
-                duplicates = false;
-            }
+        Board bd;
+        Deck dk;
+        dk.shuffle();
+        PktCards pkt(dk.draw(2));
+        bd.flop(dk.draw(3));
+        bd.turn(dk.draw());
+        bd.river(dk.draw());
+        std::cout << i << ": " << bd.cards() << " " << pkt << std::endl;
+        HandRanker::HandTypeStruct hts(HandRanker::getHandType(bd, pkt));
+        switch (hts.ht){
+        case HandRanker::HtStraightFlush: {
+            std::cout << "    Straight flush, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
         }
-        std::cout << i << ": " << vs[0];
-        for (it = vs.begin() + 1; it != vs.end(); ++it) {
-            std::cout << " " << *it;
+        case HandRanker::HtFoak: {
+            std::cout << "    Four-of-a-kind, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
         }
-        std::cout << ":" << std::endl;
-        StraightCompleters sc(HandRanker::findStraightCompleters(vs));
-        VecCardVal::const_iterator scvIt;
-        VecPktVals::const_iterator scpIt;
-        for (
-            scvIt = sc.first.begin(), scpIt = sc.second.begin();
-            scvIt != sc.first.end();
-            ++scvIt, ++scpIt
-        ) {
-            CardVal maxVal = *scvIt;
-            CardVal card1 = scpIt->first;
-            CardVal card2 = scpIt->second;
-            std::cout << "    " << maxVal << ": (" << card1 << " "
-                << card2 << ")" << std::endl;
+        case HandRanker::HtFullHouse: {
+            std::cout << "    Full house, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
         }
+        case HandRanker::HtFlush: {
+            std::cout << "    Flush, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        case HandRanker::HtStraight: {
+            std::cout << "    Straight, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        case HandRanker::HtToak: {
+            std::cout << "    Three-of-a-kind, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        case HandRanker::HtTwoPair: {
+            std::cout << "    Two pair, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        case HandRanker::HtPair: {
+            std::cout << "    Pair, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        case HandRanker::HtHighCard: {
+            std::cout << "    High card, "
+                << Card::valueToWriteChar(hts.value) << std::endl;
+            break;
+        }
+        default: {
+        } // end default
+        } // end switch
     }
     return 0;
 }

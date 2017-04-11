@@ -49,6 +49,7 @@ ds::VecValStats::VecValStats(const VecDeckInd& vdi) {
 // ****** Private Functions ****** //
 
 void ds::VecValStats::makeMetaData(const VecCard& vc) {
+    nCards_ = vc.size();
     if (!vc.size()) {
         return;
     }
