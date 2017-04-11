@@ -2,6 +2,33 @@
 #include<HandRanker.h>
 #include<error.h>
 
+// ****** Static Data Members ****** //
+
+static char ds::HandRanker::HtUnknown       = 0;
+static char ds::HandRanker::HtHighCard      = 1;
+static char ds::HandRanker::HtPair          = 2;
+static char ds::HandRanker::HtTwoPair       = 3;
+static char ds::HandRanker::HtSet           = 4;
+static char ds::HandRanker::HtStraight      = 5;
+static char ds::HandRanker::HtFlush         = 6;
+static char ds::HandRanker::HtFullHouse     = 7;
+static char ds::HandRanker::HtFoak          = 8;
+static char ds::HandRanker::HtStraightFlush = 9;
+
+static std::array<string, 10> ds::HandRanker::HandTypeNames = {
+    "Unknown",
+    "StraightFlush",
+    "Four-of-a-kind",
+    "FullHouse",
+    "Flush",
+    "Straight",
+    "Set",
+    "TwoPair",
+    "Pair",
+    "HighCard"
+};
+
+
 // ****** Public Member Functions ****** //
 
 ds::StraightCompleters ds::HandRanker::findStraightCompleters (

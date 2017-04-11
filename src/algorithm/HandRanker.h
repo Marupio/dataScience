@@ -13,23 +13,27 @@ class HandRanker
 public:
 
     // Public datatypes
-    enum HandTypeEnum {
-        HtStraightFlush,
-        HtFoak,
-        HtFullHouse,
-        HtFlush,
-        HtStraight,
-        HtToak,
-        HtTwoPair,
-        HtPair,
-        HtHighCard
-    };
+
+        //- Hand types
+        static char HtUnknown;          // 0
+        static char HtHighCard;         // 1
+        static char HtPair;             // 2
+        static char HtTwoPair;          // 3
+        static char HtSet;              // 4
+        static char HtStraight;         // 5
+        static char HtFlush;            // 6
+        static char HtFullHouse;        // 7
+        static char HtFoak;             // 8
+        static char HtStraightFlush;    // 9
+
+        //- Names associated with each Ht char
+        static std::array<string, 10> HandTypeNames;
 
     struct HandTypeStruct {
         // Public data
 
             //- Type of hand (e.g. two-pair, high card, etc)
-            HandTypeEnum ht;
+            char ht;
             
             //- Card value associated with the hand type. Examples:
             //  * Straight - this is the highest card of the straight
@@ -40,7 +44,7 @@ public:
         // Constructors    
 
             //- Construct from components
-            HandTypeStruct(HandTypeEnum t, CardVal v):
+            HandTypeStruct(char t, CardVal v):
                 ht(t),
                 value(v)
             {}
@@ -55,8 +59,11 @@ public:
     static HandTypeStruct getHandType(const Board& bd, const PktCards& pkt);
 
     //- Compare two pockets against the board
-    //  Returns pktA > pktB
-//    static bool compare
+    //  Returns:
+    //  -1: pktA < pktB
+    //   0: pktA == pktB
+    //   1: pktA > pktB
+//    static short compare
 //    (
 //        const Board& bd,
 //        const PktCards& pktA,

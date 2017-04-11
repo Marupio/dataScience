@@ -96,8 +96,8 @@ void ds::Board::updateDerivedData() {
     flushSuit_ = Card::unknownSuit;
     flushVals_.clear();
     foak_ = Card::unknownValue;
-    toak_ = Card::unknownValue;
-    toakMissingSuit_ = Card::unknownSuit;
+    set_ = Card::unknownValue;
+    setMissingSuit_ = Card::unknownSuit;
     pairA_ = Card::unknownValue;
     pairAMissingSuits_ = {Card::unknownSuit, Card::unknownSuit};
     pairB_ = Card::unknownValue;
@@ -141,7 +141,7 @@ void ds::Board::updateDerivedData() {
             break;
         }
         case 3: {
-            toak_ = itS->value();
+            set_ = itS->value();
             const VecSuit missingSuits = getMissingSuits(itS->suits());
             #ifdef DSDEBUG
             if (missingSuits.size() != 1) {
@@ -151,7 +151,7 @@ void ds::Board::updateDerivedData() {
                 abort();
             }
             #endif
-            toakMissingSuit_ = missingSuits.front();
+            setMissingSuit_ = missingSuits.front();
             break;
         }
         case 2: {

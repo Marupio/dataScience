@@ -47,9 +47,9 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             break;
         }
         case 3: {
-            // TOAK is on the board
-            const Card toakCard(it->value(), bd.toakMissingSuit());
-            PktCards foakPkt(toakCard, Card::wildCard);
+            // Set is on the board
+            const Card setCard(it->value(), bd.setMissingSuit());
+            PktCards foakPkt(setCard, Card::wildCard);
             if (pkt == foakPkt) {
                 // Player has FOAK
                 return HandTypeStruct(HtFoak, it->value());
@@ -99,7 +99,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
     if (
         bd.pairA() != Card::unknownValue
      || bd.pairB() != Card::unknownValue
-     || bd.toak() != Card::unknownValue
+     || bd.set() != Card::unknownValue
     ) {
         // Full house is possible
         for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
@@ -229,30 +229,30 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
         }
     }
 
-    // Check for three-of-a-kind (TOAK)
+    // Check for three-of-a-kind (set)
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 3: {
-            // TOAK is on board, look for two kickers
-            return HandTypeStruct(HtToak, it->value());
+            // Set is on board, look for two kickers
+            return HandTypeStruct(HtSet, it->value());
             break;
         }
         case 2: {
-            // TOAK uses a pair on the board, one pocket card is free
+            // Set uses a pair on the board, one pocket card is free
             if (pkt.has(it->value())) {
-                return HandTypeStruct(HtToak, it->value());
+                return HandTypeStruct(HtSet, it->value());
             }
             break;
         }
         case 1: {
-            // TOAK uses a single on the board, pocket pairs required
+            // Set uses a single on the board, pocket pairs required
             if (pkt.pairs(it->value())) {
-                return HandTypeStruct(HtToak, it->value());
+                return HandTypeStruct(HtSet, it->value());
             }
             break;
         }
         default: {
-            FatalError << "Unexpected nCards when checking for TOAK. nCards "
+            FatalError << "Unexpected nCards when checking for Set. nCards "
                 << "is: " << it->nCards() << std::endl;
             abort();
         } // end default
@@ -260,6 +260,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
     }    
 
     // Check for two pair
+// &&& There is a bug here where it returns low pair if pocket is high pair
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 2: {

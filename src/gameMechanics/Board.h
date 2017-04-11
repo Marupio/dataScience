@@ -109,13 +109,13 @@ public:
             }
 
             //- Has a value if board contains three of-a-kind, but not foak
-            CardVal toak() const {
-                return toak_;
+            CardVal set() const {
+                return set_;
             }
 
             //- Returns suit missing from three-of-a-kind
-            Suit toakMissingSuit() const {
-                return toakMissingSuit_;
+            Suit setMissingSuit() const {
+                return setMissingSuit_;
             }
 
             //- If board has a pair, this will contains its value
@@ -185,10 +185,10 @@ private:
             CardVal foak_;
 
             //- Has a value if board contains three of-a-kind, but not foak
-            CardVal toak_;
+            CardVal set_;
 
             //- Suit missing from three-of-a-kind
-            Suit toakMissingSuit_;
+            Suit setMissingSuit_;
             
             // Pair data
 

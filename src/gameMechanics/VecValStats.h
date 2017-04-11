@@ -50,9 +50,9 @@ public:
 
     // Public member functions
 
-        //- Return nCards
-        short nCards() const {
-            return nCards_;
+        //- Return number of cards used to create these statistics
+        short nStatCards() const {
+            return nStatCards_;
         }
 
         //- Access to front of vector
@@ -99,7 +99,7 @@ private:
     // Private data
     
         //- Number of cards on which these stats are based
-        short nCards_;
+        short nStatCards_;
 
         //- Contains the metadata
         //  Each element contains the following data:
