@@ -4,28 +4,28 @@
 
 // ****** Static Data Members ****** //
 
-static char ds::HandRanker::HtUnknown       = 0;
-static char ds::HandRanker::HtHighCard      = 1;
-static char ds::HandRanker::HtPair          = 2;
-static char ds::HandRanker::HtTwoPair       = 3;
-static char ds::HandRanker::HtSet           = 4;
-static char ds::HandRanker::HtStraight      = 5;
-static char ds::HandRanker::HtFlush         = 6;
-static char ds::HandRanker::HtFullHouse     = 7;
-static char ds::HandRanker::HtFoak          = 8;
-static char ds::HandRanker::HtStraightFlush = 9;
+const char ds::HandRanker::HtUnknown       = 0;
+const char ds::HandRanker::HtHighCard      = 1;
+const char ds::HandRanker::HtPair          = 2;
+const char ds::HandRanker::HtTwoPair       = 3;
+const char ds::HandRanker::HtSet           = 4;
+const char ds::HandRanker::HtStraight      = 5;
+const char ds::HandRanker::HtFlush         = 6;
+const char ds::HandRanker::HtFullHouse     = 7;
+const char ds::HandRanker::HtFoak          = 8;
+const char ds::HandRanker::HtStraightFlush = 9;
 
-static std::array<string, 10> ds::HandRanker::HandTypeNames = {
+const std::array<std::string, 10> ds::HandRanker::HandTypeNames = {
     "Unknown",
-    "StraightFlush",
-    "Four-of-a-kind",
-    "FullHouse",
-    "Flush",
-    "Straight",
-    "Set",
-    "TwoPair",
+    "HighCard",
     "Pair",
-    "HighCard"
+    "TwoPair",
+    "Set",
+    "Straight",
+    "Flush",
+    "FullHouse",
+    "Four-of-a-kind",
+    "StraightFlush"
 };
 
 
@@ -34,6 +34,10 @@ static std::array<string, 10> ds::HandRanker::HandTypeNames = {
 ds::StraightCompleters ds::HandRanker::findStraightCompleters (
     const VecCardVal& values
 ) {
+    StraightCompleters sc;
+    if (!values.size()) {
+        return sc;
+    }
     #ifdef DSDEBUG
     if (values.size() > 1) {
         if (values.front() < values.back()) {
@@ -48,7 +52,6 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         cValues.push_back(1);
     }
 
-    StraightCompleters sc;
     VecCardVal::const_iterator altVsIter(cValues.begin());
     if (altVsIter == cValues.end()) {
         return sc;
@@ -129,7 +132,7 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
                 std::swap(pocket.second, pocket.first);
                 pocket.first = 14;
             }
-            if (sc.size() && sc.back().second != pocket) {
+            if (!sc.size() || (sc.size() && sc.back().second != pocket)) {
                 // Conditional accounts for connected pocket with a higher
                 // straight value
                 sc.push_back(
@@ -232,7 +235,7 @@ bool ds::HandRanker::restart(
 }
 
 #include<HandRankerGetHandType.cpp>
+#include<HandRankerCompare.cpp>
 #include<HandRankerRank.cpp>
-
 
 // ****** END ****** //

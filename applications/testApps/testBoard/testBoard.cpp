@@ -20,7 +20,7 @@ void writeDetails(const Board& bd)
     Suit fSuit(bd.flushSuit());
     const VecCardVal& fVals(bd.flushVals());
     CardVal bdFoak(bd.foak());
-    Card bdToak(bd.toak(), bd.toakMissingSuit());
+    Card bdSet(bd.set(), bd.setMissingSuit());
     PktCards bdPairA(
         bd.pairA(), bd.pairAMissingSuits().first,
         bd.pairA(), bd.pairAMissingSuits().second
@@ -30,7 +30,7 @@ void writeDetails(const Board& bd)
         bd.pairB(), bd.pairBMissingSuits().second
     );
     std::cout << "          FOAK: " << Card::valueToWriteChar(bdFoak);
-    std::cout << "\n          TOAK: " << bdToak;
+    std::cout << "\n           Set: " << bdSet;
     std::cout << "\n         PairA: " << bdPairA;
     std::cout << "\n         PairB: " << bdPairB;
     std::cout << "\n    Flush suit: " << Card::suitToWriteChar(fSuit);

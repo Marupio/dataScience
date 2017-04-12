@@ -204,6 +204,18 @@ std::istream& ds::operator>>(std::istream& is, Board& b) {
             << b << std::endl;
         abort();
     }
+    while (1) {
+        int nxt(is.peek());
+        if (std::isspace(nxt)) {
+            is.get();
+            continue;
+        } else {
+            break;
+        }
+    }
+
     is >> b.cards_;
+    b.reserveSpace();
+    b.updateDerivedData();
     return is;
 }

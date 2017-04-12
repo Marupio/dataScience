@@ -11,6 +11,11 @@ class PktCards;
 
 typedef std::vector<PktCards> VecPktCards;
 
+// TODO Add PktVals as a class
+// Allow construct from pktVals, and visa-versa
+// Swap function, sort function
+// Think about comparison operators > <.
+
 class PktCards
 :
     public std::pair<Card, Card>

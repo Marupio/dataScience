@@ -57,6 +57,18 @@ install_targets(
 )
 
 add_executable(
+    testHandRankerStraightFinder
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerStraightFinder.cpp
+)
+
+target_link_libraries(testHandRankerStraightFinder core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRankerStraightFinder
+)
+
+add_executable(
     testBoard
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testBoard/testBoard.cpp
 )

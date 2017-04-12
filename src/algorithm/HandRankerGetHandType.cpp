@@ -7,6 +7,8 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
     const Board& bd,
     const PktCards& pkt
 ) {
+    const PktVals noKickers(Card::unknownValue, Card::unknownValue);
+
     // Check for straight flushes
     const Suit flushSuit = bd.flushSuit();
     const VecCardVal& flushVals(bd.flushVals());
@@ -26,33 +28,75 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 flushSuit
             );
             if (testPkt == pkt) {
-                return HandTypeStruct(HtStraightFlush, sfit->first);
+                return HandTypeStruct(
+                    HtStraightFlush,
+                    sfit->first,
+                    Card::unknownValue.
+                    noKickers
+                );
             }
         }
     }
 
     // Check for four-of-a-kind (FOAK)
     const VecValStats& stats(bd.stats());
-    #ifdef DSDEBUG
-        if (stats.nCards() < 3) {
-            FatalError << "Card value stats array has an unexpected size: "
-                << stats.nCards() << std::endl;
-            abort();
-        }
-    #endif
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 4: {
-            return HandTypeStruct(HtFoak, it->value());
+            CardVal kicker = std::max(pkt.first.value(), pkt.second.value());
+
+            // Find one low value
+            auto itR = stats.crbegin();
+            CardVal lowVal = itR->value();
+            if (lowVal == it->value()) {
+                itR++;
+                if (itR != stats.crend()) {
+                    lowVal = itR->value();
+                } else {
+                    lowVal = Card::lowAce;
+                }
+            }
+
+            kicker = kicker > lowVal ? kicker : Card::unknownValue;
+            return HandTypeStruct(
+                HtFoak,
+                it->value(),
+                Card::unknownValue,
+                kicker,
+                Card::unknownValue
+            );
             break;
         }
         case 3: {
             // Set is on the board
-            const Card setCard(it->value(), bd.setMissingSuit());
-            PktCards foakPkt(setCard, Card::wildCard);
-            if (pkt == foakPkt) {
-                // Player has FOAK
-                return HandTypeStruct(HtFoak, it->value());
+            if (pkt.has(it->value()))
+            {
+                // Find one low value
+                auto itR = stats.crbegin();
+                CardVal lowVal = itR->value();
+                if (lowVal == it->value()) {
+                    itR++;
+                    if (itR != stats.crend()) {
+                        lowVal = itR->value();
+                    } else {
+                        lowVal = Card::lowAce;
+                    }
+                }
+                CardVal kicker = pkt.first.value();
+                if (kicker == it->value()) {
+                    kicker = pkt.second.value();
+                }
+                if (kicker <= lowVal) {
+                    kicker = Card::unknownValue;
+                }
+
+                return HandTypeStruct(
+                    HtFoak,
+                    it->value(),
+                    Card::unknownValue,
+                    kicker,
+                    Card::unknownValue
+                );
             }
             break;
         }
@@ -85,7 +129,12 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 );
             }
             if (foakPkt == pkt) {
-                return HandTypeStruct(HtFoak, it->value());
+                return HandTypeStruct(
+                    HtFoak,
+                    it->value(),
+                    Card::unknownValue,
+                    noKickers
+                );
             }
             break;
         }
@@ -108,11 +157,22 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             case 3: {
                 // FH set is on the board, pocket is free
                 if (pkt.pairs() || bd.pairA() != Card::unknownValue) {
-                    return HandTypeStruct(HtFullHouse, it->value());
+                    CardVal pairVal = std::max(pkt.first.value(), bd.pairA());
+                    return HandTypeStruct(
+                        HtFullHouse,
+                        it->value(),
+                        pairVal,
+                        noKickers
+                    );
                 }
                 for (auto itp = stats.cbegin(); itp != stats.cend(); ++itp) {
                     if (pkt.has(itp->value())) {
-                        return HandTypeStruct(HtFullHouse, it->value());
+                        return HandTypeStruct(
+                            HtFullHouse,
+                            it->value(),
+                            itp->value(),
+                            noKickers
+                        );
                     }
                 }
                 break;
@@ -130,8 +190,12 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                             continue;
                         }
                         if (itp->nCards() >= 2 || pkt.has(itp->value())) {
-                            // Pair is on the board
-                            return HandTypeStruct(HtFullHouse, it->value());
+                            return HandTypeStruct(
+                                HtFullHouse,
+                                it->value(),
+                                itp->value(),
+                                noKickers
+                            );
                         }
                     }
                 }
@@ -143,7 +207,12 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                     bd.pairA() != Card::unknownValue
                  && pkt.pairs(it->value())
                 ) {
-                    return HandTypeStruct(HtFullHouse, it->value());
+                    return HandTypeStruct(
+                        HtFullHouse,
+                        it->value(),
+                        bd.pairA(),
+                        noKickers
+                    );
                 }
                 break;
             }
@@ -156,40 +225,52 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
 
     // Check for flush
     switch (flushVals.size()) {
-    case 5:
-    {
-        CardVal highVal = stats.front().value();
-        if (pkt.first.suit() == flushSuit && pkt.first.value() > highVal) {
-            highVal = pkt.first.value();
+    case 3: {
+        if (!pkt.suited(flushSuit)) {
+            break;
         }
-        if (pkt.second.suit() == flushSuit && pkt.second.value() > highVal) {
-            highVal = pkt.second.value();
-        }
-        return HandTypeStruct(HtFlush, highVal);
-        break;
+        // fall through
     }
     case 4: {
-        if (pkt.has(flushSuit)) {
-            CardVal highVal = stats.front().value();
-            if (pkt.first.suit() == flushSuit && pkt.first.value() > highVal) {
+        if (!pkt.has(flushSuit)) {
+            break;
+        }
+        // fall through
+    }
+    case 5: {
+        CardVal highVal = flushVals.front();
+        PktVals kickers(noKickers);
+        if (pkt.first.suit() == flushSuit) {
+            kickers.first = pkt.first.value();
+            if (pkt.first.value() > highVal) {
                 highVal = pkt.first.value();
             }
-            if (
-                pkt.second.suit() == flushSuit && pkt.second.value() > highVal
-            ) {
+        }
+        if (pkt.second.suit() == flushSuit) {
+            kickers.second = pkt.second.value();
+            if (pkt.second.value() > highVal) {
                 highVal = pkt.second.value();
             }
-            return HandTypeStruct(HtFlush, highVal);
         }
-        break;
-    }
-    case 3: {
-        if (pkt.suited(flushSuit)) {
-            CardVal highVal = stats.front().value();
-            highVal = std::max(highVal, pkt.first.value());
-            highVal = std::max(highVal, pkt.second.value());
-            return HandTypeStruct(HtFlush, highVal);
+        if (kickers.first > kickers.second) {
+            CardVal temp = kickers.first;
+            kickers.first = kickers.second;
+            kickers.second = temp;
         }
+
+        // Find two low values - no iterator checking
+        auto itR = flushVals.crbegin();
+        CardVal lowValA = itR->value();
+        ++itR;
+        CardVal lowValB = itR->value();
+
+        // Check two kickers
+        if (kickers.first < lowValA) {
+            kickers = noKickers;
+        } else if (kickers.first < lowValB || kickers.second < lowValA) {
+            kickers.second = Card::unknownValue;
+        }
+        return HandTypeStruct(HtFlush, highVal, Card::unknownValue, kickers);
         break;
     }
     case 0: {
@@ -224,7 +305,12 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 Card::wildSuit
             );
             if (testPkt == pkt) {
-                return HandTypeStruct(HtStraight, it->first);
+                return HandTypeStruct(
+                    HtStraight,
+                    it->first,
+                    Card::unknownValue,
+                    noKickers
+                );
             }
         }
     }
@@ -234,20 +320,94 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
         switch (it->nCards()) {
         case 3: {
             // Set is on board, look for two kickers
-            return HandTypeStruct(HtSet, it->value());
+            
+            // Find two low values
+            auto itR = stats.crbegin();
+            CardVal lowValA = Card::lowAce;
+            while (
+                itR != stats.crend()
+             && (lowValA != Card::lowAce || lowValA != it->value())
+            ) {
+                lowValA = itR->value();
+                ++itR;
+            }
+            CardVal lowValB = Card::lowAce;
+            while (
+                itR != stats.crend()
+             && (lowValB != Card::lowAce || lowValB != it->value())
+            ) {
+                lowValB = itR->value();
+                ++itR;
+            }
+
+            PktCards kickers;
+            if (pkt.first.value() > pkt.second.value()) {
+                kickers.first = pkt.first.value();
+                kickers.second = pkt.second.value();
+            } else {
+                kickers.first = pkt.second.value();
+                kickers.second = pkt.first.value();
+            }
+
+            // Check two kickers            
+            if (kickers.first < lowValA) {
+                kickers = noKickers;
+            } else if (kickers.first < lowValB || kickers.second < lowValA) {
+                kickers.second = Card::unknownValue;
+            }
+            
+            return HandTypeStruct(
+                HtSet,
+                it->value(),
+                Card::unknownValue,
+                kickers
+            );
             break;
         }
         case 2: {
             // Set uses a pair on the board, one pocket card is free
             if (pkt.has(it->value())) {
-                return HandTypeStruct(HtSet, it->value());
+
+                // Find one low value
+                auto itR = stats.crbegin();
+                CardVal lowValA = Card::lowAce;
+                while (
+                    itR != stats.crend()
+                 && (lowValA != Card::lowAce || lowValA != it->value())
+                ) {
+                    lowValA = itR->value();
+                    ++itR;
+                }
+
+                CardVal kicker =
+                    pkt.first.value() == it->value()
+                  ? pkt.second.value()
+                  : pkt.first.value();
+                
+                if (kicker < lowValA) {
+                    kicker = Card::unknownValue;
+                }
+
+                return HandTypeStruct(
+                    HtSet,
+                    it->value(),
+                    Card::unknownValue,
+                    kicker,
+                    Card::unknownValue
+                );
             }
             break;
         }
         case 1: {
             // Set uses a single on the board, pocket pairs required
             if (pkt.pairs(it->value())) {
-                return HandTypeStruct(HtSet, it->value());
+                return HandTypeStruct
+                (
+                    HtSet,
+                    it->value(),
+                    Card::unknownValue,
+                    noKickers
+                );
             }
             break;
         }
@@ -260,64 +420,293 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
     }    
 
     // Check for two pair
-// &&& There is a bug here where it returns low pair if pocket is high pair
-    for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
-        switch (it->nCards()) {
-        case 2: {
-            // One pair is on the board. Second pair can be pocket pairs or
-            // paired with another single
-            if (pkt.pairs()) {
-                return HandTypeStruct(HtTwoPair, it->value());
+    if (bd.pairA() != Card::unknownValue) {
+        if (pkt.pairs()) {
+            if (pkt.first.value() > bd.pairA()) {
+                return HandTypeStruct(
+                    HtTwoPair,
+                    pkt.first.value(),
+                    bd.pairA(),
+                    noKickers
+                );
             }
-            for (auto itB = stats.cbegin(); itB != stats.cend(); ++itB) {
-                if (itB == it) {
+            if (bd.pairB() != Card::unknownValue)
+            {
+                CardVal kicker;
+                CardVal pairB;
+                if (bd.pairB() > pkt.first.value()) {
+                    pairB = bd.pairB();
+                    kicker = pkt.first.value();
+                    
+                    // Find one low value
+                    auto itR = stats.crbegin();
+                    CardVal lowValA = Card::lowAce;
+                    while (
+                        itR != stats.crend()
+                     && (
+                            lowValA != Card::lowAce
+                         || lowValA != bd.pairA()
+                         || lowValA != pairB
+                        )
+                    ) {
+                        lowValA = itR->value();
+                        ++itR;
+                    }
+                    if (kicker <= lowValA) {
+                        kicker = Card::unknownValue;
+                    }
+                } else {
+                    kicker = Card::unknownValue;
+                    pairB = pkt.first.value();
+                }
+
+                return HandTypeStruct(
+                    HtTwoPair,
+                    bd.pairA(),
+                    pairB,
+                    kicker,
+                    Card::unknownValue
+                );
+            }
+            return HandTypeStruct(
+                HtTwoPair,
+                bd.pairA(),
+                pkt.first.value(),
+                noKickers
+            );
+        }
+        CardVal pairA = Card::lowAce;
+        CardVal pairB = Card::lowAce;
+        short nKickers = 2;
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
+            if (it->nCards() == 2) {
+                if (pairA == Card::lowAce) {
+                    pairA = it->value();
                     continue;
+                } else {
+                    pairB = it->value();
+                    break;
                 }
-                if (pkt.has(itB->value())) {
-                    return HandTypeStruct(HtTwoPair, it->value());
-                }
-            }
-            break;
-        }
-        case 1: {
-            // Pair A uses single from board
-            if (pkt.has(it->value())) {
-                for (auto itB = stats.cbegin(); itB != stats.cend(); ++itB) {
-                    if (itB == it) {
-                        continue;
-                    }
-                    if (pkt.has(itB->value())) {
-                        return HandTypeStruct(HtTwoPair, it->value());
-                    }
+            } else if (pkt.has(it->value())) {
+                if (pairA == Card::lowAce) {
+                    pairA = it->value();
+                    --nKickers;
+                    continue;
+                } else {
+                    pairB = it->value();
+                    break;
                 }
             }
-            break;
         }
-        default: {
-            FatalError << "Unexpected nCards when checking for two pairs. "
-                << "nCards is: " << it->nCards() << std::endl;
-            abort();
-            break;
-        } // end break
-        } // end switch
+        if (pairB != Card::lowAce) {
+            PktVals kickers = noKickers;
+            switch (nKickers) {
+            case 2: {
+                // Find one low value
+                auto itR = stats.crbegin();
+                CardVal lowValA = Card::lowAce;
+                while (
+                    itR != stats.crend()
+                 && (
+                        lowValA != Card::lowAce
+                     || lowValA != pairA
+                     || lowValA != pairB
+                    )
+                ) {
+                    lowValA = itR->value();
+                    ++itR;
+                }
+
+                if (pkt.first.value() > pkt.second.value()) {
+                    kickers.first = pkt.first.value();
+                } else {
+                    kickers.first = pkt.second.value();
+                }
+
+                // Check one kicker
+                if (kickers.first <= lowValA) {
+                    kickers.first = Card::unknownValue;
+                }
+                break;
+            }
+            case 1: {
+                // Find two low values
+                auto itR = stats.crbegin();
+                CardVal lowValA = Card::lowAce;
+                while (
+                    itR != stats.crend()
+                 && (
+                        lowValA != Card::lowAce
+                     || lowValA != pairA
+                     || lowValA != pairB
+                    )
+                ) {
+                    lowValA = itR->value();
+                    ++itR;
+                }
+                CardVal lowValB = Card::lowAce;
+                while (
+                    itR != stats.crend()
+                 && (
+                        lowValB != Card::lowAce
+                     || lowValB != pairA
+                     || lowValB != pairB
+                    )
+                ) {
+                    lowValB = itR->value();
+                    ++itR;
+                }
+                
+                if (pkt.first.value() != pairA && pkt.first.value() != pairB) {
+                    kickers.first = pkt.first.value();
+                } else {
+                    kickers.first = pkt.second.value();
+                }
+                
+                // Check one kicker
+                if (kickers.first <= lowValB) {
+                    kickers.first = Card::unknownValue;
+                }
+                break;
+            }
+            default: {
+                break;
+            } // end default
+            } // end switch
+            return HandTypeStruct(
+                HtTwoPair,
+                pairA,
+                it->value(),
+                kickers
+            );
+        }
     }
 
     // Check for a pair
     if (pkt.pairs()) {
-        return HandTypeStruct(HtPair, pkt.first.value());
+        return HandTypeStruct
+        (
+            HtPair,
+            pkt.first.value(),
+            Card::unknownValue,
+            noKickers
+        );
     }
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
-        if (pkt.has(it->value())) {
-            return HandTypeStruct(HtPair, it->value());
+        if (it->nCards() == 2) {
+            // Pair is on the board, pocket is free
+            
+            // Find two low values
+            auto itR = stats.crbegin();
+            CardVal lowValA = Card::lowAce;
+            while (
+                itR != stats.crend()
+             && (lowValA != Card::lowAce || lowValA != it->value())
+            ) {
+                lowValA = itR->value();
+                ++itR;
+            }
+            CardVal lowValB = Card::lowAce;
+            while (
+                itR != stats.crend()
+             && (lowValB != Card::lowAce || lowValB != it->value())
+            ) {
+                lowValB = itR->value();
+                ++itR;
+            }
+            PktVals kickers;
+            if (pkt.first.value() > pkt.second.value()) {
+                kickers.first = pkt.first.value();
+                kickers.second = pkt.second.value();
+            } else {
+                kickers.first = pkt.second.value();
+                kickers.second = pkt.first.value();
+            }
+
+            // Check two kickers            
+            if (kickers.first < lowValA) {
+                kickers = noKickers;
+            } else if (kickers.first < lowValB || kickers.second < lowValA) {
+                kickers.second = Card::unknownValue;
+            }
+            return HandTypeStruct(
+                HtPair,
+                it->value(),
+                Card::unknownValue,
+                kickers
+            );
+        } else if (pkt.has(it->value())) {
+            // Paired with single, one pocket card is free
+
+            // Find one low values
+            auto itR = stats.crbegin();
+            CardVal lowValA = Card::lowAce;
+            while (
+                itR != stats.crend()
+             && (lowValA != Card::lowAce || lowValA != it->value())
+            ) {
+                lowValA = itR->value();
+                ++itR;
+            }
+            
+            CardVal kicker;
+            if (pkt.first.value() == it->value()) {
+                kicker = pkt.second.value();
+            } else {
+                kicker = pkt.first.value();
+            }
+
+            if (kicker <= lowValA) {
+                kicker = Card::unknownValue;
+            }
+            return HandTypeStruct(
+                HtPair,
+                it->value(),
+                Card::unknownValue,
+                kicker,
+                Card::unknownValue
+            );
         }
     }
 
     // Check for high card
     {
         CardVal highVal = stats.front().value();
-        highVal = std::max(highVal, pkt.first.value());
-        highVal = std::max(highVal, pkt.second.value());
-        return HandTypeStruct(HtHighCard, highVal);
+
+        // Find two low values, no iterator checking
+        auto itR = stats.crbegin();
+        CardVal lowValA = *itR;
+        ++itR;
+        CardVal lowValB = *itR;
+        
+        PktVals kickers;
+        if (pkt.first.value() > pkt.second.value()) {
+            kickers.first = pkt.first.value();
+            kickers.second = pkt.second.value();
+        } else {
+            kickers.first = pkt.second.value();
+            kickers.second = pkt.first.value();
+        }
+
+        if (kickers.first > highVal) {
+            highVal = kickers.first;
+            kickers.first = kickers.second;
+            kickers.second = Card::unknownValue;
+        }
+        
+        // Check two kickers
+        if (kickers.first < lowValA) {
+            kickers = noKickers;
+        } else if (kickers.first < lowValB || kickers.second < lowValA) {
+            kickers.second = Card::unknownValue;
+        }
+
+        return HandTypeStruct(
+            HtHighCard,
+            highVal,
+            Card::unknownValue,
+            kickers
+        );
     }
 }
 

@@ -51,13 +51,6 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
 
     // Check for four-of-a-kind (FOAK)
     const VecValStats& stats(bd.stats());
-    #ifdef DSDEBUG
-        if (stats.nCards() < 3) {
-            FatalError << "Card value stats array has an unexpected size: "
-                << stats.nCards() << std::endl;
-            abort();
-        }
-    #endif
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 4: {
@@ -330,7 +323,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     // Check for flush
     switch (flushVals.size()) {
     case 5: {
-        if (!pkt.hasSuit(flushSuit())) {
+        if (!pkt.has(flushSuit)) {
             PktCards testPkt(
                 Card::wildValue,
                 flushSuit,
@@ -356,7 +349,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 continue;
             }
             auto itL = flushVals.cbegin();
-            if (itL->value() == Card::ace) {
+            if (*itL == Card::ace) {
                 ++itL;
             }
             for (
@@ -440,7 +433,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     continue;
                 }
                 auto itL = flushVals.cbegin();
-                if (itL->value() == Card::ace) {
+                if (*itL == Card::ace) {
                     ++itL;
                 }
                 for (
@@ -714,7 +707,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 // If pairs exist on board, remove (valA valA) and continue
 
     // Check for two pair
-    if (bd.pairA != Card::unknownValue) {
+    if (bd.pairA() != Card::unknownValue) {
         // Pocket pair could be highest, have to iterate through all cards
         const CardVal low = stats.back().value();
 
@@ -746,16 +739,16 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                                 }
                             }
 
-                            Card pairBCard = Card::wildCard;
+                            CardVal pairBVal = Card::wildValue;
                             if (itPB->nCards() == 2) {
                                 // PairB is paired on the board, look for
                                 // one kicker from both pocket cards
-                                // i.e. pairBCard is wildCard, do nothing
+                                // i.e. pairBVal is wild, do nothing
                             } else {
                                 // PairB is single on the board, look for
                                 // one kicker from one pocket card
-                                // i.e. pairBCard is pairValue, set it
-                                pairBCard.value() = pairB;
+                                // i.e. pairBVal is pairValue, set it
+                                pairBVal = pairB;
                             }
                             for (
                                 CardVal kicker = Card::ace;
@@ -768,7 +761,8 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                                 PktCards testPkt(
                                     kicker,
                                     Card::wildSuit,
-                                    pairBCard
+                                    pairBVal,
+                                    Card::wildSuit
                                 );
                                 if (pkt == testPkt) {
                                     return rank;
@@ -788,7 +782,8 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                                 PktCards testPkt(
                                     kicker,
                                     Card::wildSuit,
-                                    pairBCard
+                                    pairBVal,
+                                    Card::wildSuit
                                 );
                                 if (pkt == testPkt) {
                                     return rank;
@@ -842,7 +837,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     itB->value(),
                     Card::wildSuit
                 );
-                if (pkt = testPkt) {
+                if (pkt == testPkt) {
                     return rank;
                 } else {
                     rank += mask.remove(testPkt);

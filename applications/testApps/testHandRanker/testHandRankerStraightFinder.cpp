@@ -5,7 +5,25 @@
 
 using namespace ds;
 int main() {
-    PktCards pkt;
+    short boardSize;
+    std::cout << "How many distinct values are on the board? ";
+    std::cin >> boardSize;
+    VecCardVal vs(boardSize);
+    VecCardVal::iterator it;
+    for (it = vs.begin(); it != vs.end(); ++it) {
+        std::cout << "Value " << it - vs.begin() + 1 << "? ";
+        std::cin >> *it;
+    }
+    std::sort (vs.rbegin(), vs.rend());
+    std::cout << std::endl;    
+    std::cout << vs << std::endl;
+    StraightCompleters sc(HandRanker::findStraightCompleters(vs));
+    for (auto scvIt = sc.cbegin(); scvIt != sc.cend(); ++scvIt) {
+        std::cout << "    " << scvIt->first << ": (" << scvIt->second.first
+            << " " << scvIt->second.second << ")" << std::endl;
+    }
+
+/*    PktCards pkt;
     Board bd;
     std::cout << "First pocket card? ";
     std::cin >> pkt.first;
@@ -33,6 +51,6 @@ int main() {
     std::cout << HandRanker::HandTypeNames[hts.ht] << " ["
         << Card::valueToWriteChar(hts.values.first) << " "
         << Card::valueToWriteChar(hts.values.second) << "]" << std::endl;
-
+*/
     return 0;
 }
