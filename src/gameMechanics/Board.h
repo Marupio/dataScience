@@ -139,7 +139,7 @@ public:
             }
 
 
-        //- Dealer interface
+        // Dealer interface
 
             //- Deliver flop
             void flop(const VecDeckInd& vd);
@@ -150,6 +150,29 @@ public:
             //- Deliver river
             void river(DeckInd di);
         
+        
+        // Derived information
+
+            //- Returns lowest value, not including avoids
+            CardVal lowestVal() const;
+            CardVal lowestVal(CardVal avoid);
+            CardVal lowestVal(const PktVals& avoid);
+
+            //- Returns two lowest card values, not including avoids
+            PktVals twoLowestVals() const;
+            PktVals twoLowestVals(CardVal avoid) const;
+            PktVals twoLowestVals(const PktVals& avoid) const;
+
+            //- Returns high value, not including avoids
+            CardVal highestVal() const;
+            CardVal highestVal(CardVal avoid) const;
+            CardVal highestVal(const PktVals& avoid) const;
+
+            //- Returns two highest values, not including avoids
+            PktVals highestTwoVals() const;
+            PktVals highestTwoVals(CardVal avoid) const;
+            PktVals highestTwoVals(const PktVals& avoid) const;
+
 
     // Operators
     

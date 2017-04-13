@@ -207,6 +207,17 @@ private:
     Suit suit_;
 };
 
+
+// Global functions
+
+//- Returns true if CardA == CardB without accounting for wild
+bool noWildEquals(const Card& cA, const Card& pcB) {
+    return (
+        cA.binValue() == cB.binValue()
+     && cA.suit() == cB.suit()
+    );
+}
+
 } // end namespace ds
 
 #include<CardI.h>

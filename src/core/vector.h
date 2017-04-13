@@ -26,6 +26,16 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 
 template<class T>
 std::istream& operator>>(std::istream& is, std::vector<T>& v) {
+    while (1) {
+        int nxt(is.peek());
+        if (std::isspace(nxt)) {
+            is.get();
+            continue;
+        } else {
+            break;
+        }
+    }
+
     char firstChar(is.get());
     if (firstChar != '(') {
         FatalError << "Expecting '(' from istream.  Got '" << firstChar

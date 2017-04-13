@@ -96,40 +96,59 @@ public:
     
     // Member functions
     
-        //- Returns true if pocket has given card
-        bool has(const Card& cd) const {
-            return first == cd || second == cd;
-        }
+        // Tests
         
-        //- Returns true if pocket has given value
-        bool has(CardVal cv) const {
-            return first.value() == cv || second.value() == cv;
-        }
+            //- Returns true if pocket has given card
+            bool has(const Card& cd) const {
+                return first == cd || second == cd;
+            }
+            
+            //- Returns true if pocket has given value
+            bool has(CardVal cv) const {
+                return first.value() == cv || second.value() == cv;
+            }
+            
+            //- Returns true if pocket has given suit
+            bool has(Suit st) const {
+                return first.suit() == st || second.suit() == st;
+            }
+
+            //- Returns true if pocket is suited
+            bool suited() const {
+                return first.suit() == second.suit();
+            }
+
+            //- Returns true if pocket is suited with given suit
+            bool suited(Suit st) const {
+                return first.suit() == st && second.suit() == st;
+            }
+
+            //- Returns true if pocket is a pair
+            bool pairs() const {
+                return first.value() == second.value();
+            }
+
+            //- Returns true if pocket pair value is given value
+            bool pairs(CardVal cv) const {
+                return first.value() == cv && second.value() == cv;
+            }
+
+
+        // Edit
         
-        //- Returns true if pocket has given suit
-        bool has(Suit st) const {
-            return first.suit() == st || second.suit() == st;
-        }
+            //- Switch pocket cards first to second
+            void swap() {
+                Card temp = first;
+                first = second;
+                second = temp;
+            }
 
-        //- Returns true if pocket is suited
-        bool suited() const {
-            return first.suit() == second.suit();
-        }
-
-        //- Returns true if pocket is suited with given suit
-        bool suited(Suit st) const {
-            return first.suit() == st && second.suit() == st;
-        }
-
-        //- Returns true if pocket is a pair
-        bool pairs() const {
-            return first.value() == second.value();
-        }
-
-        //- Returns true if pocket pair value is given value
-        bool pairs(CardVal cv) const {
-            return first.value() == cv && second.value() == cv;
-        }
+        // Conversions
+            
+            //- Return PktVals with suit stripped out
+            PktVals values() const {
+                return PktVals(first.value(), second.value());
+            }
 
 
     // Member operators
@@ -158,6 +177,22 @@ public:
 //    friend std::ostream& operator<<(std::ostream& out, const PktCards& c);
 //    friend std::istream& operator>>(std::istream& in, PktCards& c);
 };
+
+
+// Global functions
+
+//- True if both pocket cards are the same as the given, with no
+//  checking for wild
+bool noWildEquals(const PktCards& pcA, const PktCards& pcB) {
+    return (
+        noWildEquals(pcA.first, pcB.first)
+     && noWildEquals(pcA.second, pcB.second)
+    ) || (
+        noWildEquals(pcA.first, pcB.second)
+     && noWildEquals(pcA.second, pcB.first)
+    );
+}
+
 
 } // End namespace ds
 #endif

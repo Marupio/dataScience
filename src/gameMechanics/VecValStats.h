@@ -93,7 +93,7 @@ public:
                 return data_.size();
             }
 
-       
+
 private:
     
     // Private data

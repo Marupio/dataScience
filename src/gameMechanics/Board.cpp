@@ -82,6 +82,54 @@ void ds::Board::river(DeckInd di) {
 }
 
 
+ds::CardVal ds::Board::lowestVal() const {
+}
+
+
+ds::CardVal ds::Board::lowestVal(CardVal avoid) {
+}
+
+
+ds::CardVal ds::Board::lowestVal(const PktVals& avoid) {
+}
+
+
+ds::PktVals ds::Board::twoLowestVals() const {
+}
+
+
+ds::PktVals ds::Board::twoLowestVals(CardVal avoid) const {
+}
+
+
+ds::PktVals ds::Board::twoLowestVals(const PktVals& avoid) const {
+}
+
+
+ds::CardVal ds::Board::highestVal() const {
+}
+
+
+ds::CardVal ds::Board::highestVal(CardVal avoid) const {
+}
+
+
+ds::CardVal ds::Board::highestVal(const PktVals& avoid) const {
+}
+
+
+ds::PktVals ds::Board::highestTwoVals() const {
+}
+
+
+ds::PktVals ds::Board::highestTwoVals(CardVal avoid) const {
+}
+
+
+ds::PktVals ds::Board::highestTwoVals(const PktVals& avoid) const {
+}
+
+
 // ****** Private member functions ****** //
 
 void ds::Board::reserveSpace() {
@@ -204,16 +252,6 @@ std::istream& ds::operator>>(std::istream& is, Board& b) {
             << b << std::endl;
         abort();
     }
-    while (1) {
-        int nxt(is.peek());
-        if (std::isspace(nxt)) {
-            is.get();
-            continue;
-        } else {
-            break;
-        }
-    }
-
     is >> b.cards_;
     b.reserveSpace();
     b.updateDerivedData();
