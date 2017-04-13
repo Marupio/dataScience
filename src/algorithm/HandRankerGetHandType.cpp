@@ -31,7 +31,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 return HandTypeStruct(
                     HtStraightFlush,
                     sfit->first,
-                    Card::unknownValue.
+                    Card::unknownValue,
                     noKickers
                 );
             }
@@ -241,18 +241,20 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
         CardVal highVal = flushVals.front();
         PktVals kickers(noKickers);
         if (pkt.first.suit() == flushSuit) {
-            kickers.first = pkt.first.value();
             if (pkt.first.value() > highVal) {
                 highVal = pkt.first.value();
+            } else {
+                kickers.first = pkt.first.value();
             }
         }
         if (pkt.second.suit() == flushSuit) {
-            kickers.second = pkt.second.value();
             if (pkt.second.value() > highVal) {
                 highVal = pkt.second.value();
+            } else {
+                kickers.second = pkt.second.value();
             }
         }
-        if (kickers.first > kickers.second) {
+        if (kickers.first < kickers.second) {
             CardVal temp = kickers.first;
             kickers.first = kickers.second;
             kickers.second = temp;
@@ -260,10 +262,16 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
 
         // Find two low values - no iterator checking
         auto itR = flushVals.crbegin();
-        CardVal lowValA = itR->value();
+        CardVal lowValA = *itR;
         ++itR;
-        CardVal lowValB = itR->value();
+        CardVal lowValB = *itR;
 
+        if (flushVals.size() == 4) {
+            lowValB = Card::lowAce;
+        } else if (flushVals.size() == 3) {
+            lowValA = Card::lowAce;
+            lowValB = Card::lowAce;
+        }
         // Check two kickers
         if (kickers.first < lowValA) {
             kickers = noKickers;
@@ -326,7 +334,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             CardVal lowValA = Card::lowAce;
             while (
                 itR != stats.crend()
-             && (lowValA != Card::lowAce || lowValA != it->value())
+             && (lowValA == Card::lowAce || lowValA == it->value())
             ) {
                 lowValA = itR->value();
                 ++itR;
@@ -334,13 +342,13 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             CardVal lowValB = Card::lowAce;
             while (
                 itR != stats.crend()
-             && (lowValB != Card::lowAce || lowValB != it->value())
+             && (lowValB == Card::lowAce || lowValB != it->value())
             ) {
                 lowValB = itR->value();
                 ++itR;
             }
 
-            PktCards kickers;
+            PktVals kickers;
             if (pkt.first.value() > pkt.second.value()) {
                 kickers.first = pkt.first.value();
                 kickers.second = pkt.second.value();
@@ -373,7 +381,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 CardVal lowValA = Card::lowAce;
                 while (
                     itR != stats.crend()
-                 && (lowValA != Card::lowAce || lowValA != it->value())
+                 && (lowValA == Card::lowAce || lowValA == it->value())
                 ) {
                     lowValA = itR->value();
                     ++itR;
@@ -444,9 +452,9 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                     while (
                         itR != stats.crend()
                      && (
-                            lowValA != Card::lowAce
-                         || lowValA != bd.pairA()
-                         || lowValA != pairB
+                            lowValA == Card::lowAce
+                         || lowValA == bd.pairA()
+                         || lowValA == pairB
                         )
                     ) {
                         lowValA = itR->value();
@@ -494,6 +502,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                     continue;
                 } else {
                     pairB = it->value();
+                    --nKickers;
                     break;
                 }
             }
@@ -502,21 +511,20 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             PktVals kickers = noKickers;
             switch (nKickers) {
             case 2: {
-                // Find one low value
-                auto itR = stats.crbegin();
-                CardVal lowValA = Card::lowAce;
+                // Find one high value
+                auto itH = stats.cbegin();
+                CardVal hValA = Card::lowAce;
                 while (
-                    itR != stats.crend()
+                    itH != stats.cend()
                  && (
-                        lowValA != Card::lowAce
-                     || lowValA != pairA
-                     || lowValA != pairB
+                        hValA == Card::lowAce
+                     || hValA == pairA
+                     || hValA == pairB
                     )
                 ) {
-                    lowValA = itR->value();
-                    ++itR;
+                    hValA = itH->value();
+                    ++itH;
                 }
-
                 if (pkt.first.value() > pkt.second.value()) {
                     kickers.first = pkt.first.value();
                 } else {
@@ -524,37 +532,25 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 }
 
                 // Check one kicker
-                if (kickers.first <= lowValA) {
+                if (kickers.first <= hValA) {
                     kickers.first = Card::unknownValue;
                 }
                 break;
             }
             case 1: {
-                // Find two low values
-                auto itR = stats.crbegin();
-                CardVal lowValA = Card::lowAce;
+                // Find one high value
+                auto itH = stats.cbegin();
+                CardVal hValA = Card::lowAce;
                 while (
-                    itR != stats.crend()
+                    itH != stats.cend()
                  && (
-                        lowValA != Card::lowAce
-                     || lowValA != pairA
-                     || lowValA != pairB
+                        hValA == Card::lowAce
+                     || hValA == pairA
+                     || hValA == pairB
                     )
                 ) {
-                    lowValA = itR->value();
-                    ++itR;
-                }
-                CardVal lowValB = Card::lowAce;
-                while (
-                    itR != stats.crend()
-                 && (
-                        lowValB != Card::lowAce
-                     || lowValB != pairA
-                     || lowValB != pairB
-                    )
-                ) {
-                    lowValB = itR->value();
-                    ++itR;
+                    hValA = itH->value();
+                    ++itH;
                 }
                 
                 if (pkt.first.value() != pairA && pkt.first.value() != pairB) {
@@ -564,7 +560,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
                 }
                 
                 // Check one kicker
-                if (kickers.first <= lowValB) {
+                if (kickers.first <= hValA) {
                     kickers.first = Card::unknownValue;
                 }
                 break;
@@ -576,7 +572,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             return HandTypeStruct(
                 HtTwoPair,
                 pairA,
-                it->value(),
+                pairB,
                 kickers
             );
         }
@@ -601,7 +597,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             CardVal lowValA = Card::lowAce;
             while (
                 itR != stats.crend()
-             && (lowValA != Card::lowAce || lowValA != it->value())
+             && (lowValA == Card::lowAce || lowValA == it->value())
             ) {
                 lowValA = itR->value();
                 ++itR;
@@ -609,7 +605,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             CardVal lowValB = Card::lowAce;
             while (
                 itR != stats.crend()
-             && (lowValB != Card::lowAce || lowValB != it->value())
+             && (lowValB == Card::lowAce || lowValB == it->value())
             ) {
                 lowValB = itR->value();
                 ++itR;
@@ -643,7 +639,7 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
             CardVal lowValA = Card::lowAce;
             while (
                 itR != stats.crend()
-             && (lowValA != Card::lowAce || lowValA != it->value())
+             && (lowValA == Card::lowAce || lowValA == it->value())
             ) {
                 lowValA = itR->value();
                 ++itR;
@@ -675,9 +671,9 @@ ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
 
         // Find two low values, no iterator checking
         auto itR = stats.crbegin();
-        CardVal lowValA = *itR;
+        CardVal lowValA = itR->value();
         ++itR;
-        CardVal lowValB = *itR;
+        CardVal lowValB = itR->value();
         
         PktVals kickers;
         if (pkt.first.value() > pkt.second.value()) {

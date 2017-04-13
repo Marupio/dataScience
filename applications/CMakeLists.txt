@@ -8,6 +8,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}
 )
 
+
 add_executable(
     testCard
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testCard/testCard.cpp
@@ -19,6 +20,7 @@ install_targets(
     ${BIN_DIR}
     testCard
 )
+
 
 add_executable(
     testPktCard
@@ -32,41 +34,58 @@ install_targets(
     testPktCard
 )
 
+
 add_executable(
-    testHandRankerRandom
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRandom.cpp
+    testHandRankerCompare_Random
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerCompare_Random.cpp
 )
 
-target_link_libraries(testHandRankerRandom core)
+target_link_libraries(testHandRankerCompare_Random core)
 
 install_targets(
     ${BIN_DIR}
-    testHandRankerRandom
+    testHandRankerCompare_Random
 )
+
 
 add_executable(
-    testHandRankerInput
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerInput.cpp
+    testHandRankerHandType_Input
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerHandType_Input.cpp
 )
 
-target_link_libraries(testHandRankerInput core)
+target_link_libraries(testHandRankerHandType_Input core)
 
 install_targets(
     ${BIN_DIR}
-    testHandRankerInput
+    testHandRankerHandType_Input
 )
+
 
 add_executable(
-    testHandRankerStraightFinder
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerStraightFinder.cpp
+    testHandRankerStraightFinder_Input
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerStraightFinder_Input.cpp
 )
 
-target_link_libraries(testHandRankerStraightFinder core)
+target_link_libraries(testHandRankerStraightFinder_Input core)
 
 install_targets(
     ${BIN_DIR}
-    testHandRankerStraightFinder
+    testHandRankerStraightFinder_Input
 )
+
+
+add_executable(
+    testHandRankerRank_Random
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRank_Random.cpp
+)
+
+target_link_libraries(testHandRankerRank_Random core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRankerRank_Random
+)
+
 
 add_executable(
     testBoard
