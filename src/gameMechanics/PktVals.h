@@ -17,6 +17,11 @@ class PktVals
 {
 public:
 
+    // Static member data
+    static const PktVals unknownValues;
+    static const PktVals lowAces;
+    static const PktVals highAces;
+
 
     // Constructors
 
@@ -48,13 +53,13 @@ public:
         // Tests
         
             //- Returns true if pocket has given value
-            inline bool has(CardVal cv) const;
+            bool has(CardVal cv) const;
 
             //- Returns true if pocket is a pair
-            inline bool pairs() const;
+            bool pairs() const;
 
             //- Returns true if pocket pair value is given value
-            inline bool pairs(CardVal cv) const;
+            bool pairs(CardVal cv) const;
 
 
         // Edit
@@ -62,17 +67,22 @@ public:
             //- Swap first and second
             void swap();
 
+            //- Ensure first > second
+            void sort();
+
 
     // Member operators
     
-        //- True if both pocket cards are the same as the given
-        inline bool operator==(const PktVals& pc) const;
+        //- True if both pocket cards are the same as the given, does not
+        //  check wilds
+        bool operator==(const PktVals& pc) const;
 
-        //- False if either pocket cards differ from given
-        inline bool operator!=(const PktVals& pc);
+        //- False if either pocket cards differ from given, does not check
+        //  wilds
+        bool operator!=(const PktVals& pc);
         
         //- Cast to VecCardVal
-        inline operator VecCardVal();
+        operator VecCardVal();
 
 };
 

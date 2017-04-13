@@ -151,7 +151,7 @@ public:
             void river(DeckInd di);
         
         
-        // Derived information
+        // Derived searches
 
             //- Returns lowest value, not including avoids
             CardVal lowestVal() const;
@@ -159,9 +159,9 @@ public:
             CardVal lowestVal(const PktVals& avoid);
 
             //- Returns two lowest card values, not including avoids
-            PktVals twoLowestVals() const;
-            PktVals twoLowestVals(CardVal avoid) const;
-            PktVals twoLowestVals(const PktVals& avoid) const;
+            PktVals lowestTwoVals() const;
+            PktVals lowestTwoVals(CardVal avoid) const;
+            PktVals lowestTwoVals(const PktVals& avoid) const;
 
             //- Returns high value, not including avoids
             CardVal highestVal() const;
@@ -172,6 +172,15 @@ public:
             PktVals highestTwoVals() const;
             PktVals highestTwoVals(CardVal avoid) const;
             PktVals highestTwoVals(const PktVals& avoid) const;
+
+            //- Return the lowest flush card. Ignores the top three, because
+            //  they are necessary for the flush.  i.e.:
+            //      if (flushVals.size() == 3) return Card::lowAce;
+            CardVal lowestFlushVal() const;
+            PktCards lowestTwoFlushVals() const;
+
+            //- Returns high value for flush, if available
+            CardVal highFlushVal() const;
 
 
     // Operators

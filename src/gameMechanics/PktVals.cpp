@@ -1,6 +1,13 @@
 #include<PktVals.h>
 #include<Card.h>
 
+// ****** Static Member Data ****** //
+
+static const PktVals unknownValues = {Card::unknownValue, Card::unknownValue};
+static const PktVals lowAces = {Card::lowAce, Card::lowAce};
+static const PktVals highAces = {Card::ace, Card::ace};
+
+
 // ****** Constructors ****** //
 
 ds::PktVals::PktVals():
@@ -50,6 +57,21 @@ ds::PktVals::PktVals(std::istream& is) {
 
 // ****** Member functions ****** //
 
+bool ds::PktVals::has(CardVal cv) const {
+    return first == cv || second == cv;
+}
+
+
+bool ds::PktVals::pairs() const {
+    return first == second;
+}
+
+
+bool ds::PktVals::pairs(CardVal cv) const {
+    return first == cv && second == cv;
+}
+
+
 void ds::PktVals::swap() {
     CardVal temp = first;
     first = second;
@@ -57,31 +79,32 @@ void ds::PktVals::swap() {
 }
 
 
-// ****** Member operators ****** //
-    
-        //- True if both pocket cards are the same as the given
-        bool operator==(const PktVals& pc) const {
-            return (
-                first == pc.first && second == pc.second
-            ) || (
-                second == pc.first && first == pc.second
-            );
-        }
+void ds::PktVals::sort() {
+    if (first < second) {
+        swap();
+    }
+}
 
-        //- False if either pocket cards differ from given
-        bool operator!=(const PktVals& pc) {
-            return !(operator==(pc));
-        }
+
+// ****** Member Operators ****** //
+
+bool ds::PktVals::operator==(const PktVals& pc) const {
+    return (
+        first == pc.first && second == pc.second
+    ) || (
+        second == pc.first && first == pc.second
+    );
+}
+
+
+bool ds::PktVals::operator!=(const PktVals& pc) {
+    return !(operator==(pc));
+}
         
-        //- Cast to VecCardVal
-        operator VecCardVal() {
-            return {first, second};
-        }
 
+ds::PktVals::operator VecCardVal() {
+    return {first, second};
+}
 
-    // Friend functions
-//    friend std::ostream& operator<<(std::ostream& out, const PktVals& c);
-//    friend std::istream& operator>>(std::istream& in, PktVals& c);
-};
 
 // ****** END ****** //
