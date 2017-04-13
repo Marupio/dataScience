@@ -34,12 +34,6 @@ public:
         //- Construct from cards, stripping the suit
         PktVals(const Card& CardA, const Card& CardB);
         
-        //- Construct from deck indices
-        PktVals(DeckInd diA, DeckInd diB);
-
-        //- Construct from VecDeckInd
-        PktVals(VecDeckInd vdi);
-
         //- Construct from istream
         PktVals(std::istream& is);
 
@@ -88,7 +82,5 @@ public:
 
 
 } // End namespace ds
-
-#include<PktValsI.h>
 
 #endif

@@ -1,7 +1,6 @@
 #ifndef ValStats_h
 #define ValStats_h
 
-
 #include<tuple>
 #include<Card.h>
 
@@ -11,7 +10,9 @@
 namespace ds {
 
 // Forward declarations
-//class ValStats;
+class ValStats;
+std::ostream& operator<<(std::ostream& os, const ValStats& vs);
+std::istream& operator>>(std::istream& in, ValStats& vs);
 
 class ValStats: 
     public std::tuple<CardVal, short, SuitCount>
@@ -26,20 +27,10 @@ public:
     // Constructors
     
         //- Construct null
-        ValStats():
-            std::tuple<CardVal, short, SuitCount>(
-                Card::unknownValue,
-                0,
-                {0, 0, 0, 0}
-            ) {}
+        ValStats();
 
         //- Construct from components
-        ValStats(CardVal value, short nCards, SuitCount& suits):
-            std::tuple<CardVal, short, SuitCount>(
-                value,
-                nCards,
-                suits
-            ) {}
+        ValStats(CardVal value, short nCards, SuitCount& suits);
 
     //- Destructor
     ~ValStats() {}
@@ -49,34 +40,28 @@ public:
         // Access
         
             //- Access the card value
-            CardVal& value() {
-                return std::get<0>(*this);
-            }
+            CardVal& value();
             
             //- Return the card value
-            CardVal value() const {
-                return std::get<0>(*this);
-            }
+            CardVal value() const;
             
             //- Access the card count
-            short& nCards() {
-                return std::get<1>(*this);
-            }
+            short& nCards();
 
             //- Return the card count
-            short nCards() const {
-                return std::get<1>(*this);
-            }
+            short nCards() const;
             
             //- Access the suit count
-            SuitCount& suits() {
-                return std::get<2>(*this);
-            }
+            SuitCount& suits();
 
             //- Access the suit count
-            const SuitCount& suits() const {
-                return std::get<2>(*this);
-            }
+            const SuitCount& suits() const;
+
+
+    // Friend functions
+    friend std::ostream& operator<<(std::ostream& out, const Card& c);
+    friend std::istream& operator>>(std::istream& in, Card& c);
+
 };
 
 } // end namespace ds

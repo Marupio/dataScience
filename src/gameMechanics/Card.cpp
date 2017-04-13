@@ -51,7 +51,75 @@ const ds::CardVal ds::Card::ace(14);
 const ds::CardVal ds::Card::wildValue(15);
 
 
-// ****** Public member functions ******
+// *** Constructors *** //
+
+ds::Card::Card():
+    binValue_(binUnknownValue),
+    suit_(unknownSuit)
+{}
+
+
+ds::Card::Card(CardVal value, Suit suit):
+    binValue_(valueToBinValue(value)),
+    suit_(suit)
+{}
+
+
+ds::Card::Card(BinCardVal value, Suit suit):
+    binValue_(value),
+    suit_(suit)
+{}
+
+
+ds::Card::Card(const char* chStr):
+    binValue_(readCharToBinValue(chStr[0])), 
+    suit_(readCharToSuit(chStr[1]))
+{
+    if (chStr[2] != '\0') {
+        FatalError << "Invalid card constructor char array: '" << chStr
+            << "'" << std::endl;
+        abort();
+    }
+}
+
+
+ds::Card::Card(const std::string& str):
+    binValue_(readCharToBinValue(str[0])), 
+    suit_(readCharToSuit(str[1]))
+{
+    if (str.size() > 2) {
+        FatalError << "Invalid card constructor string: '" << str
+            << "'" << std::endl;
+        abort();
+    }
+}
+
+
+ds::Card::Card(DeckInd di):
+    binValue_(binUnknownValue),
+    suit_(unknownSuit)
+{
+    #ifdef DSDEBUG
+        if (di < 0 || di > 51) {
+            FatalError << "Attempting to construct a card from deck index "
+                << di << std::endl;
+            abort();
+        }
+    #endif
+    binValue_ = di % 13;
+    suit_ = (di-binValue_)/13;
+}
+
+
+ds::Card::Card(std::istream& is):
+    binValue_(binUnknownValue),
+    suit_(unknownSuit)
+{
+    is >> *this;
+}
+
+
+// ****** Public Member Functions ******
 
 ds::BinCardVal ds::Card::readCharToBinValue(char value) {
     if (value > 49 && value < 58) {
@@ -177,6 +245,22 @@ char ds::Card::valueToWriteChar(CardVal value) {
 }
 
 
+ds::CardVal ds::Card::binValueToValue(BinCardVal value) {
+    return value + 2;
+}
+
+
+ds::BinCardVal ds::Card::valueToBinValue(CardVal value) {
+    #ifdef DSDEBUG
+    if (value == lowAce) {
+        Warning << "lowAce encountered." << std::endl;
+        return binAce;
+    }
+    #endif
+    return value - 2;
+}
+
+
 ds::Suit ds::Card::readCharToSuit(char suit) {
     char us(std::toupper(suit));
     if (us == '?') {
@@ -225,6 +309,130 @@ char ds::Card::suitToWriteChar(Suit suit) {
 }
 
 
+ds::DeckInd ds::Card::cardToDeckIndex(const Card& c) {
+    if (c.hasWildValue() || c.hasWildSuit() || c.partsUnknown()) {
+        return -1;
+    }
+    return c.binValue() + c.suit()*13;
+}
+
+
+ds::Card ds::Card::deckIndexToCard(DeckInd di) {
+    if (di < 0 || di > 51) {
+        return Card();
+    }
+    BinCardVal value = di % 13;
+    Suit suit = (di-value)/13;
+
+    return Card(value, suit);
+}
+
+
+ds::CardVal ds::Card::value() const {
+    return binValueToValue(binValue_);
+}
+
+
+ds::BinCardVal ds::Card::binValue() const {
+    return binValue_;
+}
+
+
+ds::Suit ds::Card::suit() const {
+    return suit_;
+}
+
+
+bool ds::Card::hasWildValue() const {
+    return binValue_ == binWildValue;
+}
+
+
+bool ds::Card::hasWildSuit() const {
+    return suit_ == wildSuit;
+}
+
+
+bool ds::Card::hasWild() const {
+    return hasWildSuit() || hasWildValue();
+}
+
+
+bool ds::Card::wild() const {
+    return hasWildSuit() && hasWildValue();
+}
+
+
+bool ds::Card::valid() const {
+    return 
+        binValue_ <= 13 && binValue_ >= 0
+     && suit_  <= 4 && suit_ >= 0;
+}
+
+bool ds::Card::real() const {
+    return
+        binValue_ <= 13 && binValue_ >= 0
+     && suit_  <= 3 && suit_ >= 0;
+}
+
+
+bool ds::Card::partsUnknown() const {
+    return binValue_ == binUnknownValue || suit_ == unknownSuit;
+}
+
+
+ds::DeckInd ds::Card::deckIndex() const {
+    return cardToDeckIndex(*this);
+}
+
+
+// ****** Member Operators ****** //
+
+bool ds::Card::operator<(const Card& c1) const {
+    return binValue_ < c1.binValue_;
+}
+
+
+bool ds::Card::operator<=(const Card& c1) const {
+    if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
+        return true;
+    }
+    return binValue_ <= c1.binValue_;
+}
+
+
+bool ds::Card::operator>(const Card& c1) const {
+    return binValue_ > c1.binValue_;
+}
+
+
+bool ds::Card::operator>=(const Card& c1) const {
+    if (c1.binValue_ == binWildValue || binValue_ == binWildValue) {
+        return true;
+    }
+    return binValue_ >= c1.binValue_;
+}
+
+        
+bool ds::Card::operator==(const Card& c1) const {
+    return
+        (
+            (c1.binValue_ == binValue_)
+         || (c1.binValue_ == binWildValue)
+         || (binValue_ == binWildValue)
+        ) && (
+            (c1.suit_ == suit_)
+         || (c1.suit_ == wildSuit)
+         || (suit_ == wildSuit)
+        );
+}
+
+
+bool ds::Card::operator!=(const Card& c1) const {
+    return !(operator==(c1));
+}
+
+
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Card& c) {
@@ -242,3 +450,21 @@ std::istream& ds::operator>>(std::istream& in, Card& c) {
     c.suit_ = Card::readCharToSuit(sc);
     return in;
 }
+
+
+// ****** Global Functions ****** //
+
+bool ds::noWildEquals(const Card& cA, const Card& cB) {
+    #ifdef DSDEBUG
+    if (cA.hasWild() || cB.hasWild()) {
+        FatalError << "Attempting to use non-wild comparison on cards with "
+            << "wilds.  Cards are: " << cA << " " << cB << std::endl;
+        abort();
+    }
+    #endif
+    return (
+        cA.binValue() == cB.binValue()
+     && cA.suit() == cB.suit()
+    );
+}
+

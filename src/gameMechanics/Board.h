@@ -177,7 +177,7 @@ public:
             //  they are necessary for the flush.  i.e.:
             //      if (flushVals.size() == 3) return Card::lowAce;
             CardVal lowestFlushVal() const;
-            PktCards lowestTwoFlushVals() const;
+            PktVals lowestTwoFlushVals() const;
 
             //- Returns high value for flush, if available
             CardVal highFlushVal() const;
@@ -247,7 +247,5 @@ private:
 };
 
 } // end namespace ds
-
-//#include<BoardI.h>
 
 #endif

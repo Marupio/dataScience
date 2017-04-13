@@ -3,9 +3,10 @@
 
 // ****** Static Member Data ****** //
 
-static const PktVals unknownValues = {Card::unknownValue, Card::unknownValue};
-static const PktVals lowAces = {Card::lowAce, Card::lowAce};
-static const PktVals highAces = {Card::ace, Card::ace};
+const ds::PktVals ds::PktVals::unknownValues =
+    {Card::unknownValue, Card::unknownValue};
+const ds::PktVals ds::PktVals::lowAces = {Card::lowAce, Card::lowAce};
+const ds::PktVals ds::PktVals::highAces = {Card::ace, Card::ace};
 
 
 // ****** Constructors ****** //
@@ -28,26 +29,8 @@ ds::PktVals::PktVals
     const Card& CardA,
     const Card& CardB
 ):
-    std::pair<CardVal, CardVal>(CardA.value(), Card.value())
+    std::pair<CardVal, CardVal>(CardA.value(), CardB.value())
 {}
-
-
-ds::PktVals::PktVals(DeckInd diA, DeckInd diB):
-    std::pair<CardVal, CardVal>(Card(diA).value(), Card(diB).value())
-{}
-
-
-ds::PktVals::PktVals(VecDeckInd vdi):
-    std::pair<CardVal, CardVal>(Card::unknownValue, Card::unknownValue)
-{
-    if (vdi.size() != 2) {
-        FatalError << "Attempting to construct PktVals from "
-            << "VecDeckInd with size " << vdi.size() << std::endl;
-        abort();
-    }
-    first = Card(vdi.front()).value();
-    second = Card(vdi.back()).value();
-}
 
 
 ds::PktVals::PktVals(std::istream& is) {

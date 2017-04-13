@@ -8,6 +8,8 @@ namespace ds {
 
 // Typedefs
 
+    // TODO - make VecSuit, VecVecSuit, SuitCount, VecSuitCount, PktSuits
+    //  into actual classes
     typedef signed char Suit;
     typedef std::vector<Suit> VecSuit;
     typedef std::vector<VecSuit> VecVecSuit;

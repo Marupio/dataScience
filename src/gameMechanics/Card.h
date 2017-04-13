@@ -75,25 +75,25 @@ public:
     // Constructors
 
         //- Construct null
-        inline Card();
+        Card();
 
         //- Construct from integer value and suit
-        inline Card(CardVal value, Suit suit);
+        Card(CardVal value, Suit suit);
 
         //- Construct from bin values
-        inline Card(BinCardVal value, Suit suit);
+        Card(BinCardVal value, Suit suit);
         
         //- Construct from human-readable char array
-        inline Card(const char* chStr);
+        Card(const char* chStr);
 
         //- Construct from human-readable string
-        inline Card(const std::string& str);
+        Card(const std::string& str);
 
         //- Construct from deck index
-        inline Card(DeckInd di);
+        Card(DeckInd di);
         
         //- Construct from istream
-        inline Card(std::istream& is);
+        Card(std::istream& is);
     
 
     //- Destructor
@@ -119,10 +119,10 @@ public:
                 static char valueToWriteChar(CardVal value);
 
                 //- Convert internal value to card value
-                inline static CardVal binValueToValue(BinCardVal value);
+                static CardVal binValueToValue(BinCardVal value);
 
                 //- Convert integer value to internal value
-                inline static BinCardVal valueToBinValue(CardVal value);
+                static BinCardVal valueToBinValue(CardVal value);
 
 
             // Conversions for card suit
@@ -135,62 +135,62 @@ public:
 
 
             //- Convert given card to deck indexing
-            inline static DeckInd cardToDeckIndex(const Card& c);
+            static DeckInd cardToDeckIndex(const Card& c);
 
             //- Convert deck index to card
-            inline static Card deckIndexToCard(DeckInd di);
+            static Card deckIndexToCard(DeckInd di);
 
 
         // Access
 
             //- Return card value
-            inline CardVal value() const;
+            CardVal value() const;
 
             //- Return internal bin value
-            inline BinCardVal binValue() const;
+            BinCardVal binValue() const;
             
             //- Return suit
-            inline Suit suit() const;
+            Suit suit() const;
             
             //- True if value is wild
-            inline bool hasWildValue() const;
+            bool hasWildValue() const;
             
             //- True if suit is wild
-            inline bool hasWildSuit() const;
+            bool hasWildSuit() const;
 
             //- True if value or suit is wild
-            inline bool hasWild() const;
+            bool hasWild() const;
 
             //- True if value and suit are wild
-            inline bool wild() const;
+            bool wild() const;
 
             //- Checks validity of card and returns true if valid
-            inline bool valid() const;
+            bool valid() const;
             
             //- True if card represents a physical card with no wild components
             //  and does not have a lowAce value
-            inline bool real() const;
+            bool real() const;
 
             //- True if value or suit is unknown
-            inline bool partsUnknown() const;
+            bool partsUnknown() const;
 
             //- Return my deck index
-            inline DeckInd deckIndex() const;
+            DeckInd deckIndex() const;
 
 
     // Operators
     
-        inline bool operator<(const Card& c1) const;
+        bool operator<(const Card& c1) const;
 
-        inline bool operator<=(const Card& c1) const;
+        bool operator<=(const Card& c1) const;
         
-        inline bool operator>(const Card& c1) const;
+        bool operator>(const Card& c1) const;
         
-        inline bool operator>=(const Card& c1) const;
+        bool operator>=(const Card& c1) const;
         
-        inline bool operator==(const Card& c1) const;
+        bool operator==(const Card& c1) const;
 
-        inline bool operator!=(const Card& c1) const;
+        bool operator!=(const Card& c1) const;
 
 
     // Friend functions
@@ -211,15 +211,8 @@ private:
 // Global functions
 
 //- Returns true if CardA == CardB without accounting for wild
-bool noWildEquals(const Card& cA, const Card& pcB) {
-    return (
-        cA.binValue() == cB.binValue()
-     && cA.suit() == cB.suit()
-    );
-}
+bool noWildEquals(const Card& cA, const Card& cB);
 
 } // end namespace ds
-
-#include<CardI.h>
 
 #endif

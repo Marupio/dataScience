@@ -86,7 +86,7 @@ ds::CardVal ds::Board::lowestVal() const {
     if (!stats_.size()) {
         return Card::lowAce;
     }
-    return stats_.back()->value();
+    return stats_.back().value();
 }
 
 
@@ -196,7 +196,7 @@ ds::CardVal ds::Board::highestVal() const {
 
 
 ds::CardVal ds::Board::highestVal(CardVal avoid) const {
-    CardVal highCard = Card::lowAce;
+    CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
     while (
         it != stats_.cend()
@@ -210,7 +210,7 @@ ds::CardVal ds::Board::highestVal(CardVal avoid) const {
 
 
 ds::CardVal ds::Board::highestVal(const PktVals& avoid) const {
-    CardVal highCard = Card::lowAce;
+    CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
     while (
         it != stats_.cend()
@@ -300,7 +300,7 @@ ds::CardVal ds::Board::lowestFlushVal() const {
 }
 
 
-ds::PktCards ds::Board::lowestTwoFlushVals() const {
+ds::PktVals ds::Board::lowestTwoFlushVals() const {
     switch(flushVals_.size()) {
     case 0: // fall through
     case 3: {
@@ -308,12 +308,12 @@ ds::PktCards ds::Board::lowestTwoFlushVals() const {
         break;
     }
     case 4: {
-        return PktCards(flushVals_.back(), Card::lowAce);
+        return PktVals(flushVals_.back(), Card::lowAce);
         break;
     }
     case 5: {
         auto itR = flushVals_.crbegin();
-        return PktCards(*(itR++), (*itR));
+        return PktVals(*(itR++), (*itR));
         break;
     }
     default: {
@@ -327,7 +327,7 @@ ds::PktCards ds::Board::lowestTwoFlushVals() const {
 }
 
 
-ds::CardVal ds::board::highFlushVal() const {
+ds::CardVal ds::Board::highFlushVal() const {
     if (!flushVals_.size()) {
         return Card::lowAce;
     }

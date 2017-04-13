@@ -49,15 +49,15 @@ install_targets(
 
 
 add_executable(
-    testHandRankerHandType_Input
-    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerHandType_Input.cpp
+    testHandRankerHandTypes_Input
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerHandTypes_Input.cpp
 )
 
-target_link_libraries(testHandRankerHandType_Input core)
+target_link_libraries(testHandRankerHandTypes_Input core)
 
 install_targets(
     ${BIN_DIR}
-    testHandRankerHandType_Input
+    testHandRankerHandTypes_Input
 )
 
 

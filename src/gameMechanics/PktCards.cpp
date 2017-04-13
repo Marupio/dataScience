@@ -1,3 +1,5 @@
+#include<PktCards.h>
+
 // ****** Constructors ****** //
 
 ds::PktCards::PktCards():
