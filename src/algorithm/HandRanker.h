@@ -110,6 +110,7 @@ public:
 
         //- Find pocket cards that complete a straight for a given set of values
         //  Values must be sorted and unique, it doesn't check
+        //  ** Located in HandRankerFindStraightCompleters.cpp
         static StraightCompleters findStraightCompleters
         (
             const VecCardVal& values
@@ -119,6 +120,7 @@ public:
 private:
 
     //- Helper function for findStraightCompleters
+    //  ** Located in HandRankerFindStraightCompleters.cpp
     static bool restart(
         const VecCardVal& values,
         short& cursor,
