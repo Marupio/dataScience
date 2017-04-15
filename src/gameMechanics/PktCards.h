@@ -89,6 +89,12 @@ public:
             bool pairs(CardVal cv) const;
 
 
+        // Derived data
+        
+            //- Returns highest value
+            CardVal highestVal() const;
+
+
         // Edit
         
             //- Switch pocket cards first to second

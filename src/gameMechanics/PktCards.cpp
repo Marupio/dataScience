@@ -103,6 +103,11 @@ bool ds::PktCards::pairs(CardVal cv) const {
 }
 
 
+ds::CardVal ds::PktCards::highestVal() const {
+    return std::max(first.value(), second.value());
+}
+
+
 void ds::PktCards::swap() {
     Card temp = first;
     first = second;
