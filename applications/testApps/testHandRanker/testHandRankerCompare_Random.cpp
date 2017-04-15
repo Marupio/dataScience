@@ -25,7 +25,7 @@ int main() {
         } else {
             std::cout << "    ";
         }
-        HandRanker::HandTypeStruct htsA(HandRanker::getHandType(bd, pktA));
+        HandRanker::HandType htsA(HandRanker::getHandType(bd, pktA));
         std::cout << pktA << ": "
             << HandRanker::HandTypeNames[htsA.ht] << " ["
             << Card::valueToWriteChar(htsA.values.first) << " "
@@ -38,7 +38,7 @@ int main() {
         } else {
             std::cout << "    ";
         }
-        HandRanker::HandTypeStruct htsB(HandRanker::getHandType(bd, pktB));
+        HandRanker::HandType htsB(HandRanker::getHandType(bd, pktB));
         std::cout << pktB << ": "
             << HandRanker::HandTypeNames[htsB.ht] << " ["
             << Card::valueToWriteChar(htsB.values.first) << " "

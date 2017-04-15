@@ -5,6 +5,7 @@
 #include<types.h>
 #include<Board.h>
 #include<PktCards.h>
+#include<StraightCompleters.h>
 
 namespace ds {
 
@@ -33,7 +34,7 @@ public:
 
     // Public data types
 
-    struct HandTypeStruct {
+    struct HandType {
         // Public data
 
             //- Type of hand (e.g. two-pair, high card, etc)
@@ -51,38 +52,22 @@ public:
         // Constructors    
 
             //- Construct from components
-            HandTypeStruct(char t, PktVals v, PktVals k):
-                ht(t),
-                values(v),
-                kickers(k)
-            {}
+            HandType(char t, PktVals v, PktVals k);
 
             //- Construct from components
-            HandTypeStruct(char t, CardVal vA, CardVal vB, PktVals k):
-                ht(t),
-                values(vA, vB),
-                kickers(k)
-            {}
+            HandType(char t, CardVal vA, CardVal vB, PktVals k);
 
             //- Construct from components
-            HandTypeStruct(char t, PktVals v, CardVal kA, CardVal kB):
-                ht(t),
-                values(v),
-                kickers(kA, kB)
-            {}
+            HandType(char t, PktVals v, CardVal kA, CardVal kB);
 
             //- Construct from components
-            HandTypeStruct(
+            HandType(
                 char t,
                 CardVal vA,
                 CardVal vB,
                 CardVal kA,
                 CardVal kB
-            ):
-                ht(t),
-                values(vA, vB),
-                kickers(kA, kB)
-            {}
+            );
     };
 
 
@@ -94,7 +79,7 @@ public:
 
         //- Return the hand type for a given board and pocket
         //  *** Located in HandRankerGetHandType.cpp
-        static HandTypeStruct getHandType(const Board& bd, const PktCards& pkt);
+        static HandType getHandType(const Board& bd, const PktCards& pkt);
 
         //- Compare two pockets against the board
         //  Returns:
@@ -108,29 +93,8 @@ public:
             const PktCards& pktB
         );
 
-        //- Find pocket cards that complete a straight for a given set of values
-        //  Values must be sorted and unique, it doesn't check
-        //  ** Located in HandRankerFindStraightCompleters.cpp
-        static StraightCompleters findStraightCompleters
-        (
-            const VecCardVal& values
-        );
-
 
 private:
-
-    //- Helper function for findStraightCompleters
-    //  ** Located in HandRankerFindStraightCompleters.cpp
-    static bool restart(
-        const VecCardVal& values,
-        short& cursor,
-        short& restartCursor,
-        VecCardVal::const_iterator& vsIter,
-        VecCardVal::const_iterator& altVsIter,
-        short& curStraightSize,
-        CardVal& curStraightMax,
-        PktVals& pocket
-    );
 
     //- Helper for compare
     //  Finds two lowest cards on board that are not in avoid

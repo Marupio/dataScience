@@ -10,9 +10,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     const Suit flushSuit = bd.flushSuit();
     const VecCardVal& flushVals(bd.flushVals());
     if (flushSuit != Card::unknownSuit) {
-        const StraightCompleters straightFlushes(
-            findStraightCompleters(flushVals)
-        );
+        const StraightCompleters straightFlushes(flushVals);
         for (
             auto sfit = straightFlushes.cbegin();
             sfit != straightFlushes.cend();
@@ -485,13 +483,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
 
     // Check for straight
     {
-        // TODO - Implement vector copy using STL
-        VecCardVal values;
-        values.reserve(stats.size());
-        for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
-            values.push_back(it->value());
-        }
-        const StraightCompleters straights(findStraightCompleters(values));
+        const StraightCompleters straights(stats);
         for (
             auto it = straights.cbegin();
             it != straights.cend();

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <dsConfig.h>
 #include <HandRanker.h>
+#include <StraightCompleters.h>
 #include <error.h>
 
 using namespace ds;
@@ -17,7 +18,7 @@ int main() {
     std::sort (vs.rbegin(), vs.rend());
     std::cout << std::endl;    
     std::cout << vs << std::endl;
-    StraightCompleters sc(HandRanker::findStraightCompleters(vs));
+    StraightCompleters sc(vs);
     for (auto scvIt = sc.cbegin(); scvIt != sc.cend(); ++scvIt) {
         std::cout << "    " << scvIt->first << ": (" << scvIt->second.first
             << " " << scvIt->second.second << ")" << std::endl;
@@ -39,15 +40,13 @@ int main() {
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         values.push_back(it->value());
     }
-    const StraightCompleters sc(
-        HandRanker::findStraightCompleters(values)
-    );
+    const StraightCompleters sc(values);
     for (auto it = sc.cbegin(); it != sc.cend(); ++it) {
         std::cout << it->first << ": [" << it->second.first << " "
             << it->second.second << "]" << std::endl;
     }
 
-    HandRanker::HandTypeStruct hts(HandRanker::getHandType(bd, pkt));
+    HandRanker::HandType hts(HandRanker::getHandType(bd, pkt));
     std::cout << HandRanker::HandTypeNames[hts.ht] << " ["
         << Card::valueToWriteChar(hts.values.first) << " "
         << Card::valueToWriteChar(hts.values.second) << "]" << std::endl;

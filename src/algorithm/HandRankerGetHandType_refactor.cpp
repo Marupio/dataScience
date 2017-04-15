@@ -2,7 +2,7 @@
 
 // ****** Public Member Functions ****** //
 
-ds::HandRanker::HandType ds::HandRanker::getHandType
+ds::HandRanker::HandTypeStruct ds::HandRanker::getHandType
 (
     const Board& bd,
     const PktCards& pkt
@@ -13,7 +13,9 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     const Suit flushSuit = bd.flushSuit();
     const VecCardVal& flushVals(bd.flushVals());
     if (flushSuit != Card::unknownSuit) {
-        const StraightCompleters straightFlushes(flushVals);
+        const StraightCompleters straightFlushes(
+            findStraightCompleters(flushVals)
+        );
         for (
             auto sfit = straightFlushes.cbegin();
             sfit != straightFlushes.cend();
@@ -26,7 +28,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 flushSuit
             );
             if (testPkt == pkt) {
-                return HandType(
+                return HandTypeStruct(
                     HtStraightFlush,
                     sfit->first,
                     Card::unknownValue,
@@ -56,7 +58,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
             }
 
             kicker = kicker > lowVal ? kicker : Card::unknownValue;
-            return HandType(
+            return HandTypeStruct(
                 HtFoak,
                 it->value(),
                 Card::unknownValue,
@@ -88,7 +90,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     kicker = Card::unknownValue;
                 }
 
-                return HandType(
+                return HandTypeStruct(
                     HtFoak,
                     it->value(),
                     Card::unknownValue,
@@ -127,7 +129,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 );
             }
             if (foakPkt == pkt) {
-                return HandType(
+                return HandTypeStruct(
                     HtFoak,
                     it->value(),
                     Card::unknownValue,
@@ -156,7 +158,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 // FH set is on the board, pocket is free
                 if (pkt.pairs() || bd.pairA() != Card::unknownValue) {
                     CardVal pairVal = std::max(pkt.first.value(), bd.pairA());
-                    return HandType(
+                    return HandTypeStruct(
                         HtFullHouse,
                         it->value(),
                         pairVal,
@@ -165,7 +167,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 }
                 for (auto itp = stats.cbegin(); itp != stats.cend(); ++itp) {
                     if (pkt.has(itp->value())) {
-                        return HandType(
+                        return HandTypeStruct(
                             HtFullHouse,
                             it->value(),
                             itp->value(),
@@ -188,7 +190,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                             continue;
                         }
                         if (itp->nCards() >= 2 || pkt.has(itp->value())) {
-                            return HandType(
+                            return HandTypeStruct(
                                 HtFullHouse,
                                 it->value(),
                                 itp->value(),
@@ -205,7 +207,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     bd.pairA() != Card::unknownValue
                  && pkt.pairs(it->value())
                 ) {
-                    return HandType(
+                    return HandTypeStruct(
                         HtFullHouse,
                         it->value(),
                         bd.pairA(),
@@ -276,7 +278,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
         } else if (kickers.first < lowValB || kickers.second < lowValA) {
             kickers.second = Card::unknownValue;
         }
-        return HandType(HtFlush, highVal, Card::unknownValue, kickers);
+        return HandTypeStruct(HtFlush, highVal, Card::unknownValue, kickers);
         break;
     }
     case 0: {
@@ -292,7 +294,13 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
 
     // Check for straight
     {
-        const StraightCompleters straights(stats);
+        // TODO - Implement vector copy using STL
+        VecCardVal values;
+        values.reserve(stats.size());
+        for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
+            values.push_back(it->value());
+        }
+        const StraightCompleters straights(findStraightCompleters(values));
         for (
             auto it = straights.cbegin();
             it != straights.cend();
@@ -305,7 +313,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 Card::wildSuit
             );
             if (testPkt == pkt) {
-                return HandType(
+                return HandTypeStruct(
                     HtStraight,
                     it->first,
                     Card::unknownValue,
@@ -356,7 +364,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 kickers.second = Card::unknownValue;
             }
             
-            return HandType(
+            return HandTypeStruct(
                 HtSet,
                 it->value(),
                 Card::unknownValue,
@@ -388,7 +396,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     kicker = Card::unknownValue;
                 }
 
-                return HandType(
+                return HandTypeStruct(
                     HtSet,
                     it->value(),
                     Card::unknownValue,
@@ -401,7 +409,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
         case 1: {
             // Set uses a single on the board, pocket pairs required
             if (pkt.pairs(it->value())) {
-                return HandType
+                return HandTypeStruct
                 (
                     HtSet,
                     it->value(),
@@ -423,7 +431,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     if (bd.pairA() != Card::unknownValue) {
         if (pkt.pairs()) {
             if (pkt.first.value() > bd.pairA()) {
-                return HandType(
+                return HandTypeStruct(
                     HtTwoPair,
                     pkt.first.value(),
                     bd.pairA(),
@@ -460,7 +468,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     pairB = pkt.first.value();
                 }
 
-                return HandType(
+                return HandTypeStruct(
                     HtTwoPair,
                     bd.pairA(),
                     pairB,
@@ -468,7 +476,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     Card::unknownValue
                 );
             }
-            return HandType(
+            return HandTypeStruct(
                 HtTwoPair,
                 bd.pairA(),
                 pkt.first.value(),
@@ -561,7 +569,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 break;
             } // end default
             } // end switch
-            return HandType(
+            return HandTypeStruct(
                 HtTwoPair,
                 pairA,
                 pairB,
@@ -572,7 +580,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
 
     // Check for a pair
     if (pkt.pairs()) {
-        return HandType
+        return HandTypeStruct
         (
             HtPair,
             pkt.first.value(),
@@ -617,7 +625,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
             } else if (kickers.first < lowValB || kickers.second < lowValA) {
                 kickers.second = Card::unknownValue;
             }
-            return HandType(
+            return HandTypeStruct(
                 HtPair,
                 it->value(),
                 Card::unknownValue,
@@ -647,7 +655,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
             if (kicker <= lowValA) {
                 kicker = Card::unknownValue;
             }
-            return HandType(
+            return HandTypeStruct(
                 HtPair,
                 it->value(),
                 Card::unknownValue,
@@ -689,7 +697,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
             kickers.second = Card::unknownValue;
         }
 
-        return HandType(
+        return HandTypeStruct(
             HtHighCard,
             highVal,
             Card::unknownValue,

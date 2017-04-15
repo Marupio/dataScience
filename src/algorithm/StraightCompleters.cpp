@@ -1,11 +1,33 @@
+#include<StraightCompleters.h>
+
+// ****** Constructors ****** //
+
+ds::StraightCompleters::StraightCompleters()
+{}
+
+
+ds::StraightCompleters::StraightCompleters(const VecCardVal& values) {
+    makeStraightCompleters(values);
+}
+
+
+ds::StraightCompleters::StraightCompleters(const VecValStats& stats) {
+    VecCardVal values;
+    values.reserve(stats.size());
+    for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
+        values.push_back(it->value());
+    }
+    makeStraightCompleters(values);
+}
+
+
 // ****** Public Member Functions ****** //
 
-ds::StraightCompleters ds::HandRanker::findStraightCompleters (
+void ds::StraightCompleters::makeStraightCompleters (
     const VecCardVal& values
 ) {
-    StraightCompleters sc;
     if (!values.size()) {
-        return sc;
+        return;
     }
     #ifdef DSDEBUG
     if (values.size() > 1) {
@@ -23,11 +45,11 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
 
     VecCardVal::const_iterator altVsIter(cValues.begin());
     if (altVsIter == cValues.end()) {
-        return sc;
+        return;
     }
     VecCardVal::const_iterator vsIter(altVsIter + 1);
     if (vsIter == cValues.end()) {
-        return sc;
+        return;
     }
     ++vsIter;
     while (vsIter != cValues.end() && (*altVsIter - *vsIter > 4)) {
@@ -35,10 +57,10 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         vsIter++;
     }
     if (vsIter == cValues.end()) {
-        return sc;
+        return;
     }
     vsIter = altVsIter;
-    sc.reserve(5);
+    reserve(5);
     short cursor = std::min((*altVsIter + 2), 14);
     short restartCursor = cursor;
     PktVals pocket(15, 15);
@@ -56,7 +78,7 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
         pocket
     );
     if (!started) {
-        return sc;
+        return;
     }
     while (1) {
         --cursor;
@@ -101,10 +123,10 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
                 std::swap(pocket.second, pocket.first);
                 pocket.first = 14;
             }
-            if (!sc.size() || (sc.size() && sc.back().second != pocket)) {
+            if (!size() || (size() && back().second != pocket)) {
                 // Conditional accounts for connected pocket with a higher
                 // straight value
-                sc.push_back(
+                push_back(
                     std::pair<CardVal, PktVals>(curStraightMax, pocket)
                 );
             }
@@ -124,14 +146,12 @@ ds::StraightCompleters ds::HandRanker::findStraightCompleters (
             }
         }
     }
-
-    return sc;
 }
 
 
 // ****** Private Member Functions ****** //
 
-bool ds::HandRanker::restart(
+bool ds::StraightCompleters::restart(
     const VecCardVal& values,
     short& cursor,
     short& restartCursor,
@@ -203,5 +223,6 @@ bool ds::HandRanker::restart(
     pocket.second = 15;
     return true;
 }
+
 
 // ****** END ****** //

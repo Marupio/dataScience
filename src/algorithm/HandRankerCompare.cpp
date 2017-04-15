@@ -8,8 +8,8 @@ short ds::HandRanker::compare
     const PktCards& pktA,
     const PktCards& pktB
 ) {
-    HandTypeStruct htA(getHandType(bd, pktA));
-    HandTypeStruct htB(getHandType(bd, pktB));
+    HandType htA(getHandType(bd, pktA));
+    HandType htB(getHandType(bd, pktB));
     
     // check ht
     if (htA.ht > htB.ht) {

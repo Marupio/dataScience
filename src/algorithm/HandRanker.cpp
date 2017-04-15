@@ -28,7 +28,42 @@ const std::array<std::string, 10> ds::HandRanker::HandTypeNames = {
     "StraightFlush"
 };
 
-#include<HandRankerFindStraightCompleters.cpp>
+// ****** Constructors ****** //
+
+ds::HandRanker::HandType::HandType(char t, PktVals v, PktVals k):
+    ht(t),
+    values(v),
+    kickers(k)
+{}
+
+
+ds::HandRanker::HandType::HandType(char t, CardVal vA, CardVal vB, PktVals k):
+    ht(t),
+    values(vA, vB),
+    kickers(k)
+{}
+
+
+ds::HandRanker::HandType::HandType(char t, PktVals v, CardVal kA, CardVal kB):
+    ht(t),
+    values(v),
+    kickers(kA, kB)
+{}
+
+
+ds::HandRanker::HandType::HandType(
+    char t,
+    CardVal vA,
+    CardVal vB,
+    CardVal kA,
+    CardVal kB
+):
+    ht(t),
+    values(vA, vB),
+    kickers(kA, kB)
+{}
+
+
 #include<HandRankerGetHandType.cpp>
 #include<HandRankerCompare.cpp>
 #include<HandRankerRank.cpp>
