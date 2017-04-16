@@ -91,8 +91,9 @@ public:
 
         // Derived data
         
-            //- Returns highest value
+            //- Returns highest value, not including avoid cards
             CardVal highestVal() const;
+            CardVal highestVal(CardVal avoid) const;
 
 
         // Edit
@@ -108,6 +109,9 @@ public:
             
             //- Return PktVals with suit stripped out
             PktVals values() const;
+
+            //- Return PktVals with suit stripped out
+            PktVals sortedValues() const;
 
 
     // Member operators

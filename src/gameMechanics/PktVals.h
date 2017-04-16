@@ -56,6 +56,13 @@ public:
             bool pairs(CardVal cv) const;
 
 
+        // Derived data
+        
+            //- Returns highest value, not including avoid cards
+            CardVal highestVal() const;
+            CardVal highestVal(CardVal avoid) const;
+
+
         // Edit
         
             //- Swap first and second

@@ -55,6 +55,21 @@ bool ds::PktVals::pairs(CardVal cv) const {
 }
 
 
+ds::CardVal ds::PktVals::highestVal() const {
+    return std::max(first, second);
+}
+
+
+ds::CardVal ds::PktVals::highestVal(CardVal avoid) const {
+    if (first == avoid) {
+        return second;
+    } else if (second == avoid) {
+        return first;
+    }
+    return std::max(first, second);
+}
+
+
 void ds::PktVals::swap() {
     CardVal temp = first;
     first = second;
