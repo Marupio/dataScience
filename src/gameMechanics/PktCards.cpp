@@ -108,6 +108,16 @@ ds::CardVal ds::PktCards::highestVal() const {
 }
 
 
+ds::CardVal ds::PktCards::highestVal(CardVal avoid) const {
+    if (first.value() == avoid) {
+        return second.value();
+    } else if (second.value() == avoid) {
+        return first.value();
+    }
+    return std::max(first.value(), second.value());
+}
+
+
 void ds::PktCards::swap() {
     Card temp = first;
     first = second;
@@ -124,6 +134,14 @@ void ds::PktCards::sort() {
 
 ds::PktVals ds::PktCards::values() const {
     return PktVals(first.value(), second.value());
+}
+
+
+ds::PktVals ds::PktCards::sortedValues() const {
+    if (first.value() >= second.value()) {
+        return PktVals(first.value(), second.value());
+    }
+    return PktVals(second.value(), first.value());
 }
 
 
