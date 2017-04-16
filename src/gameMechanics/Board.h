@@ -99,8 +99,8 @@ public:
 
             //- Return sorted flush values, non-empty if 3 suited are on the
             //  board
-            const VecCardVal& flushVals() const {
-                return flushVals_;
+            const VecCardVal& flushValues() const {
+                return flushValues_;
             }
 
             //- Has a value if board contains four of-a-kind
@@ -155,8 +155,8 @@ public:
 
             //- Returns lowest value, not including avoids
             CardVal lowestValue() const;
-            CardVal lowestValue(CardVal avoid);
-            CardVal lowestValue(const PktVals& avoid);
+            CardVal lowestValue(CardVal avoid) const;
+            CardVal lowestValue(const PktVals& avoid) const;
 
             //- Returns two lowest card values, not including avoids
             PktVals lowestTwoValues() const;
@@ -175,7 +175,7 @@ public:
 
             //- Return the lowest flush card. Ignores the top three, because
             //  they are necessary for the flush.  i.e.:
-            //      if (flushVals.size() == 3) return Card::lowAce;
+            //      if (flushValues.size() == 3) return Card::lowAce;
             CardVal lowestFlushValue() const;
             PktVals lowestTwoFlushValues() const;
 
@@ -211,7 +211,7 @@ private:
             
             //- If one suit has 3 or more represented, this vector will contain
             //  their sorted values
-            VecCardVal flushVals_;
+            VecCardVal flushValues_;
 
             //- Has a value if board contains four of-a-kind
             CardVal foak_;

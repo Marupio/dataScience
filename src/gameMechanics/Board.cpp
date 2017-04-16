@@ -82,7 +82,7 @@ void ds::Board::river(DeckInd di) {
 }
 
 
-ds::CardVal ds::Board::lowestVal() const {
+ds::CardVal ds::Board::lowestValue() const {
     if (!stats_.size()) {
         return Card::lowAce;
     }
@@ -90,7 +90,7 @@ ds::CardVal ds::Board::lowestVal() const {
 }
 
 
-ds::CardVal ds::Board::lowestVal(CardVal avoid) {
+ds::CardVal ds::Board::lowestValue(CardVal avoid) const {
     auto itR = stats_.crbegin();
     CardVal lowVal = Card::lowAce;
     while (
@@ -104,7 +104,7 @@ ds::CardVal ds::Board::lowestVal(CardVal avoid) {
 }
 
 
-ds::CardVal ds::Board::lowestVal(const PktVals& avoid) {
+ds::CardVal ds::Board::lowestValue(const PktVals& avoid) const {
     auto itR = stats_.crbegin();
     CardVal lowVal = Card::lowAce;
     while (
@@ -122,7 +122,7 @@ ds::CardVal ds::Board::lowestVal(const PktVals& avoid) {
 }
 
 
-ds::PktVals ds::Board::lowestTwoVals() const {
+ds::PktVals ds::Board::lowestTwoValues() const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
     while (itR != stats_.crend() && lowVals.first == Card::lowAce) {
@@ -137,7 +137,7 @@ ds::PktVals ds::Board::lowestTwoVals() const {
 }
 
 
-ds::PktVals ds::Board::lowestTwoVals(CardVal avoid) const {
+ds::PktVals ds::Board::lowestTwoValues(CardVal avoid) const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
     while (
@@ -158,7 +158,7 @@ ds::PktVals ds::Board::lowestTwoVals(CardVal avoid) const {
 }
 
 
-ds::PktVals ds::Board::lowestTwoVals(const PktVals& avoid) const {
+ds::PktVals ds::Board::lowestTwoValues(const PktVals& avoid) const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
     while (
@@ -187,7 +187,7 @@ ds::PktVals ds::Board::lowestTwoVals(const PktVals& avoid) const {
 }
 
 
-ds::CardVal ds::Board::highestVal() const {
+ds::CardVal ds::Board::highestValue() const {
     if (!stats_.size()) {
         return Card::lowAce;
     }
@@ -195,7 +195,7 @@ ds::CardVal ds::Board::highestVal() const {
 }
 
 
-ds::CardVal ds::Board::highestVal(CardVal avoid) const {
+ds::CardVal ds::Board::highestValue(CardVal avoid) const {
     CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
     while (
@@ -209,7 +209,7 @@ ds::CardVal ds::Board::highestVal(CardVal avoid) const {
 }
 
 
-ds::CardVal ds::Board::highestVal(const PktVals& avoid) const {
+ds::CardVal ds::Board::highestValue(const PktVals& avoid) const {
     CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
     while (
@@ -227,7 +227,7 @@ ds::CardVal ds::Board::highestVal(const PktVals& avoid) const {
 }
 
 
-ds::PktVals ds::Board::highestTwoVals() const {
+ds::PktVals ds::Board::highestTwoValues() const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
     while (it != stats_.cend() && highVals.first == Card::lowAce) {
@@ -242,7 +242,7 @@ ds::PktVals ds::Board::highestTwoVals() const {
 }
 
 
-ds::PktVals ds::Board::highestTwoVals(CardVal avoid) const {
+ds::PktVals ds::Board::highestTwoValues(CardVal avoid) const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
     while (
@@ -263,7 +263,7 @@ ds::PktVals ds::Board::highestTwoVals(CardVal avoid) const {
 }
 
 
-ds::PktVals ds::Board::highestTwoVals(const PktVals& avoid) const {
+ds::PktVals ds::Board::highestTwoValues(const PktVals& avoid) const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
     while (
@@ -292,32 +292,32 @@ ds::PktVals ds::Board::highestTwoVals(const PktVals& avoid) const {
 }
 
 
-ds::CardVal ds::Board::lowestFlushVal() const {
-    if (flushVals_.size() < 4) {
+ds::CardVal ds::Board::lowestFlushValue() const {
+    if (flushValues_.size() < 4) {
         return Card::lowAce;
     }
-    return flushVals_.back();
+    return flushValues_.back();
 }
 
 
-ds::PktVals ds::Board::lowestTwoFlushVals() const {
-    switch(flushVals_.size()) {
+ds::PktVals ds::Board::lowestTwoFlushValues() const {
+    switch(flushValues_.size()) {
     case 0: // fall through
     case 3: {
         return PktVals::lowAces;
         break;
     }
     case 4: {
-        return PktVals(flushVals_.back(), Card::lowAce);
+        return PktVals(flushValues_.back(), Card::lowAce);
         break;
     }
     case 5: {
-        auto itR = flushVals_.crbegin();
+        auto itR = flushValues_.crbegin();
         return PktVals(*(itR++), (*itR));
         break;
     }
     default: {
-        FatalError << "Unexpected size of flushVals (" << flushVals_.size()
+        FatalError << "Unexpected size of flushValues (" << flushValues_.size()
             << ")" << std::endl;
         abort();
         return PktVals::lowAces;
@@ -327,11 +327,11 @@ ds::PktVals ds::Board::lowestTwoFlushVals() const {
 }
 
 
-ds::CardVal ds::Board::highFlushVal() const {
-    if (!flushVals_.size()) {
+ds::CardVal ds::Board::highestFlushValue() const {
+    if (!flushValues_.size()) {
         return Card::lowAce;
     }
-    return flushVals_.front();
+    return flushValues_.front();
 }
 
 
@@ -339,7 +339,7 @@ ds::CardVal ds::Board::highFlushVal() const {
 
 void ds::Board::reserveSpace() {
     cards_.reserve(maxCardsOnBoard_);
-    flushVals_.reserve(maxCardsOnBoard_);
+    flushValues_.reserve(maxCardsOnBoard_);
 }
 
 
@@ -347,7 +347,7 @@ void ds::Board::updateDerivedData() {
     stats_ = VecValStats(cards_);
     suitCounts_.fill(0);
     flushSuit_ = Card::unknownSuit;
-    flushVals_.clear();
+    flushValues_.clear();
     foak_ = Card::unknownValue;
     set_ = Card::unknownValue;
     setMissingSuit_ = Card::unknownSuit;
@@ -377,7 +377,7 @@ void ds::Board::updateDerivedData() {
                 ++itS
             ) {
                 if (itS->suits()[flushSuit_] > 0) {
-                    flushVals_.push_back(itS->value());
+                    flushValues_.push_back(itS->value());
                 }
             }
             break;

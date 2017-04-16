@@ -2,7 +2,7 @@
 
 // ****** Public Member Functions ****** //
 
-ds::HandRanker::HandType ds::HandRanker::getHandType
+ds::HandRanker::HandType2 ds::HandRanker::getHandType2
 (
     const Board& bd,
     const PktCards& pkt
@@ -11,9 +11,9 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
 
     // Check for straight flushes
     const Suit flushSuit = bd.flushSuit();
-    const VecCardVal& flushVals(bd.flushVals());
+    const VecCardVal& flushValues(bd.flushValues());
     if (flushSuit != Card::unknownSuit) {
-        const StraightCompleters straightFlushes(flushVals);
+        const StraightCompleters straightFlushes(flushValues);
         for (
             auto sfit = straightFlushes.cbegin();
             sfit != straightFlushes.cend();
@@ -24,7 +24,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 sfit->second.second, flushSuit
             );
             if (noWildEquals(testPkt, pkt)) {
-                return HandType(
+                return HandType2(
                     HtStraightFlush,
                     sfit->first,
                     Card::unknownValue
@@ -38,21 +38,21 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 4: {
-            return HandType(HtFoak, it->value(), Card::unknownValue);
+            return HandType2(HtFoak, it->value(), Card::unknownValue);
             break;
         }
         case 3: {
             // Set is on the board
             if (pkt.has(it->value()))
             {
-                return HandType(HtFoak, it->value(), Card::unknownValue);
+                return HandType2(HtFoak, it->value(), Card::unknownValue);
             }
             break;
         }
         case 2: {
             // Pair is on the board
-            if (pkt.pairs(it->value()) {
-                return HandType(HtFoak, it->value(), Card::unknownValue);
+            if (pkt.pairs(it->value())) {
+                return HandType2(HtFoak, it->value(), Card::unknownValue);
             }
             break;
         }
@@ -80,12 +80,12 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                       ? std::max(pkt.first.value(), bd.pairA())
                       : bd.pairA()
                     );
-                    return HandType(HtFullHouse, it->value(), pairVal);
+                    return HandType2(HtFullHouse, it->value(), pairVal);
                 }
                 // No pairs on board, must pair with pkt
                 for (auto itp = stats.cbegin(); itp != stats.cend(); ++itp) {
                     if (pkt.has(itp->value())) {
-                        return HandType(HtFullHouse, it->value(), itp->value());
+                        return HandType2(HtFullHouse, it->value(), itp->value());
                     }
                 }
                 break;
@@ -103,7 +103,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                             continue;
                         }
                         if (itp->nCards() >= 2 || pkt.has(itp->value())) {
-                            return HandType(
+                            return HandType2(
                                 HtFullHouse,
                                 it->value(),
                                 itp->value()
@@ -119,7 +119,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     bd.pairA() != Card::unknownValue
                  && pkt.pairs(it->value())
                 ) {
-                    return HandType(HtFullHouse, it->value(), bd.pairA());
+                    return HandType2(HtFullHouse, it->value(), bd.pairA());
                 }
                 break;
             }
@@ -131,36 +131,37 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     }
 
     // Check for flush
-    switch (flushVals.size()) {
+    switch (flushValues.size()) {
     case 5: {
-        CardVal highVal = bd.highFlushVal();
+        CardVal highVal = bd.highestFlushValue();
         if (pkt.first.suit() == flushSuit) {
             highVal = std::max(pkt.first.value(), highVal);
         }
         if (pkt.second.suit() == flushSuit) {
-            highVal = std::max(pkt.secondValue(), highVal);
+            highVal = std::max(pkt.second.value(), highVal);
         }
-        return HandType(HtFlush, highVal, Card::unknownValue);
+        return HandType2(HtFlush, highVal, Card::unknownValue);
         break;
     }
     case 4: {
         if (pkt.has(flushSuit)) {
-            CardVal highVal = bd.highFlushVal();
+            CardVal highVal = bd.highestFlushValue();
             if (pkt.first.suit() == flushSuit) {
                 highVal = std::max(pkt.first.value(), highVal);
             }
             if (pkt.second.suit() == flushSuit) {
-                highVal = std::max(pkt.secondValue(), highVal);
+                highVal = std::max(pkt.second.value(), highVal);
             }
-            return HandType(HtFlush, highVal, Card::unknownValue);
+            return HandType2(HtFlush, highVal, Card::unknownValue);
         }
         break;
     }
     case 3: {
         if (pkt.suited(flushSuit)) {
-            CardVal highVal = std::max(bd.highFlushVal(), pkt.firstValue());
-            highVal = std::max(highVal, pkt.secondVal());
-            return HandType(HtFlush, highVal, Card::unknownValue);
+            CardVal highVal =
+                std::max(bd.highestFlushValue(), pkt.first.value());
+            highVal = std::max(highVal, pkt.second.value());
+            return HandType2(HtFlush, highVal, Card::unknownValue);
         }
         break;
     }
@@ -170,7 +171,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     }
     default: {
         FatalError << "Unexpected number of flush value cards on board. Flush "
-            << "values are:\n" << flushVals << std::endl;
+            << "values are:\n" << flushValues << std::endl;
         abort();
     } // end default
     } // end switch
@@ -188,7 +189,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                 it->second.second, Card::wildSuit
             );
             if (testPkt == pkt) {
-                return HandType(HtStraight, it->first, Card::unknownValue);
+                return HandType2(HtStraight, it->first, Card::unknownValue);
             }
         }
     }
@@ -198,20 +199,20 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
         switch (it->nCards()) {
         case 3: {
             // Set is on board, look for two kickers
-            return HandType(HtSet, it->value(), Card::unknownValue);
+            return HandType2(HtSet, it->value(), Card::unknownValue);
             break;
         }
         case 2: {
             // Set uses a pair on the board, one pocket card is free
             if (pkt.has(it->value())) {
-                return HandType(HtSet, it->value(), Card::unknownValue);
+                return HandType2(HtSet, it->value(), Card::unknownValue);
             }
             break;
         }
         case 1: {
             // Set uses a single on the board, pocket pairs required
             if (pkt.pairs(it->value())) {
-                return HandType(HtSet, it->value(), Card::unknownValue);
+                return HandType2(HtSet, it->value(), Card::unknownValue);
             }
             break;
         }
@@ -227,10 +228,10 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     if (bd.pairA() != Card::unknownValue) {
         if (pkt.pairs()) {
             if (pkt.first.value() > bd.pairA()) {
-                return HandType(HtTwoPair, pkt.first.value(), bd.pairA());
+                return HandType2(HtTwoPair, pkt.first.value(), bd.pairA());
             }
             CardVal pairB = std::max(bd.pairB(), pkt.first.value());
-            return HandType(HtTwoPair, bd.pairA(), pairB);
+            return HandType2(HtTwoPair, bd.pairA(), pairB);
         }
         CardVal pairA = Card::lowAce;
         for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
@@ -239,14 +240,14 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
                     pairA = it->value();
                     continue;
                 } else {
-                    return HandType(HtTwoPair, pairA, it->value());
+                    return HandType2(HtTwoPair, pairA, it->value());
                 }
             } else if (pkt.has(it->value())) {
                 if (pairA == Card::lowAce) {
                     pairA = it->value();
                     continue;
                 } else {
-                    return HandType(HtTwoPair, pairA, it->value());
+                    return HandType2(HtTwoPair, pairA, it->value());
                 }
             }
         }
@@ -254,22 +255,22 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
 
     // Check for a pair
     if (pkt.pairs()) {
-        return HandType(HtPair, pkt.first.value(), Card::unknownValue);
+        return HandType2(HtPair, pkt.first.value(), Card::unknownValue);
     }
     if (bd.pairA() != Card::unknownValue) {
-        return HandType(HtPair, bd.pairA(), Card::unknownValue);
+        return HandType2(HtPair, bd.pairA(), Card::unknownValue);
     }
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         if (pkt.has(it->value())) {
-            return HandType(HtPair, it->value(), Card::unknownValue);
+            return HandType2(HtPair, it->value(), Card::unknownValue);
         }
     }
 
     // Check for high card
     CardVal highVal = std::max(
-         bd.highestVal(), pkt.highestVal()
+         bd.highestValue(), pkt.highestValue()
     );
-    return HandType(HtHighCard, highValue, Card::unknownValue);
+    return HandType2(HtHighCard, highVal, Card::unknownValue);
 }
 
 // ****** END ****** //

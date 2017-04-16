@@ -64,8 +64,23 @@ ds::HandRanker::HandType::HandType(
 {}
 
 
+ds::HandRanker::HandType2::HandType2(char t, PktVals v):
+    ht(t),
+    values(v)
+{}
+
+
+ds::HandRanker::HandType2::HandType2(char t, CardVal vA, CardVal vB):
+    ht(t),
+    values(vA, vB)
+{}
+
+
 #include<HandRankerGetHandType.cpp>
+#include<HandRankerGetHandType2.cpp>
+#include<HandRankerGetKickers.cpp>
 #include<HandRankerCompare.cpp>
+#include<HandRankerCompare2.cpp>
 #include<HandRankerRank.cpp>
 
 // ****** END ****** //

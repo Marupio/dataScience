@@ -70,6 +70,27 @@ public:
             );
     };
 
+    struct HandType2 {
+        // Public data
+
+            //- Type of hand (e.g. two-pair, high card, etc)
+            char ht;
+            
+            //- Card value associated with the hand type. Examples:
+            //  * Straight - this is the highest card of the straight
+            //  * Full house - this is the value of the set
+            //  * Pair - this is the value of the pair
+            PktVals values;
+
+        // Constructors    
+
+            //- Construct from components
+            HandType2(char t, PktVals v);
+
+            //- Construct from components
+            HandType2(char t, CardVal vA, CardVal vB);
+    };
+
 
     // Public member functions
 
@@ -80,14 +101,19 @@ public:
         //- Return the hand type for a given board and pocket
         //  *** Located in HandRankerGetHandType.cpp
         static HandType getHandType(const Board& bd, const PktCards& pkt);
+        static HandType2 getHandType2(const Board& bd, const PktCards& pkt);
 
         //- Compare two pockets against the board
         //  Returns:
         //  -1: pktA < pktB
         //   0: pktA == pktB
         //   1: pktA > pktB
-        static short compare
-        (
+        static short compare(
+            const Board& bd,
+            const PktCards& pktA,
+            const PktCards& pktB
+        );
+        static short compare2(
             const Board& bd,
             const PktCards& pktA,
             const PktCards& pktB
@@ -97,41 +123,11 @@ public:
 private:
 
     //- Helper for compare
-    //  Finds two lowest cards on board that are not in avoid
-    //  Checks if pktA or pktB can beat it, in the required suit
-    //  Set one or both components of avoid to (unknownCard) when not required
-    //  Set requiredSuit to unknownSuit when not required
-    //  Set checkSecond to true to check both kickers
-    //  *** Located in HandRankerCompare.cpp
-    static short findAndCompareKickers
-    (
+    //  ** Located in HandRankerGetKickers.cpp
+    static PktVals getKickers(
         const Board& bd,
-        const PktVals& avoid,
-        Suit requiredSuit,
-        bool checkSecond,
-        const PktCards& pktA,
-        const PktCards& pktB
-    );
-
-    //- Helper function for findAndCompareKickers
-    //  Looks at pocket for higher kickers than those on board
-    //  *** Located in HandRankerCompare.cpp
-    static PktVals findTwoKickers(
         const PktCards& pkt,
-        const PktVals& avoid,
-        CardVal bdLowKicker,
-        CardVal bdHighKicker,
-        Suit requiredSuit
-    );
-
-    //- Helper function for findAndCompareKickers
-    //  Compares kickers
-    //  *** Located in HandRankerCompare.cpp
-    static short checkKickers
-    (
-        const PktVals& kickersA,
-        const PktVals& kickersB,
-        bool checkSecond
+        const HandType2& ht
     );
 };
 

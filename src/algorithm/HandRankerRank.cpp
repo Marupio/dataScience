@@ -8,9 +8,9 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
 
     // Check for straight flushes
     const Suit flushSuit = bd.flushSuit();
-    const VecCardVal& flushVals(bd.flushVals());
+    const VecCardVal& flushValues(bd.flushValues());
     if (flushSuit != Card::unknownSuit) {
-        const StraightCompleters straightFlushes(flushVals);
+        const StraightCompleters straightFlushes(flushValues);
         for (
             auto sfit = straightFlushes.cbegin();
             sfit != straightFlushes.cend();
@@ -319,7 +319,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             // Continue
 
     // Check for flush
-    switch (flushVals.size()) {
+    switch (flushValues.size()) {
     case 5: {
         if (!pkt.has(flushSuit)) {
             PktCards testPkt(
@@ -331,22 +331,22 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             rank += mask.remove(testPkt);
             return rank;
         }
-        auto itR = flushVals.crbegin();
+        auto itR = flushValues.crbegin();
         CardVal lowValA = *itR;
         itR++;
         CardVal lowValB = *itR;
         // Look for two kickers
-        auto itH = flushVals.cbegin();
+        auto itH = flushValues.cbegin();
         for (
             CardVal highKicker = Card::ace;
             highKicker > lowValB;
             ++highKicker
         ) {
-            if (itH != flushVals.cend() && highKicker == *itH) {
+            if (itH != flushValues.cend() && highKicker == *itH) {
                 ++itH;
                 continue;
             }
-            auto itL = flushVals.cbegin();
+            auto itL = flushValues.cbegin();
             if (*itL == Card::ace) {
                 ++itL;
             }
@@ -355,7 +355,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 highKicker > lowValA;
                 ++highKicker
             ) {
-                if (itL != flushVals.cend() && lowKicker == *itL) {
+                if (itL != flushValues.cend() && lowKicker == *itL) {
                     ++itL;
                     continue;
                 }
@@ -368,13 +368,13 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             }
         }
         // Look for one kicker
-        itH = flushVals.cbegin();
+        itH = flushValues.cbegin();
         for (
             CardVal kicker = Card::ace;
             kicker > lowValA;
             --kicker
         ) {
-            if (itH != flushVals.cend() && kicker == *itH) {
+            if (itH != flushValues.cend() && kicker == *itH) {
                 ++itH;
                 continue;
             }
@@ -392,13 +392,13 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     case 4: {
         if (pkt.has(flushSuit)) {
             // Sort by pocket card that completes the flush
-            auto itH = flushVals.cbegin();
+            auto itH = flushValues.cbegin();
             for (
                 CardVal kicker = Card::ace;
                 kicker > Card::two;
                 --kicker
             ) {
-                if (itH != flushVals.cend() && kicker == *itH) {
+                if (itH != flushValues.cend() && kicker == *itH) {
                     ++itH;
                     continue;
                 }
@@ -420,17 +420,17 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     }
     case 3: {
         if (pkt.suited(flushSuit)) {
-            auto itH = flushVals.cbegin();
+            auto itH = flushValues.cbegin();
             for (
                 CardVal highKicker = Card::ace;
                 highKicker > Card::three;
                 ++highKicker
             ) {
-                if (itH != flushVals.cend() && highKicker == *itH) {
+                if (itH != flushValues.cend() && highKicker == *itH) {
                     ++itH;
                     continue;
                 }
-                auto itL = flushVals.cbegin();
+                auto itL = flushValues.cbegin();
                 if (*itL == Card::ace) {
                     ++itL;
                 }
@@ -439,7 +439,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     highKicker > Card::two;
                     ++highKicker
                 ) {
-                    if (itL != flushVals.cend() && lowKicker == *itL) {
+                    if (itL != flushValues.cend() && lowKicker == *itL) {
                         ++itL;
                         continue;
                     }
@@ -476,7 +476,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     }
     default: {
         FatalError << "Unexpected number of flush value cards on board. Flush "
-            << "values are:\n" << flushVals << std::endl;
+            << "values are:\n" << flushValues << std::endl;
         abort();
     } // end default
     } // end switch

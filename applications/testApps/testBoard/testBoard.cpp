@@ -18,7 +18,7 @@ void writeDetails(const Board& bd)
         std::cout << "\n";
     }
     Suit fSuit(bd.flushSuit());
-    const VecCardVal& fVals(bd.flushVals());
+    const VecCardVal& fVals(bd.flushValues());
     CardVal bdFoak(bd.foak());
     Card bdSet(bd.set(), bd.setMissingSuit());
     PktCards bdPairA(

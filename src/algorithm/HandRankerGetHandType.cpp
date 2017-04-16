@@ -11,9 +11,9 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
 
     // Check for straight flushes
     const Suit flushSuit = bd.flushSuit();
-    const VecCardVal& flushVals(bd.flushVals());
+    const VecCardVal& flushValues(bd.flushValues());
     if (flushSuit != Card::unknownSuit) {
-        const StraightCompleters straightFlushes(flushVals);
+        const StraightCompleters straightFlushes(flushValues);
         for (
             auto sfit = straightFlushes.cbegin();
             sfit != straightFlushes.cend();
@@ -222,7 +222,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     }
 
     // Check for flush
-    switch (flushVals.size()) {
+    switch (flushValues.size()) {
     case 3: {
         if (!pkt.suited(flushSuit)) {
             break;
@@ -236,7 +236,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
         // fall through
     }
     case 5: {
-        CardVal highVal = flushVals.front();
+        CardVal highVal = flushValues.front();
         PktVals kickers(noKickers);
         if (pkt.first.suit() == flushSuit) {
             if (pkt.first.value() > highVal) {
@@ -259,14 +259,14 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
         }
 
         // Find two low values - no iterator checking
-        auto itR = flushVals.crbegin();
+        auto itR = flushValues.crbegin();
         CardVal lowValA = *itR;
         ++itR;
         CardVal lowValB = *itR;
 
-        if (flushVals.size() == 4) {
+        if (flushValues.size() == 4) {
             lowValB = Card::lowAce;
-        } else if (flushVals.size() == 3) {
+        } else if (flushValues.size() == 3) {
             lowValA = Card::lowAce;
             lowValB = Card::lowAce;
         }
@@ -285,7 +285,7 @@ ds::HandRanker::HandType ds::HandRanker::getHandType
     }
     default: {
         FatalError << "Unexpected number of flush value cards on board. Flush "
-            << "values are:\n" << flushVals << std::endl;
+            << "values are:\n" << flushValues << std::endl;
         abort();
     } // end default
     } // end switch

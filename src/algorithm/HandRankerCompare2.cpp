@@ -1,13 +1,13 @@
 // ****** Public Member Functions ****** //
 
-short ds::HandRanker::compare
+short ds::HandRanker::compare2
 (
     const Board& bd,
     const PktCards& pktA,
     const PktCards& pktB
 ) {
-    HandType htA(getHandType(bd, pktA));
-    HandType htB(getHandType(bd, pktB));
+    HandType2 htA(getHandType2(bd, pktA));
+    HandType2 htB(getHandType2(bd, pktB));
     
     // check ht
     if (htA.ht > htB.ht) {
@@ -30,21 +30,26 @@ short ds::HandRanker::compare
         return -1;
     }
 
-    // check first kicker
-    if (htA.kickers.first > htB.kickers.first) {
+    // All is equal, we need to check kickers
+    PktVals kA = getKickers(bd, pktA, htA);
+    PktVals kB = getKickers(bd, pktB, htB);
+
+    // Check first kicker
+    if (kA.first > kB.first) {
         return 1;
-    } else if (htA.kickers.first < htB.kickers.first) {
+    } else if (kA.first < kB.first) {
         return -1;
     }
-    
-    // check second kicker
-    if (htA.kickers.second > htB.kickers.second) {
+
+    // Check second kicker
+    if (kA.second > kB.second) {
         return 1;
-    } else if (htA.kickers.second < htB.kickers.second) {
+    } else if (kA.second < kB.second) {
         return -1;
     }
-    
+
     return 0;
 }
+
 
 // ****** END ****** //
