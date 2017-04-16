@@ -154,33 +154,33 @@ public:
         // Derived searches
 
             //- Returns lowest value, not including avoids
-            CardVal lowestVal() const;
-            CardVal lowestVal(CardVal avoid);
-            CardVal lowestVal(const PktVals& avoid);
+            CardVal lowestValue() const;
+            CardVal lowestValue(CardVal avoid);
+            CardVal lowestValue(const PktVals& avoid);
 
             //- Returns two lowest card values, not including avoids
-            PktVals lowestTwoVals() const;
-            PktVals lowestTwoVals(CardVal avoid) const;
-            PktVals lowestTwoVals(const PktVals& avoid) const;
+            PktVals lowestTwoValues() const;
+            PktVals lowestTwoValues(CardVal avoid) const;
+            PktVals lowestTwoValues(const PktVals& avoid) const;
 
             //- Returns high value, not including avoids
-            CardVal highestVal() const;
-            CardVal highestVal(CardVal avoid) const;
-            CardVal highestVal(const PktVals& avoid) const;
+            CardVal highestValue() const;
+            CardVal highestValue(CardVal avoid) const;
+            CardVal highestValue(const PktVals& avoid) const;
 
             //- Returns two highest values, not including avoids
-            PktVals highestTwoVals() const;
-            PktVals highestTwoVals(CardVal avoid) const;
-            PktVals highestTwoVals(const PktVals& avoid) const;
+            PktVals highestTwoValues() const;
+            PktVals highestTwoValues(CardVal avoid) const;
+            PktVals highestTwoValues(const PktVals& avoid) const;
 
             //- Return the lowest flush card. Ignores the top three, because
             //  they are necessary for the flush.  i.e.:
             //      if (flushVals.size() == 3) return Card::lowAce;
-            CardVal lowestFlushVal() const;
-            PktVals lowestTwoFlushVals() const;
+            CardVal lowestFlushValue() const;
+            PktVals lowestTwoFlushValues() const;
 
             //- Returns high value for flush, if available
-            CardVal highFlushVal() const;
+            CardVal highestFlushValue() const;
 
 
     // Operators

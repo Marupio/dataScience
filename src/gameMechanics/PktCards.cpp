@@ -103,12 +103,12 @@ bool ds::PktCards::pairs(CardVal cv) const {
 }
 
 
-ds::CardVal ds::PktCards::highestVal() const {
+ds::CardVal ds::PktCards::highestValue() const {
     return std::max(first.value(), second.value());
 }
 
 
-ds::CardVal ds::PktCards::highestVal(CardVal avoid) const {
+ds::CardVal ds::PktCards::highestValue(CardVal avoid) const {
     if (first.value() == avoid) {
         return second.value();
     } else if (second.value() == avoid) {

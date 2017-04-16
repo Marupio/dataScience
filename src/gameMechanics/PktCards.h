@@ -92,8 +92,8 @@ public:
         // Derived data
         
             //- Returns highest value, not including avoid cards
-            CardVal highestVal() const;
-            CardVal highestVal(CardVal avoid) const;
+            CardVal highestValue() const;
+            CardVal highestValue(CardVal avoid) const;
 
 
         // Edit
