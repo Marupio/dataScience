@@ -30,57 +30,21 @@ const std::array<std::string, 10> ds::HandRanker::HandTypeNames = {
 
 // ****** Constructors ****** //
 
-ds::HandRanker::HandType::HandType(char t, PktVals v, PktVals k):
-    ht(t),
-    values(v),
-    kickers(k)
-{}
-
-
-ds::HandRanker::HandType::HandType(char t, CardVal vA, CardVal vB, PktVals k):
-    ht(t),
-    values(vA, vB),
-    kickers(k)
-{}
-
-
-ds::HandRanker::HandType::HandType(char t, PktVals v, CardVal kA, CardVal kB):
-    ht(t),
-    values(v),
-    kickers(kA, kB)
-{}
-
-
-ds::HandRanker::HandType::HandType(
-    char t,
-    CardVal vA,
-    CardVal vB,
-    CardVal kA,
-    CardVal kB
-):
-    ht(t),
-    values(vA, vB),
-    kickers(kA, kB)
-{}
-
-
-ds::HandRanker::HandType2::HandType2(char t, PktVals v):
+ds::HandRanker::HandType::HandType(char t, PktVals v):
     ht(t),
     values(v)
 {}
 
 
-ds::HandRanker::HandType2::HandType2(char t, CardVal vA, CardVal vB):
+ds::HandRanker::HandType::HandType(char t, CardVal vA, CardVal vB):
     ht(t),
     values(vA, vB)
 {}
 
 
 #include<HandRankerGetHandType.cpp>
-#include<HandRankerGetHandType2.cpp>
 #include<HandRankerGetKickers.cpp>
 #include<HandRankerCompare.cpp>
-#include<HandRankerCompare2.cpp>
 #include<HandRankerRank.cpp>
 
 // ****** END ****** //

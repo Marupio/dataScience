@@ -29,9 +29,9 @@ int main() {
         std::cout << pktA << ": "
             << HandRanker::HandTypeNames[htsA.ht] << " ["
             << Card::valueToWriteChar(htsA.values.first) << " "
-            << Card::valueToWriteChar(htsA.values.second) << "] k["
+            << Card::valueToWriteChar(htsA.values.second) << "]"/* k["
             << Card::valueToWriteChar(htsA.kickers.first) << " "
-            << Card::valueToWriteChar(htsA.kickers.second) << "]"
+            << Card::valueToWriteChar(htsA.kickers.second) << "]"*/
             << std::endl;
         if (res <= 0) {
             std::cout << " ** ";
@@ -42,9 +42,9 @@ int main() {
         std::cout << pktB << ": "
             << HandRanker::HandTypeNames[htsB.ht] << " ["
             << Card::valueToWriteChar(htsB.values.first) << " "
-            << Card::valueToWriteChar(htsB.values.second) << "] k["
+            << Card::valueToWriteChar(htsB.values.second) << "]"/* k["
             << Card::valueToWriteChar(htsB.kickers.first) << " "
-            << Card::valueToWriteChar(htsB.kickers.second) << "]"
+            << Card::valueToWriteChar(htsB.kickers.second) << "]"*/
             << std::endl;
         if (htsA.ht == htsB.ht && htsA.values == htsB.values) {
             std::cout << "^^^^^^^^^" << std::endl;

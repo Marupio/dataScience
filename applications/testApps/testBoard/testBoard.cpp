@@ -35,6 +35,44 @@ void writeDetails(const Board& bd)
     std::cout << "\n         PairB: " << bdPairB;
     std::cout << "\n    Flush suit: " << Card::suitToWriteChar(fSuit);
     std::cout << "\n   Flush values: " << fVals;
+
+    std::cout << "\n\n      lowestVal: "
+        << Card::valueToWriteChar(bd.lowestValue());
+    std::cout << "\n   lowestVal(2): "
+        << Card::valueToWriteChar(bd.lowestValue(2));
+    std::cout << "\n lowestVal(2,3): "
+        << Card::valueToWriteChar(bd.lowestValue(PktVals(2,3)));
+
+    std::cout << "\n\n      lowestTwo: "
+        << bd.lowestTwoValues();
+    std::cout << "\n   lowestTwo(2): "
+        << bd.lowestTwoValues(2);
+    std::cout << "\n lowestTwo(2,3): "
+        << bd.lowestTwoValues(PktVals(2,3));
+
+    std::cout << "\n\n     highestVal: "
+        << Card::valueToWriteChar(bd.highestValue());
+    std::cout << "\n  highestVal(A): "
+        << Card::valueToWriteChar(bd.highestValue(14));
+    std::cout << "\nhighestVal(A,K): "
+        << Card::valueToWriteChar(bd.highestValue(PktVals(14,13)));
+
+    std::cout << "\n\n     highestTwo: "
+        << bd.highestTwoValues();
+    std::cout << "\n  highestTwo(A): "
+        << bd.highestTwoValues(14);
+    std::cout << "\nhighestTwo(A,K): "
+        << bd.highestTwoValues(PktVals(14,13));
+
+    if (fVals.size()) {
+        std::cout << "\n\n   lowestFlush: "
+            << bd.lowestFlushValue();
+        std::cout << "\n  lowest2Flush: "
+            << bd.lowestTwoFlushValues();
+        std::cout << "\n\n  highestFlush: "
+            << bd.highestFlushValue();
+    }
+
     std::cout << std::endl;
 }
 

@@ -46,49 +46,13 @@ public:
             //  * Pair - this is the value of the pair
             PktVals values;
 
-            //- Kickers from pocket, if any
-            PktVals kickers;
-
         // Constructors    
 
             //- Construct from components
-            HandType(char t, PktVals v, PktVals k);
+            HandType(char t, PktVals v);
 
             //- Construct from components
-            HandType(char t, CardVal vA, CardVal vB, PktVals k);
-
-            //- Construct from components
-            HandType(char t, PktVals v, CardVal kA, CardVal kB);
-
-            //- Construct from components
-            HandType(
-                char t,
-                CardVal vA,
-                CardVal vB,
-                CardVal kA,
-                CardVal kB
-            );
-    };
-
-    struct HandType2 {
-        // Public data
-
-            //- Type of hand (e.g. two-pair, high card, etc)
-            char ht;
-            
-            //- Card value associated with the hand type. Examples:
-            //  * Straight - this is the highest card of the straight
-            //  * Full house - this is the value of the set
-            //  * Pair - this is the value of the pair
-            PktVals values;
-
-        // Constructors    
-
-            //- Construct from components
-            HandType2(char t, PktVals v);
-
-            //- Construct from components
-            HandType2(char t, CardVal vA, CardVal vB);
+            HandType(char t, CardVal vA, CardVal vB);
     };
 
 
@@ -101,7 +65,6 @@ public:
         //- Return the hand type for a given board and pocket
         //  *** Located in HandRankerGetHandType.cpp
         static HandType getHandType(const Board& bd, const PktCards& pkt);
-        static HandType2 getHandType2(const Board& bd, const PktCards& pkt);
 
         //- Compare two pockets against the board
         //  Returns:
@@ -109,11 +72,6 @@ public:
         //   0: pktA == pktB
         //   1: pktA > pktB
         static short compare(
-            const Board& bd,
-            const PktCards& pktA,
-            const PktCards& pktB
-        );
-        static short compare2(
             const Board& bd,
             const PktCards& pktA,
             const PktCards& pktB
@@ -127,7 +85,7 @@ private:
     static PktVals getKickers(
         const Board& bd,
         const PktCards& pkt,
-        const HandType2& ht
+        const HandType& ht
     );
 };
 

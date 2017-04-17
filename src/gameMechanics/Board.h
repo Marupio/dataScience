@@ -159,6 +159,7 @@ public:
             CardVal lowestValue(const PktVals& avoid) const;
 
             //- Returns two lowest card values, not including avoids
+            //  return.first < return.second
             PktVals lowestTwoValues() const;
             PktVals lowestTwoValues(CardVal avoid) const;
             PktVals lowestTwoValues(const PktVals& avoid) const;
@@ -169,14 +170,20 @@ public:
             CardVal highestValue(const PktVals& avoid) const;
 
             //- Returns two highest values, not including avoids
+            //  return.first > return.second
             PktVals highestTwoValues() const;
             PktVals highestTwoValues(CardVal avoid) const;
             PktVals highestTwoValues(const PktVals& avoid) const;
 
-            //- Return the lowest flush card. Ignores the top three, because
+            //- Return the lowest flush card. Ignores the top three because
             //  they are necessary for the flush.  i.e.:
             //      if (flushValues.size() == 3) return Card::lowAce;
             CardVal lowestFlushValue() const;
+
+            //- Return the lowest two flush cards. Ignores the top three
+            //  because they are necessary for the flush.  i.e.:
+            //      if (flushValues.size() == 3) return Card::lowAce;
+            //  return.first < return.second
             PktVals lowestTwoFlushValues() const;
 
             //- Returns high value for flush, if available

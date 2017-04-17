@@ -93,12 +93,14 @@ ds::CardVal ds::Board::lowestValue() const {
 ds::CardVal ds::Board::lowestValue(CardVal avoid) const {
     auto itR = stats_.crbegin();
     CardVal lowVal = Card::lowAce;
-    while (
+    for (
+        ;
         itR != stats_.crend()
-     && (lowVal == Card::lowAce || lowVal == avoid)
-    ) {
+     && itR->value() == avoid;
+        ++itR
+    ) {}
+    if (itR != stats_.crend()) {
         lowVal = itR->value();
-        ++itR;
     }
     return lowVal;
 }
@@ -107,16 +109,14 @@ ds::CardVal ds::Board::lowestValue(CardVal avoid) const {
 ds::CardVal ds::Board::lowestValue(const PktVals& avoid) const {
     auto itR = stats_.crbegin();
     CardVal lowVal = Card::lowAce;
-    while (
+    for (
+        ;
         itR != stats_.crend()
-     && (
-            lowVal == Card::lowAce
-         || lowVal == avoid.first
-         || lowVal == avoid.second
-        )
-    ) {
+     && (itR->value() == avoid.first || itR->value() == avoid.second);
+        ++itR
+    ) {}
+    if (itR != stats_.crend()) {
         lowVal = itR->value();
-        ++itR;
     }
     return lowVal;
 }
@@ -125,13 +125,12 @@ ds::CardVal ds::Board::lowestValue(const PktVals& avoid) const {
 ds::PktVals ds::Board::lowestTwoValues() const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
-    while (itR != stats_.crend() && lowVals.first == Card::lowAce) {
-        lowVals.first = Card::lowAce;
+    if (itR != stats_.crend()) {
+        lowVals.first = itR->value();
         ++itR;
-    }
-    while (itR != stats_.crend() && lowVals.second == Card::lowAce) {
-        lowVals.second = Card::lowAce;
-        ++itR;
+        if (itR != stats_.crend()) {
+            lowVals.second = itR->value();
+        }
     }
     return lowVals;
 }
@@ -140,19 +139,13 @@ ds::PktVals ds::Board::lowestTwoValues() const {
 ds::PktVals ds::Board::lowestTwoValues(CardVal avoid) const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
-    while (
-        itR != stats_.crend()
-     && (lowVals.first == Card::lowAce || lowVals.first == avoid)
-    ) {
-        lowVals.first = Card::lowAce;
-        ++itR;
-    }
-    while (
-        itR != stats_.crend()
-     && (lowVals.second == Card::lowAce || lowVals.second == avoid)
-    ) {
-        lowVals.second = Card::lowAce;
-        ++itR;
+    for (; itR != stats_.crend() && itR->value() == avoid; ++itR) {}
+    if (itR != stats_.crend()) {
+        lowVals.first = (itR++)->value();
+        for (; itR != stats_.crend() && itR->value() == avoid; ++itR) {}
+        if (itR != stats_.crend()) {
+            lowVals.second = itR->value();
+        }
     }
     return lowVals;
 }
@@ -161,27 +154,23 @@ ds::PktVals ds::Board::lowestTwoValues(CardVal avoid) const {
 ds::PktVals ds::Board::lowestTwoValues(const PktVals& avoid) const {
     PktVals lowVals(PktVals::lowAces);
     auto itR = stats_.crbegin();
-    while (
+    for (
+        ;
         itR != stats_.crend()
-     && (
-            lowVals.first == Card::lowAce
-         || lowVals.first == avoid.first
-         || lowVals.first == avoid.second
-        )
-    ) {
-        lowVals.first = Card::lowAce;
-        ++itR;
-    }
-    while (
-        itR != stats_.crend()
-     && (
-            lowVals.second == Card::lowAce
-         || lowVals.second == avoid.first
-         || lowVals.second == avoid.second
-        )
-    ) {
-        lowVals.second = Card::lowAce;
-        ++itR;
+     && (itR->value() == avoid.first || itR->value() == avoid.second);
+        ++itR
+    ) {}
+    if (itR != stats_.crend()) {
+        lowVals.first = (itR++)->value();
+        for (
+            ;
+            itR != stats_.crend()
+         && (itR->value() == avoid.first || itR->value() == avoid.second);
+            ++itR
+        ) {}
+        if (itR != stats_.crend()) {    
+            lowVals.second = itR->value();
+        }
     }
     return lowVals;
 }
@@ -198,12 +187,9 @@ ds::CardVal ds::Board::highestValue() const {
 ds::CardVal ds::Board::highestValue(CardVal avoid) const {
     CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
-    while (
-        it != stats_.cend()
-     && (highVal == Card::lowAce || highVal == avoid)
-    ) {
+    for (; it != stats_.cend() && it->value() == avoid; ++it) {}
+    if (it != stats_.cend()) {
         highVal = it->value();
-        ++it;
     }
     return highVal;
 }
@@ -212,16 +198,14 @@ ds::CardVal ds::Board::highestValue(CardVal avoid) const {
 ds::CardVal ds::Board::highestValue(const PktVals& avoid) const {
     CardVal highVal = Card::lowAce;
     auto it = stats_.cbegin();
-    while (
+    for (
+        ;
         it != stats_.cend()
-     && (
-            highVal == Card::lowAce
-         || highVal == avoid.first
-         || highVal == avoid.second
-        )
-    ) {
+     && (it->value() == avoid.first || it->value() == avoid.second);
+        ++it
+    ) {}
+    if (it != stats_.cend()) {
         highVal = it->value();
-        ++it;
     }
     return highVal;
 }
@@ -230,13 +214,12 @@ ds::CardVal ds::Board::highestValue(const PktVals& avoid) const {
 ds::PktVals ds::Board::highestTwoValues() const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
-    while (it != stats_.cend() && highVals.first == Card::lowAce) {
-        highVals.first = Card::lowAce;
+    if (it != stats_.cend()) {
+        highVals.first = it->value();
         ++it;
-    }
-    while (it != stats_.cend() && highVals.second == Card::lowAce) {
-        highVals.second = Card::lowAce;
-        ++it;
+        if (it != stats_.cend()) {
+            highVals.second = it->value();
+        }
     }
     return highVals;
 }
@@ -245,19 +228,13 @@ ds::PktVals ds::Board::highestTwoValues() const {
 ds::PktVals ds::Board::highestTwoValues(CardVal avoid) const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
-    while (
-        it != stats_.cend()
-     && (highVals.first == Card::lowAce || highVals.first == avoid)
-    ) {
-        highVals.first = Card::lowAce;
-        ++it;
-    }
-    while (
-        it != stats_.cend()
-     && (highVals.second == Card::lowAce || highVals.second == avoid)
-    ) {
-        highVals.second = Card::lowAce;
-        ++it;
+    for (; it != stats_.cend() && it->value() == avoid; ++it) {}
+    if (it != stats_.cend()) {
+        highVals.first = (it++)->value();
+        for (; it != stats_.cend() && it->value() == avoid; ++it) {}
+        if (it != stats_.cend()) {
+            highVals.second = it->value();
+        }
     }
     return highVals;
 }
@@ -266,27 +243,23 @@ ds::PktVals ds::Board::highestTwoValues(CardVal avoid) const {
 ds::PktVals ds::Board::highestTwoValues(const PktVals& avoid) const {
     PktVals highVals(PktVals::lowAces);
     auto it = stats_.cbegin();
-    while (
+    for (
+        ;
         it != stats_.cend()
-     && (
-            highVals.first == Card::lowAce
-         || highVals.first == avoid.first
-         || highVals.first == avoid.second
-        )
-    ) {
-        highVals.first = Card::lowAce;
-        ++it;
-    }
-    while (
-        it != stats_.cend()
-     && (
-            highVals.second == Card::lowAce
-         || highVals.second == avoid.first
-         || highVals.second == avoid.second
-        )
-    ) {
-        highVals.second = Card::lowAce;
-        ++it;
+     && (it->value() == avoid.first || it->value() == avoid.second);
+        ++it
+    ) {}
+    if (it != stats_.cend()) {
+        highVals.first = (it++)->value();
+        for (
+            ;
+            it != stats_.cend()
+         && (it->value() == avoid.first || it->value() == avoid.second);
+            ++it
+        ) {}
+        if (it != stats_.cend()) {
+            highVals.second = it->value();
+        }
     }
     return highVals;
 }
@@ -305,23 +278,22 @@ ds::PktVals ds::Board::lowestTwoFlushValues() const {
     case 0: // fall through
     case 3: {
         return PktVals::lowAces;
-        break;
     }
     case 4: {
         return PktVals(flushValues_.back(), Card::lowAce);
-        break;
     }
     case 5: {
         auto itR = flushValues_.crbegin();
-        return PktVals(*(itR++), (*itR));
-        break;
+        PktVals lowVals;
+        lowVals.first = *(itR++);
+        lowVals.second = *itR;
+        return lowVals;
     }
     default: {
         FatalError << "Unexpected size of flushValues (" << flushValues_.size()
             << ")" << std::endl;
         abort();
         return PktVals::lowAces;
-        break;
     } // end default
     } // end switch
 }

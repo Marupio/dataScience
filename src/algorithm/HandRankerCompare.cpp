@@ -30,21 +30,28 @@ short ds::HandRanker::compare
         return -1;
     }
 
-    // check first kicker
-    if (htA.kickers.first > htB.kickers.first) {
+    // All is equal, we need to check kickers
+    PktVals kA = getKickers(bd, pktA, htA);
+    PktVals kB = getKickers(bd, pktB, htB);
+//std::cout << "    kA = " << kA << "\n"
+//    << "    kB = " << kB << std::endl;
+
+    // Check first kicker
+    if (kA.first > kB.first) {
         return 1;
-    } else if (htA.kickers.first < htB.kickers.first) {
+    } else if (kA.first < kB.first) {
         return -1;
     }
-    
-    // check second kicker
-    if (htA.kickers.second > htB.kickers.second) {
+
+    // Check second kicker
+    if (kA.second > kB.second) {
         return 1;
-    } else if (htA.kickers.second < htB.kickers.second) {
+    } else if (kA.second < kB.second) {
         return -1;
     }
-    
+
     return 0;
 }
+
 
 // ****** END ****** //
