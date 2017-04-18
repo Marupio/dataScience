@@ -517,7 +517,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             auto itA = stats.cbegin();
             for (
                 CardVal kickerA = Card::ace;
-                kickerA > lowVals.second;
+                kickerA > highVals.first;
                 --kickerA
             ) {
                 if (itA != stats.cend() && kickerA == itA->value()) {
@@ -530,7 +530,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 auto itB = itA;
                 for (
                     CardVal kickerB = kickerA - 1;
-                    kickerB > lowVals.first;
+                    kickerB > highVals.second;
                     --kickerB
                 ) {
                     if (itB != stats.cend() && kickerB == itB->value()) {
@@ -555,7 +555,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 // kickerB too low, continue to save iterations
                 short rankOffset = 0;
                 for (
-                    CardVal kickerB = lowVals.first - 1;
+                    CardVal kickerB = highVals.second - 1;
                     kickerB > Card::lowAce;
                     --kickerB
                 ) {
@@ -581,10 +581,10 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 rank += rankOffset;
             }
 
-            // kickerA could still be higher than lowVals.first
+            // kickerA could still be higher than highVals.second
             for (
-                CardVal kickerA = lowVals.second - 1;
-                kickerA > lowVals.first;
+                CardVal kickerA = highVals.first - 1;
+                kickerA > highVals.second;
                 --kickerA
             ) {
                 if (itA != stats.cend() && kickerA == itA->value()) {
@@ -757,7 +757,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         std::max(bd.lowestValue(), bd.pairB());
                     auto itB = itA + 1;
                     for (CardVal pairB = pairA - 1; pairB > lowest; --pairB) {
-                        if (itB != stats.cend() && itB->value == pairB) {
+                        if (itB != stats.cend() && itB->value() == pairB) {
                             // pairB is on the board
                             CardVal pairBCardVal = Card::wildValue;
                             if (itB->value() == 2) {
@@ -856,7 +856,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                             ) {
                                 if (
                                     itK != stats.cend()
-                                 && itK.value() == kicker
+                                 && itK->value() == kicker
                                 ) {
                                     ++itK;
                                     continue;
@@ -883,7 +883,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                             ) {
                                 if (
                                     itK != stats.cend()
-                                 && itK.value() == kicker
+                                 && itK->value() == kicker
                                 ) {
                                     ++itK;
                                     continue;
@@ -1006,8 +1006,8 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
         for (auto itA = stats.cbegin(); itA != stats.cend(); ++itA) {
             for (auto itB = itA + 1; itB != stats.cend(); ++itB) {
                 PktCards testPkt(
-                    itA->value, Card::wildSuit,
-                    itB->value, Card::wildSuit
+                    itA->value(), Card::wildSuit,
+                    itB->value(), Card::wildSuit
                 );
                 if (pkt == testPkt) {
                     return rank;
@@ -1037,7 +1037,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     // PP??? ??
 
                     // Find two low values, no need for iterator checking
-                    const PktVals lowVals = bd.twoLowestValues(pairVal);
+                    const PktVals lowVals = bd.lowestTwoValues(pairVal);
                     
                     auto itH = stats.cbegin();
                     for (
@@ -1155,7 +1155,11 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     // P???? P?
                     const CardVal lowVal = bd.lowestValue(pairVal);
                     auto itK = stats.cbegin();
-                    for (Card kicker = Card::ace; kicker > lowVal; --kicker) {
+                    for (
+                        CardVal kicker = Card::ace;
+                        kicker > lowVal;
+                        --kicker
+                    ) {
                         if (itK != stats.cend() && itK->value() == kicker) {
                             itK++;
                             continue;
@@ -1176,7 +1180,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     // Kicker too low, continue through
                     short rankOffset = 0;
                     for (
-                        Card kicker = lowVal - 1;
+                        CardVal kicker = lowVal - 1;
                         kicker > Card::lowAce;
                         --kicker
                     ) {

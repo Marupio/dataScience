@@ -28,10 +28,10 @@ int main() {
             << it->second.second << "]" << std::endl;
     }
 
-    HandRanker::HandType hts(HandRanker::getHandType(bd, pkt));
-    std::cout << HandRanker::HandTypeNames[hts.ht] << " ["
-        << Card::valueToWriteChar(hts.values.first) << " "
-        << Card::valueToWriteChar(hts.values.second) << "]" << std::endl;
+    HandType hts(bd, pkt);
+    std::cout << HandType::HandTypeNames[hts.ht()] << " ["
+        << Card::valueToWriteChar(hts.values().first) << " "
+        << Card::valueToWriteChar(hts.values().second) << "]" << std::endl;
 
     return 0;
 }

@@ -6,17 +6,17 @@ ds::PktVals ds::HandRanker::getKickers(
     const HandType& ht
 ) {
     PktVals kickers(PktVals::unknownValues);
-    switch (ht.ht) {
-    case HtStraightFlush: // fall through
-    case HtFullHouse: // fall through
-    case HtStraight: {
+    switch (ht.ht()) {
+    case HandType::HtStraightFlush: // fall through
+    case HandType::HtFullHouse: // fall through
+    case HandType::HtStraight: {
         // No kickers
         return kickers;
     }
-    case HtFoak: {
+    case HandType::HtFoak: {
         const VecValStats& stats(bd.stats());
         auto it = stats.cbegin();
-        while (it != stats.cend() && it->value() != ht.values.first) {
+        while (it != stats.cend() && it->value() != ht.values().first) {
             ++it;
         }
         #ifdef DSDEBUG
@@ -68,7 +68,7 @@ ds::PktVals ds::HandRanker::getKickers(
         abort();
         break;
     }
-    case HtFlush: {
+    case HandType::HtFlush: {
         const VecCardVal& flushValues(bd.flushValues());
         const Suit flushSuit(bd.flushSuit());
         switch (flushValues.size()) {
@@ -124,10 +124,10 @@ ds::PktVals ds::HandRanker::getKickers(
         abort();
         break;
     }
-    case HtSet: {
+    case HandType::HtSet: {
         const VecValStats& stats(bd.stats());
         auto it = stats.cbegin();
-        while (it != stats.cend() && it->value() != ht.values.first) {
+        while (it != stats.cend() && it->value() != ht.values().first) {
             ++it;
         }
         #ifdef DSDEBUG
@@ -179,14 +179,14 @@ ds::PktVals ds::HandRanker::getKickers(
         } // end switch
         break;
     }
-    case HtTwoPair: {
+    case HandType::HtTwoPair: {
         const VecValStats& stats(bd.stats());
         auto itA = stats.cbegin();
-        while (itA != stats.cend() && itA->value() != ht.values.first) {
+        while (itA != stats.cend() && itA->value() != ht.values().first) {
             ++itA;
         }
         auto itB = stats.cbegin();
-        while (itB != stats.cend() && itB->value() != ht.values.second) {
+        while (itB != stats.cend() && itB->value() != ht.values().second) {
             ++itB;
         }
         #ifdef DSDEBUG
@@ -208,7 +208,7 @@ ds::PktVals ds::HandRanker::getKickers(
         if (itA->nCards() == 2 && itB->nCards() == 2) {
             // Both pairs are on board, pocket is free
             kickers.first = pkt.highestValue();
-            CardVal lowVal = bd.lowestValue(ht.values);
+            CardVal lowVal = bd.lowestValue(ht.values());
             if (kickers.first <= lowVal) {
                 kickers.first = Card::unknownValue;
             }
@@ -227,19 +227,19 @@ ds::PktVals ds::HandRanker::getKickers(
             kickers.first = pkt.first.value();
         }
 
-        const PktVals lowVals(bd.lowestTwoValues(ht.values));
+        const PktVals lowVals(bd.lowestTwoValues(ht.values()));
         if (kickers.first <= lowVals.second) {
             kickers.first = Card::unknownValue;
         }
         return kickers;
     }
-    case HtPair: {
+    case HandType::HtPair: {
         if (pkt.pairs()) {
             return kickers;
         }
         const VecValStats& stats(bd.stats());
         auto it = stats.cbegin();
-        while (it != stats.cend() && it->value() != ht.values.first) {
+        while (it != stats.cend() && it->value() != ht.values().first) {
             ++it;
         }
         #ifdef DSDEBUG
@@ -254,7 +254,7 @@ ds::PktVals ds::HandRanker::getKickers(
             // XX??? ??
 
             kickers = pkt.sortedValues();
-            const PktVals lowVals(bd.lowestTwoValues(ht.values.first));
+            const PktVals lowVals(bd.lowestTwoValues(ht.values().first));
             // Check two kickers
             if (kickers.first < lowVals.first) {
                 kickers = PktVals::unknownValues;
@@ -269,21 +269,21 @@ ds::PktVals ds::HandRanker::getKickers(
         // Paired with single, one pocket card is free
         // X???? X?
 
-        if (pkt.first.value() == ht.values.first) {
+        if (pkt.first.value() == ht.values().first) {
             kickers.first = pkt.second.value();
         } else {
             kickers.first = pkt.first.value();
         }
 
-        const CardVal lowVal(bd.lowestValue(ht.values.first));
+        const CardVal lowVal(bd.lowestValue(ht.values().first));
         if (kickers.first <= lowVal) {
             kickers.first = Card::unknownValue;
         }
         return kickers;
     }
-    case HtHighCard: {
+    case HandType::HtHighCard: {
         kickers = pkt.sortedValues();
-        const PktVals lowVals(bd.lowestTwoValues(ht.values.first));
+        const PktVals lowVals(bd.lowestTwoValues(ht.values().first));
         
         // Check two kickers
         if (kickers.first < lowVals.first) {
@@ -297,7 +297,7 @@ ds::PktVals ds::HandRanker::getKickers(
         return kickers;
     }
     default: {
-        FatalError << "Unknown HandType (" << ht.ht << ")" << std::endl;
+        FatalError << "Unknown HandType (" << ht.ht() << ")" << std::endl;
         abort();
         break;
     } // end default

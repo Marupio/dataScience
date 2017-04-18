@@ -25,24 +25,24 @@ int main() {
         } else {
             std::cout << "    ";
         }
-        HandRanker::HandType htsA(HandRanker::getHandType(bd, pktA));
+        HandType htsA(bd, pktA);
         std::cout << pktA << ": "
-            << HandRanker::HandTypeNames[htsA.ht] << " ["
-            << Card::valueToWriteChar(htsA.values.first) << " "
-            << Card::valueToWriteChar(htsA.values.second) << "]"
+            << HandType::HandTypeNames[htsA.ht()] << " ["
+            << Card::valueToWriteChar(htsA.values().first) << " "
+            << Card::valueToWriteChar(htsA.values().second) << "]"
             << std::endl;
         if (res <= 0) {
             std::cout << " ** ";
         } else {
             std::cout << "    ";
         }
-        HandRanker::HandType htsB(HandRanker::getHandType(bd, pktB));
+        HandType htsB(bd, pktB);
         std::cout << pktB << ": "
-            << HandRanker::HandTypeNames[htsB.ht] << " ["
-            << Card::valueToWriteChar(htsB.values.first) << " "
-            << Card::valueToWriteChar(htsB.values.second) << "]"
+            << HandType::HandTypeNames[htsB.ht()] << " ["
+            << Card::valueToWriteChar(htsB.values().first) << " "
+            << Card::valueToWriteChar(htsB.values().second) << "]"
             << std::endl;
-        if (htsA.ht == htsB.ht && htsA.values == htsB.values) {
+        if (htsA.ht() == htsB.ht() && htsA.values() == htsB.values()) {
             std::cout << "^^^^^^^^^" << std::endl;
         }
     }

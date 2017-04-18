@@ -29,6 +29,7 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/ValStats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/VecValStats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/HandRanker.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/HandType.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/PktMask.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/StraightCompleters.cpp
 )
