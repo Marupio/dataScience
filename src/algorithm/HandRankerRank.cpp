@@ -56,19 +56,10 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             // rank by cards higher than fifth card (val wild)
             // then exit (wild wild)
 
-            // Find one low value
-            auto itR = stats.crbegin();
-            CardVal lowVal = itR->value();
-            if (lowVal == it->value()) {
-                itR++;
-                if (itR != stats.crend()) {
-                    lowVal = itR->value();
-                } else {
-                    lowVal = Card::lowAce;
-                }
-            }
+            // Find highest kicker
+            const CardVal highVal = bd.highestValue(it->value());
 
-            for (CardVal kicker = Card::ace; kicker > lowVal; --kicker) {
+            for (CardVal kicker = Card::ace; kicker > highVal; --kicker) {
                 PktCards testPkt(kicker, Card::wildSuit, Card::wildCard);
                 if (testPkt == pkt) {
                     return rank;
@@ -83,20 +74,13 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
         case 3: {
             // Set is on the board
             const Card setCard(it->value(), bd.setMissingSuit());
-            PktCards foakPkt(setCard, Card::wildCard);
-            if (pkt == foakPkt) {
+            if (pkt.has(it->value())) {
                 // Player has FOAK
-                auto itR = stats.crbegin();
-                CardVal lowVal = itR->value();
-                if (lowVal == it->value()) {
-                    itR++;
-                    if (itR != stats.crend()) {
-                        lowVal = itR->value();
-                    } else {
-                        lowVal = Card::lowAce;
-                    }
-                }
-                for (CardVal kicker = Card::ace; kicker > lowVal; --kicker) {
+                // BBB?? P?
+
+                // Find highest kicker
+                const CardVal highVal(bd.highestValue(it->value()));
+                for (CardVal kicker = Card::ace; kicker > highVal; --kicker) {
                     if (kicker == it->value()) {
                         continue;
                     }
@@ -111,6 +95,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 return rank;
             } else {
                 // Player does not have FOAK
+                PktCards foakPkt(setCard, Card::wildCard);
                 rank += mask.remove(foakPkt);
             }
             break;
@@ -204,7 +189,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     }
                     if (itp != stats.cend() && pairVal == itp->value()) {
                         // best pair is a value on the board
-                        if (itp->nCards() >= 2) {
+                        if (itp->nCards() > 1) {
                             // best pair is already paired on the board
                             // all remaining hands the same
                             return rank;
@@ -241,13 +226,13 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             }
             case 2: {
                 // FH set uses a pair on the board, needs one card in hand
-                // setVal = it->value
                 for (auto itp = stats.cbegin(); itp != stats.cend(); ++itp) {
                     if (itp == it) {
                         continue;
                     }
-                    if (itp->nCards() >= 2) {
+                    if (itp->nCards() > 1) {
                         // Pair is on the board
+                        // SSPP? S?
                         PktCards testPkt(
                             it->value(),
                             Card::wildSuit,
@@ -260,6 +245,7 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         }
                     } else {
                         // FH pair uses single from the board
+                        // SSP?? SP
                         PktCards testPkt(
                             it->value(),
                             Card::wildSuit,
@@ -276,25 +262,22 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 break;
             }
             case 1: {
-                // single is the set, needs pocket pairs and pair on the board                
-                for (auto itp = stats.cbegin(); itp != stats.cend(); ++itp) {
-                    if (itp == it) {
-                        continue;
-                    }
-                    if (itp->nCards() >= 2) {
-                        PktCards testPkt(
-                            it->value(),
-                            Card::wildSuit,
-                            it->value(),
-                            Card::wildSuit
-                        );
-                        if (pkt == testPkt) {
-                            return rank;
-                        } else {
-                            rank += mask.remove(testPkt);
-                        }
+                // single is the set, needs pocket pairs and pair on the board
+                // SPP?? SS
+                if (bd.pairA() != Card::unknownValue) {
+                    PktCards testPkt(
+                        it->value(),
+                        Card::wildSuit,
+                        it->value(),
+                        Card::wildSuit
+                    );
+                    if (pkt == testPkt) {
+                        return rank;
+                    } else {
+                        rank += mask.remove(testPkt);
                     }
                 }
+                // No need to check pairB
                 break;
             }
             default: {
@@ -321,26 +304,13 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     // Check for flush
     switch (flushValues.size()) {
     case 5: {
-        if (!pkt.has(flushSuit)) {
-            PktCards testPkt(
-                Card::wildValue,
-                flushSuit,
-                Card::wildValue,
-                flushSuit
-            );
-            rank += mask.remove(testPkt);
-            return rank;
-        }
-        auto itR = flushValues.crbegin();
-        CardVal lowValA = *itR;
-        itR++;
-        CardVal lowValB = *itR;
         // Look for two kickers
+        const PktVals lowVals(bd.lowestTwoFlushValues());
         auto itH = flushValues.cbegin();
         for (
             CardVal highKicker = Card::ace;
-            highKicker > lowValB;
-            ++highKicker
+            highKicker > lowVals.second;
+            --highKicker
         ) {
             if (itH != flushValues.cend() && highKicker == *itH) {
                 ++itH;
@@ -352,8 +322,8 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             }
             for (
                 CardVal lowKicker = Card::king;
-                highKicker > lowValA;
-                ++highKicker
+                lowKicker > lowVals.first;
+                --lowKicker
             ) {
                 if (itL != flushValues.cend() && lowKicker == *itL) {
                     ++itL;
@@ -366,28 +336,46 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                     rank += mask.remove(testPkt);
                 }
             }
+            
+            // Low kicker too low, continue to save iterations
+            short rankOffset = 0;
+            for (
+                CardVal lowKicker = lowVals.first - 1;
+                lowKicker > Card::lowAce;
+                --lowKicker
+            ) {
+                if (itL != flushValues.cend() && lowKicker == *itL) {
+                    ++itL;
+                    continue;
+                }
+                PktCards testPkt(highKicker, flushSuit, lowKicker, flushSuit);
+                if (pkt == testPkt) {
+                    return rank;
+                } else {
+                    rankOffset += mask.remove(testPkt);
+                }
+            }
+            rank += rankOffset;
         }
-        // Look for one kicker
-        itH = flushValues.cbegin();
+        // High kicker could still beat lowest value
         for (
-            CardVal kicker = Card::ace;
-            kicker > lowValA;
-            --kicker
+            CardVal highKicker = lowVals.second - 1;
+            highKicker > lowVals.first;
+            --highKicker
         ) {
-            if (itH != flushValues.cend() && kicker == *itH) {
+            if (itH != flushValues.cend() && highKicker == *itH) {
                 ++itH;
                 continue;
             }
-            PktCards testPkt(kicker, flushSuit, Card::wildCard);
+            PktCards testPkt(highKicker, flushSuit, Card::wildCard);
             if (pkt == testPkt) {
                 return rank;
             } else {
                 rank += mask.remove(testPkt);
             }
         }
-        // all other hands the same
+        // All remaining hands the same
         return rank;
-        break;
     }
     case 4: {
         if (pkt.has(flushSuit)) {
@@ -523,27 +511,15 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
         case 3: {
             // set is on board, look for two kickers
 
-            // Find two low values
-            auto itR = stats.crbegin();
-            CardVal lowValA = Card::lowAce;
-            CardVal lowValB = Card::lowAce;
-            while (
-                itR != stats.crend()
-             && (lowValA == it->value() || lowValA == Card::lowAce)
-            ) {
-                lowValA = itR->value();
-                ++itR;
-            }
-            while (
-                itR != stats.crend()
-             && (lowValB == it->value() || lowValB == Card::lowAce)
-            ) {
-                lowValB = itR->value();
-                ++itR;
-            }
+            // Look for two kickers
+            const PktVals highVals(bd.highestTwoValues(it->value()));
             
             auto itA = stats.cbegin();
-            for (CardVal kickerA = Card::ace; kickerA > lowValB; --kickerA) {
+            for (
+                CardVal kickerA = Card::ace;
+                kickerA > lowVals.second;
+                --kickerA
+            ) {
                 if (itA != stats.cend() && kickerA == itA->value()) {
                     ++itA;
                     continue;
@@ -551,13 +527,10 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 if (kickerA == it->value()) {
                     continue;
                 }
-                auto itB = stats.cbegin();
-                if (itB->value() == Card::ace) {
-                    ++itB;
-                }
+                auto itB = itA;
                 for (
-                    CardVal kickerB = Card::king;
-                    kickerB > lowValA;
+                    CardVal kickerB = kickerA - 1;
+                    kickerB > lowVals.first;
                     --kickerB
                 ) {
                     if (itB != stats.cend() && kickerB == itB->value()) {
@@ -579,24 +552,79 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         rank += mask.remove(testPkt);
                     }
                 }
+                // kickerB too low, continue to save iterations
+                short rankOffset = 0;
+                for (
+                    CardVal kickerB = lowVals.first - 1;
+                    kickerB > Card::lowAce;
+                    --kickerB
+                ) {
+                    if (itB != stats.cend() && kickerB == itB->value()) {
+                        ++itB;
+                        continue;
+                    }
+                    if (kickerB == it->value()) {
+                        continue;
+                    }
+                    PktCards testPkt(
+                        kickerA,
+                        Card::wildSuit,
+                        kickerB,
+                        Card::wildSuit
+                    );
+                    if (pkt == testPkt) {
+                        return rank;
+                    } else {
+                        rankOffset += mask.remove(testPkt);
+                    }
+                }
+                rank += rankOffset;
             }
-            // Didn't find two kickers, look for one kicker
-            itA = stats.cbegin();
-            for (CardVal kicker = Card::ace; kicker > lowValA; --kicker) {
-                if (itA != stats.cend() && kicker == itA->value()) {
+
+            // kickerA could still be higher than lowVals.first
+            for (
+                CardVal kickerA = lowVals.second - 1;
+                kickerA > lowVals.first;
+                --kickerA
+            ) {
+                if (itA != stats.cend() && kickerA == itA->value()) {
                     ++itA;
                     continue;
                 }
-                PktCards testPkt(kicker, Card::wildSuit, Card::wildCard);
-                if (pkt == testPkt) {
-                    return rank;
-                } else {
-                    rank += mask.remove(testPkt);
+                if (kickerA == it->value()) {
+                    continue;
                 }
+                auto itB = itA;
+                short rankOffset = 0;
+                for (
+                    CardVal kickerB = kickerA - 1;
+                    kickerB > Card::lowAce;
+                    --kickerB
+                ) {
+                    if (itB != stats.cend() && kickerB == itB->value()) {
+                        ++itB;
+                        continue;
+                    }
+                    if (kickerB == it->value()) {
+                        continue;
+                    }
+                    PktCards testPkt(
+                        kickerA,
+                        Card::wildSuit,
+                        kickerB,
+                        Card::wildSuit
+                    );
+                    if (pkt == testPkt) {
+                        return rank;
+                    } else {
+                        rankOffset += mask.remove(testPkt);
+                    }
+                }
+                rank += rankOffset;
             }
-            // Didn't find one kicker, all remaining hands the same
+
+            // kickerA too low all remaining hands the same
             return rank;
-            break;
         }
         case 2: {
             // set uses a pair on the board, one pocket card is free
@@ -608,32 +636,25 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             
             // We could use wildSuit, but we know what suits are missing, so
             // we specify the suits and check two cards to reduce effort
-            Card completerA(it->value(), missingSuits.first);
-            Card completerB(it->value(), missingSuits.second);
+            Card setCardA(it->value(), missingSuits.first);
+            Card setCardB(it->value(), missingSuits.second);
             
             if (pkt.has(it->value()))
             {
+                // Player has set
+                // SS??? S?
 
-                // Find one low value
-                auto itR = stats.crbegin();
-                CardVal lowVal = itR->value();
-                if (lowVal == it->value()) {
-                    itR++;
-                    if (itR != stats.crend()) {
-                        lowVal = itR->value();
-                    } else {
-                        lowVal = Card::lowAce;
-                    }
-                }
-
+                // Find lowest value
+                const CardVal lowVal = bd.lowestValue(it->value());
+                
                 auto itA = stats.cbegin();
                 for (CardVal kicker = Card::ace; kicker > lowVal; --kicker) {
                     if (itA != stats.cend() && kicker == itA->value()) {
                         ++itA;
                         continue;
                     }
-                    PktCards testPktA(completerA, kicker, Card::wildSuit);
-                    PktCards testPktB(completerB, kicker, Card::wildSuit);
+                    PktCards testPktA(setCardA, kicker, Card::wildSuit);
+                    PktCards testPktB(setCardB, kicker, Card::wildSuit);
                     if (pkt == testPktA || pkt == testPktB) {
                         return rank;
                     } else {
@@ -641,9 +662,31 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         rank += mask.remove(testPktB);
                     }
                 }
+                // kicker too low, but continue to save iterations
+                short rankOffset = 0;
+                for (
+                    CardVal kicker = lowVal - 1;
+                    kicker > Card::lowAce;
+                    --kicker
+                ) {
+                    if (itA != stats.cend() && kicker == itA->value()) {
+                        ++itA;
+                        continue;
+                    }
+                    PktCards testPktA(setCardA, kicker, Card::wildSuit);
+                    PktCards testPktB(setCardB, kicker, Card::wildSuit);
+                    if (pkt == testPktA || pkt == testPktB) {
+                        return rank;
+                    } else {
+                        rankOffset += mask.remove(testPktA);
+                        rankOffset += mask.remove(testPktB);
+                    }
+                }
+                rank += rankOffset;
             } else {
-                PktCards testPktA(completerA, Card::wildCard);
-                PktCards testPktB(completerB, Card::wildCard);
+                // pkt does not have set
+                PktCards testPktA(setCardA, Card::wildCard);
+                PktCards testPktB(setCardB, Card::wildCard);
                 rank += mask.remove(testPktA);
                 rank += mask.remove(testPktB);
             }
@@ -701,60 +744,55 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
     // Check for two pair
     if (bd.pairA() != Card::unknownValue) {
         // Pocket pair could be highest, have to iterate through all cards
-        const CardVal low = stats.back().value();
+        const CardVal boardPairA = bd.pairA();
 
-        auto itP = stats.cbegin();
+        auto itA = stats.cbegin();
 
-        for (CardVal pairA = Card::ace; pairA > low; --pairA) {
-            if (pairA == itP->value()) {
-                if (itP->nCards() == 2) {
-                    // PairA is paired on the board, next pair can be pocket
-                    // pairs
-                    auto itPB = itP + 1;
-                    for (
-                        CardVal pairB = pairA - 1;
-                        pairB > Card::lowAce;
-                        --pairB
-                    ) {
-                        if (pairB == itPB->value()) {
-                            // PairB is on the board, need to look for kicker
-
-                            // Find one low value
-                            auto itR = stats.crbegin();
-                            CardVal lowVal = itR->value();
-                            if (lowVal == pairA || lowVal == pairB) {
-                                itR++;
-                                if (itR != stats.crend()) {
-                                    lowVal = itR->value();
-                                } else {
-                                    lowVal = Card::lowAce;
-                                }
-                            }
-
-                            CardVal pairBVal = Card::wildValue;
-                            if (itPB->nCards() == 2) {
-                                // PairB is paired on the board, look for
-                                // one kicker from both pocket cards
-                                // i.e. pairBVal is wild, do nothing
+        for (CardVal pairA = Card::ace; pairA > boardPairA; --pairA) {
+            if (itA != stats.cend() && itA->value() == pairA) {
+                // pairA is on the board
+                if (itA->nCards() == 2) {
+                    // pairA is paired on the board, pairB can be pocket pairs
+                    const CardVal lowest =
+                        std::max(bd.lowestValue(), bd.pairB());
+                    auto itB = itA + 1;
+                    for (CardVal pairB = pairA - 1; pairB > lowest; --pairB) {
+                        if (itB != stats.cend() && itB->value == pairB) {
+                            // pairB is on the board
+                            CardVal pairBCardVal = Card::wildValue;
+                            if (itB->value() == 2) {
+                                // pairB is paired on the board
+                                // AABB? ??
+                                // Do nothing, look for kickers below
                             } else {
-                                // PairB is single on the board, look for
-                                // one kicker from one pocket card
-                                // i.e. pairBVal is pairValue, set it
-                                pairBVal = pairB;
+                                // pairB is single on the board
+                                // AAB?? B?
+                                pairBCardVal = pairB;
                             }
+                            
+                            // Look for kickers
+                            CardVal highVal(
+                                bd.highestValue(PktVals(pairA, pairB))
+                            );
+                            auto itK = stats.cbegin();
                             for (
                                 CardVal kicker = Card::ace;
-                                kicker > lowVal;
+                                kicker > highVal;
                                 --kicker
                             ) {
+                                if (
+                                    itK != stats.cend()
+                                 && itK->value() == kicker
+                                ) {
+                                    ++itK;
+                                    continue;
+                                }
                                 if (kicker == pairA || kicker == pairB) {
                                     continue;
                                 }
                                 PktCards testPkt(
-                                    kicker,
-                                    Card::wildSuit,
-                                    pairBVal,
-                                    Card::wildSuit
+                                    kicker, Card::wildSuit,
+                                    pairBCardVal, Card::wildSuit 
                                 );
                                 if (pkt == testPkt) {
                                     return rank;
@@ -762,20 +800,26 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                                     rank += mask.remove(testPkt);
                                 }
                             }
+                            // No kicker, run through the rest
                             short rankOffset = 0;
                             for (
-                                CardVal kicker = lowVal - 1;
+                                CardVal kicker = highVal - 1;
                                 kicker > Card::lowAce;
                                 --kicker
                             ) {
+                                if (
+                                    itK != stats.cend()
+                                 && itK->value() == kicker
+                                ) {
+                                    ++itK;
+                                    continue;
+                                }
                                 if (kicker == pairA || kicker == pairB) {
                                     continue;
                                 }
                                 PktCards testPkt(
-                                    kicker,
-                                    Card::wildSuit,
-                                    pairBVal,
-                                    Card::wildSuit
+                                    kicker, Card::wildSuit,
+                                    pairBCardVal, Card::wildSuit 
                                 );
                                 if (pkt == testPkt) {
                                     return rank;
@@ -784,34 +828,100 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                                 }
                             }
                             rank += rankOffset;
-                            ++itPB;
+
+                            ++itB;
                         }
                     }
                 } else {
-                    // PairA is single on the board
-                    for (auto itB = itP + 1; itB != stats.cend(); ++itB) {
-                        PktCards testPkt(
-                            pairA,
-                            Card::wildSuit,
-                            itB->value(),
-                            Card::wildSuit
-                        );
-                        if (testPkt == pkt) {
-                            return rank;
+                    #ifdef DSDEBUG
+                    if (itA->nCards() != 1) {
+                        FatalError << "Expecting number of cards to be 1. Is "
+                            << itA->nCards() << std::endl;
+                        abort();
+                    }
+                    #endif
+                    // pairA is single on the board, pairB must pair with board
+                    auto itB = itA + 1;
+                    for (; itB != stats.cend(); ++itB) {
+                        if (itB->nCards() == 2) {
+                            // pairB is paired on the board
+                            // ABB?? A?  Look for kicker
+                            const CardVal lowVal =
+                                bd.lowestValue(PktVals(pairA, itB->value()));
+                            auto itK = stats.cbegin();
+                            for (
+                                CardVal kicker = Card::ace;
+                                kicker > lowVal;
+                                --kicker
+                            ) {
+                                if (
+                                    itK != stats.cend()
+                                 && itK.value() == kicker
+                                ) {
+                                    ++itK;
+                                    continue;
+                                }
+                                if (kicker == pairA || kicker == itB->value()) {
+                                    continue;
+                                }
+                                PktCards testPkt(
+                                    pairA, Card::wildSuit,
+                                    kicker, Card::wildSuit
+                                );
+                                if (testPkt == pkt) {
+                                    return rank;
+                                } else {
+                                    rank += mask.remove(testPkt);
+                                }
+                            }
+                            // Kicker too low, run through the rest
+                            short rankOffset = 0;
+                            for (
+                                CardVal kicker = lowVal - 1;
+                                kicker > Card::lowAce;
+                                --kicker
+                            ) {
+                                if (
+                                    itK != stats.cend()
+                                 && itK.value() == kicker
+                                ) {
+                                    ++itK;
+                                    continue;
+                                }
+                                if (kicker == pairA || kicker == itB->value()) {
+                                    continue;
+                                }
+                                PktCards testPkt(
+                                    pairA, Card::wildSuit,
+                                    kicker, Card::wildSuit
+                                );
+                                if (testPkt == pkt) {
+                                    return rank;
+                                } else {
+                                    rankOffset += mask.remove(testPkt);
+                                }
+                            }
+                            rank += rankOffset;
                         } else {
-                            rank += mask.remove(testPkt);
+                            // pairB is single on the board
+                            // AB??? AB
+                            PktCards testPkt(
+                                pairA, Card::wildSuit,
+                                itB->value(), Card::wildSuit
+                            );
+                            if (pkt == testPkt) {
+                                return rank;
+                            } else {
+                                rank += mask.remove(testPkt);
+                            }
                         }
                     }
                 }
-                ++itP;
+                ++itA;
             } else {
-                // PairA is not on the board, must be pocket pairs
-                PktCards testPkt(
-                    pairA,
-                    Card::wildSuit,
-                    pairA,
-                    Card::wildSuit
-                );
+                // pairA is not on the board, must be pocket pairs
+                // BB??? AA
+                PktCards testPkt(pairA, Card::wildSuit, pairA, Card::wildSuit);
                 if (testPkt == pkt) {
                     return rank;
                 } else {
@@ -819,15 +929,85 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                 }
             }
         }
+        
+        // boardPairA is pairA, pairB can be pocketPairs
+        const CardVal pairA = boardPairA;
+        for (CardVal pairB = pairA - 1; pairB > Card::lowAce; --pairB) {
+            if (itA != stats.cend() && itA->value() == pairB) {
+                // pairB is on the board
+                CardVal pairBCardVal = Card::wildValue;
+                if (itA->nCards() == 2) {
+                    // pairB is paired on the board, look for kickers
+                    // AABB? ??
+                    // Do nothing, look for kickers below
+                } else {
+                    #ifdef DSDEBUG
+                    if (itA->nCards() != 1) {
+                        FatalError << "Expecting number of cards to be 1. Is "
+                            << itA->nCards() << std::endl;
+                        abort();
+                    }
+                    #endif
+                    // pairB is single on the board, look for one kicker
+                    // AAB?? B?
+                    pairBCardVal = pairB;
+                }
+                // Look for kickers
+                CardVal highVal(bd.highestValue(PktVals(pairA, pairB)));
+                auto itK = stats.cbegin();
+                for (CardVal kicker = Card::ace; kicker > highVal; --kicker) {
+                    if (itK != stats.cend() && itK->value() == kicker) {
+                        ++itK;
+                        continue;
+                    }
+                    if (kicker == pairA || kicker == pairB) {
+                        continue;
+                    }
+                    PktCards testPkt(
+                        kicker, Card::wildSuit,
+                        pairBCardVal, Card::wildSuit 
+                    );
+                    if (pkt == testPkt) {
+                        return rank;
+                    } else {
+                        rank += mask.remove(testPkt);
+                    }
+                }
+                // No kicker, run through the rest
+                short rankOffset = 0;
+                for (
+                    CardVal kicker = highVal - 1;
+                    kicker > Card::lowAce;
+                    ++kicker
+                ) {
+                    if (itK != stats.cend() && itK->value() == kicker) {
+                        ++itK;
+                        continue;
+                    }
+                    if (kicker == pairA || kicker == pairB) {
+                        continue;
+                    }
+                    PktCards testPkt(
+                        kicker, Card::wildSuit,
+                        pairBCardVal, Card::wildSuit 
+                    );
+                    if (pkt == testPkt) {
+                        return rank;
+                    } else {
+                        rankOffset += mask.remove(testPkt);
+                    }
+                }
+                rank += rankOffset;
+                ++itA;
+            }
+        }
     } else {
-        // Must pair with two board cards, can iterate through stats
+        // No pairs on the board, pocket must pair with singles
         for (auto itA = stats.cbegin(); itA != stats.cend(); ++itA) {
             for (auto itB = itA + 1; itB != stats.cend(); ++itB) {
                 PktCards testPkt(
-                    itA->value(),
-                    Card::wildSuit,
-                    itB->value(),
-                    Card::wildSuit
+                    itA->value, Card::wildSuit,
+                    itB->value, Card::wildSuit
                 );
                 if (pkt == testPkt) {
                     return rank;
@@ -854,86 +1034,73 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
             if (it != stats.cend() && pairVal == it->value()) {
                 if (it->nCards() == 2) {
                     // Value is paired on the board, look for two kickers
+                    // PP??? ??
 
                     // Find two low values, no need for iterator checking
-                    auto itR = stats.crbegin();
-                    CardVal lowValA = itR->value();
-                    CardVal lowValB;
-                    if (lowValA == pairVal) {
-                        ++itR;
-                        lowValA = itR->value();
-                        ++itR;
-                        lowValB = itR->value();
-                    } else {
-                        ++itR;
-                        lowValB = itR->value();
-                        if (lowValB == pairVal) {
-                            ++itR;
-                            lowValB = itR->value();
-                        }
-                    }
+                    const PktVals lowVals = bd.twoLowestValues(pairVal);
                     
-                    auto itO = stats.cbegin();
+                    auto itH = stats.cbegin();
                     for (
                         CardVal highKicker = Card::ace;
-                        highKicker < lowValB;
+                        highKicker > lowVals.second;
                         --highKicker
                     ) {
-                        if (itO != stats.cend() && highKicker == itO->value()) {
-                            ++itO;
+                        if (itH != stats.cend() && itH->value() == highKicker) {
+                            ++itH;
                             continue;
                         }
-                        auto itI = stats.cbegin();
-                        if (itI->value() == Card::ace) {
-                            ++itI;
+                        if (highKicker == it->value()) {
+                            continue;
                         }
+                        
+                        auto itL = itH;
                         for (
-                            CardVal lowKicker = Card::king;
-                            lowKicker < lowValA;
+                            CardVal lowKicker = highKicker - 1;
+                            lowKicker > lowVals.first;
                             --lowKicker
                         ) {
                             if (
-                                itI != stats.cend()
-                             && lowKicker == itI->value()
+                                itL != stats.cend()
+                             && itL->value() == lowKicker
                             ) {
-                                ++itI;
+                                ++itL;
+                                continue;
+                            }
+                            if (lowKicker == it->value()) {
                                 continue;
                             }
                             PktCards testPkt(
-                                highKicker,
-                                Card::wildSuit,
-                                lowKicker,
-                                Card::wildSuit
+                                highKicker, Card::wildSuit,
+                                lowKicker, Card::wildSuit
                             );
-                            if (pkt == testPkt) {
+                            if (testPkt == pkt) {
                                 return rank;
                             } else {
                                 rank += mask.remove(testPkt);
                             }
                         }
-
-                        // Low kicker doesn't matter, continue through
-                        // remaining cards
+                        // Low kicker too low, continue through
                         short rankOffset = 0;
                         for (
-                            CardVal lowKicker = Card::king;
-                            lowKicker < lowValA;
+                            CardVal lowKicker = lowVals.first - 1;
+                            lowKicker > Card::lowAce;
                             --lowKicker
                         ) {
                             if (
-                                itI != stats.cend()
-                             && lowKicker == itI->value()
+                                itL != stats.cend()
+                             && itL->value() == lowKicker
                             ) {
-                                ++itI;
+                                ++itL;
+                                continue;
+                            }
+                            if (lowKicker == it->value()) {
                                 continue;
                             }
                             PktCards testPkt(
-                                highKicker,
-                                Card::wildSuit,
-                                lowKicker,
-                                Card::wildSuit
+                                highKicker, Card::wildSuit,
+                                lowKicker, Card::wildSuit
                             );
-                            if (pkt == testPkt) {
+                            if (testPkt == pkt) {
                                 return rank;
                             } else {
                                 rankOffset += mask.remove(testPkt);
@@ -941,30 +1108,64 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         }
                         rank += rankOffset;
                     }
-                } else {
-                    // Pair card is on the board, look for kicker
-                    
-                    // Find one low value, no need for iterator checking
-                    auto itR = stats.crbegin();
-                    CardVal lowVal = itR->value();
-                    if (lowVal == pairVal) {
-                        itR++;
-                        lowVal = itR->value();
+                    // High kicker could still beat lowVals.first
+                    for (
+                        CardVal highKicker = lowVals.second - 1;
+                        highKicker > lowVals.first;
+                        --highKicker
+                    ) {
+                        if (itH != stats.cend() && itH->value() == highKicker) {
+                            ++itH;
+                            continue;
+                        }
+                        if (highKicker == it->value()) {
+                            continue;
+                        }
+                        // Low kicker doesn't matter
+                        short rankOffset = 0;
+                        auto itL = itH;
+                        for (
+                            CardVal lowKicker = highKicker - 1;
+                            lowKicker > Card::lowAce;
+                            --lowKicker
+                        ) {
+                            if (
+                                itL != stats.cend()
+                             && itL->value() == lowKicker
+                            ) {
+                                ++itL;
+                                continue;
+                            }
+                            PktCards testPkt(
+                                highKicker, Card::wildSuit,
+                                lowKicker, Card::wildSuit
+                            );
+                            if (testPkt == pkt) {
+                                return rank;
+                            } else {
+                                rankOffset += mask.remove(testPkt);
+                            }
+                        }
+                        rank += rankOffset;
                     }
+                    // remaining hands the same
+                    return rank;
+                } else {
+                    // Value is single on the board, need one in pocket
+                    // P???? P?
+                    const CardVal lowVal = bd.lowestValue(pairVal);
                     auto itK = stats.cbegin();
-                    for (CardVal kicker = Card::ace; kicker > lowVal; --kicker) {
-                        if (itK != stats.cend() && kicker == itK->value()) {
-                            ++itK;
+                    for (Card kicker = Card::ace; kicker > lowVal; --kicker) {
+                        if (itK != stats.cend() && itK->value() == kicker) {
+                            itK++;
                             continue;
                         }
                         if (kicker == pairVal) {
                             continue;
                         }
                         PktCards testPkt(
-                            pairVal,
-                            Card::wildSuit,
-                            kicker,
-                            Card::wildSuit
+                            kicker, Card::wildSuit,
+                            Card::wildCard
                         );
                         if (testPkt == pkt) {
                             return rank;
@@ -972,18 +1173,23 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                             rank += mask.remove(testPkt);
                         }
                     }
-                    // No kicker
+                    // Kicker too low, continue through
                     short rankOffset = 0;
                     for (
-                        CardVal nonKicker = lowVal - 1;
-                        nonKicker >= Card::two;
-                        --nonKicker
+                        Card kicker = lowVal - 1;
+                        kicker > Card::lowAce;
+                        --kicker
                     ) {
+                        if (itK != stats.cend() && itK->value() == kicker) {
+                            itK++;
+                            continue;
+                        }
+                        if (kicker == pairVal) {
+                            continue;
+                        }
                         PktCards testPkt(
-                            pairVal,
-                            Card::wildSuit,
-                            nonKicker,
-                            Card::wildSuit
+                            kicker, Card::wildSuit,
+                            Card::wildCard
                         );
                         if (testPkt == pkt) {
                             return rank;
@@ -992,24 +1198,20 @@ short ds::HandRanker::getRank(const Board& bd, const PktCards& pkt){
                         }
                     }
                     rank += rankOffset;
-                    ++it;
                 }
+                ++it;
+                continue;
+            }
+            // Value is not on the board, need pocket pairs
+            PktCards testPkt(pairVal, Card::wildSuit, pairVal, Card::wildSuit);
+            if (testPkt == pkt) {
+                return rank;
             } else {
-                // Pair val is not on the board, must be pocket pairs
-                PktCards testPkt(
-                    pairVal,
-                    Card::wildSuit,
-                    pairVal,
-                    Card::wildSuit
-                );
-                if (testPkt == pkt) {
-                    return rank;
-                } else {
-                    rank += mask.remove(testPkt);
-                }
+                mask.remove(testPkt);
             }
         }
     }
+
 
     // Check for high card
         // boardA > boardB are lowest two values on board
