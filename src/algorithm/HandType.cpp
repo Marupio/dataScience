@@ -20,7 +20,7 @@ const std::array<std::string, 10> ds::HandType::HandTypeNames = {
 
 // ****** Constructors ****** //
 
-ds::HandType::HandType(const Board bd, const PktCards& pkt):
+ds::HandType::HandType(const Board& bd, const PktCards& pkt):
     ht_(HtUnknown),
     values_(PktVals::unknownValues)
 {

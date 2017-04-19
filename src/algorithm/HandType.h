@@ -35,7 +35,7 @@ public:
         // Constructors    
 
             //- Construct given board and pocket
-            HandType(const Board bd, const PktCards& pkt);
+            HandType(const Board& bd, const PktCards& pkt);
 
 
         // Public Member Functions

@@ -1,3 +1,5 @@
+// TODO - Get rid of binCardValue and just use value alone.
+
 #ifndef Card_h
 #define Card_h
 
