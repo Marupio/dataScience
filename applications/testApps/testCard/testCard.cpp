@@ -10,7 +10,7 @@ int main()
     std::cout << "Constructing from deckIndex..." << std::endl;
     for (short i = 0; i < 52; ++i) {
         Card diCard(i);
-        std::cout << i << ": " << diCard << std::endl;
+        std::cout << i << ": " << diCard << ", " << diCard.deckIndex() << std::endl;
     }
     std::string asStr("AS");
     std::cout << "Reading from string...";

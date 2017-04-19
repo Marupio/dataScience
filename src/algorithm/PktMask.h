@@ -142,7 +142,7 @@ private:
     
         //- Remove from index
         short removeIndex(short maskIndex) {
-            #ifdef DS_DEBUG
+            #ifdef DSDEBUG
             short removed = at(maskIndex);
             operator[](maskIndex) = 0;
             return removed;

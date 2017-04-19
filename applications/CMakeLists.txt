@@ -49,6 +49,32 @@ install_targets(
 
 
 add_executable(
+    testHandRankerRank_Input
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRank_Input.cpp
+)
+
+target_link_libraries(testHandRankerRank_Input core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRankerRank_Input
+)
+
+
+add_executable(
+    testHandRankerRankExtensive_Random
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerRankExtensive_Random.cpp
+)
+
+target_link_libraries(testHandRankerRankExtensive_Random core)
+
+install_targets(
+    ${BIN_DIR}
+    testHandRankerRankExtensive_Random
+)
+
+
+add_executable(
     testHandRankerHandTypes_Input
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerHandTypes_Input.cpp
 )

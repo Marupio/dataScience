@@ -1,5 +1,6 @@
 const ds::VecDeckInd ds::PktMask::deckIndicesToPocketMask_ =
 {
+-1,
 0,
 1,
 2,

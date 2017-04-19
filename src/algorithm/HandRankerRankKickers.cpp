@@ -173,12 +173,9 @@ void ds::HandRanker::rankKickersThreeFlush(short& rank) {
             ++itH;
             continue;
         }
-        auto itL = flushValues.cbegin();
-        if (*itL == Card::ace) {
-            ++itL;
-        }
+        auto itL = itH;
         for (
-            CardVal lowKicker = Card::king;
+            CardVal lowKicker = highKicker - 1;
             lowKicker > Card::lowAce;
             --lowKicker
         ) {

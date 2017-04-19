@@ -56,7 +56,7 @@ short ds::PktMask::remove(PktCards pc) {
     #endif
     if (!wildValA && !wildSuitA && !wildValB && !wildSuitB) {
         const DeckInd diA(ca.deckIndex());
-        const DeckInd diB(ca.deckIndex());
+        const DeckInd diB(cb.deckIndex());
         short hashIndex;
         if (diA > diB) {
             hashIndex = diA + diB*51;
