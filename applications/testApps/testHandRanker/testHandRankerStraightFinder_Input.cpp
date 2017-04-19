@@ -23,33 +23,5 @@ int main() {
         std::cout << "    " << scvIt->first << ": (" << scvIt->second.first
             << " " << scvIt->second.second << ")" << std::endl;
     }
-
-/*    PktCards pkt;
-    Board bd;
-    std::cout << "First pocket card? ";
-    std::cin >> pkt.first;
-    std::cout << "Second pocket card? ";
-    std::cin >> pkt.second;
-    std::cout << "Board cards? ";
-    std::cin >> bd;
-    std::cout << bd << ", " << pkt << std::endl;
-
-    const VecValStats& stats(bd.stats());
-    VecCardVal values;
-    values.reserve(stats.size());
-    for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
-        values.push_back(it->value());
-    }
-    const StraightCompleters sc(values);
-    for (auto it = sc.cbegin(); it != sc.cend(); ++it) {
-        std::cout << it->first << ": [" << it->second.first << " "
-            << it->second.second << "]" << std::endl;
-    }
-
-    HandRanker::HandType hts(HandRanker::getHandType(bd, pkt));
-    std::cout << HandRanker::HandTypeNames[hts.ht] << " ["
-        << Card::valueToWriteChar(hts.values.first) << " "
-        << Card::valueToWriteChar(hts.values.second) << "]" << std::endl;
-*/
     return 0;
 }

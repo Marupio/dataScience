@@ -28,15 +28,16 @@ public:
         //- Static suit data
         static const short nSuits;
         
-        static const Suit unknownSuit;      // -1
+        static const Suit unknownSuit;      // -2
+        static const Suit wildSuit;         // -1
         static const Suit clubs;            // 0
         static const Suit diamonds;         // 1
         static const Suit hearts;           // 2
         static const Suit spades;           // 3
-        static const Suit wildSuit;         // 4
 
         //- Static binary value data
-        static const BinCardVal binUnknownValue;  // -2
+        static const BinCardVal binUnknownValue;  // -3
+        static const BinCardVal binWildValue;     // -2
         static const BinCardVal binLowAce;        // -1
         static const BinCardVal binTwo;           // 0
         static const BinCardVal binThree;         // 1
@@ -51,10 +52,10 @@ public:
         static const BinCardVal binQueen;         // 10
         static const BinCardVal binKing;          // 11
         static const BinCardVal binAce;           // 12
-        static const BinCardVal binWildValue;     // 13
 
         //- Static integer value data
-        static const CardVal unknownValue;    // 0
+        static const CardVal unknownValue;    // -1
+        static const CardVal wildValue;       // 0
         static const CardVal lowAce;          // 1 reserved for low-ace cases
         static const CardVal two;             // 2
         static const CardVal three;           // 3
@@ -69,7 +70,6 @@ public:
         static const CardVal queen;           // 12
         static const CardVal king;            // 13
         static const CardVal ace;             // 14
-        static const CardVal wildValue;       // 15
 
 
     // Constructors

@@ -4,7 +4,6 @@
 #include<Deck.h>
 #include<dsConfig.h>
 #include<types.h>
-#include <HandRanker.h>
 
 using namespace ds;
 

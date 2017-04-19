@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <dsConfig.h>
-#include <HandRanker.h>
+#include <HandType.h>
 #include <StraightCompleters.h>
 #include <error.h>
 

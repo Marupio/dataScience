@@ -39,8 +39,8 @@ void ds::StraightCompleters::makeStraightCompleters (
     }
     #endif
     VecCardVal cValues(values);
-    if (values.front() == 14) {
-        cValues.push_back(1);
+    if (values.front() == Card::ace) {
+        cValues.push_back(Card::lowAce);
     }
 
     VecCardVal::const_iterator altVsIter(cValues.begin());
@@ -61,9 +61,9 @@ void ds::StraightCompleters::makeStraightCompleters (
     }
     vsIter = altVsIter;
     reserve(5);
-    short cursor = std::min((*altVsIter + 2), 14);
+    short cursor = std::min(CardVal(*altVsIter + 2), Card::ace);
     short restartCursor = cursor;
-    PktVals pocket(15, 15);
+    PktVals pocket(Card::wildValue, Card::wildValue);
     short curStraightSize(1);
     CardVal curStraightMax(cursor);
 
@@ -87,14 +87,14 @@ void ds::StraightCompleters::makeStraightCompleters (
         if (vsIter != cValues.end() && *vsIter == cursor) {
             // Value is on the board
             ++vsIter;
-        } else if (pocket.first == 15) {
+        } else if (pocket.first == Card::wildValue) {
             // There is room in the first pocket card
             pocket.first = cursor;
             
             // Set restart
             altVsIter = vsIter;
             restartCursor = cursor;
-        } else if (pocket.second == 15) {
+        } else if (pocket.second == Card::wildValue) {
             // There is room in the second pocket card
             pocket.second = cursor;
         }
@@ -117,11 +117,11 @@ void ds::StraightCompleters::makeStraightCompleters (
         if (curStraightSize == 5) {
             // Straight was formed
             // Account for low Ace value
-            if (pocket.first == 1) {
-                pocket.first = 14;
-            } else if (pocket.second == 1) {
+            if (pocket.first == Card::lowAce) {
+                pocket.first = Card::ace;
+            } else if (pocket.second == Card::lowAce) {
                 std::swap(pocket.second, pocket.first);
-                pocket.first = 14;
+                pocket.first = Card::ace;
             }
             if (!size() || (size() && back().second != pocket)) {
                 // Conditional accounts for connected pocket with a higher
@@ -167,8 +167,8 @@ bool ds::StraightCompleters::restart(
     cursor = restartCursor;
     // Edge case - one wild card
     if (
-        pocket.second == 15
-     && pocket.first != 15
+        pocket.second == Card::wildValue
+     && pocket.first != Card::wildValue
      && pocket.first < curStraightMax) {
         --cursor;
     }
@@ -218,9 +218,9 @@ bool ds::StraightCompleters::restart(
     } else {
         altVsIter = values.end();
         vsIter++;
-        pocket.first = 15;
+        pocket.first = Card::wildValue;
     }
-    pocket.second = 15;
+    pocket.second = Card::wildValue;
     return true;
 }
 

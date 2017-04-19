@@ -8,7 +8,7 @@
 namespace ds {
 
 class PktMask:
-    public std::vector<signed char>
+    public std::vector<short>
 {
 public:
 
@@ -80,13 +80,13 @@ public:
 
         //- Construct null    
         PktMask():
-            std::vector<signed char>(1326, 1),
+            std::vector<short>(1326, 1),
             nRemaining_(1326)
         {}
 
         //- Construct from Board
         PktMask(const Board& b):
-            std::vector<signed char>(1326, 1),
+            std::vector<short>(1326, 1),
             nRemaining_(1326)
         {
             remove(b);
@@ -95,7 +95,7 @@ public:
         //- Construct from Board and player's PocketCards
         //  Note: players pocket cards are removed individually
         PktMask(const Board& b, const PktCards pc):
-            std::vector<signed char>(1326, 1),
+            std::vector<short>(1326, 1),
             nRemaining_(1326)
         {
             remove(b);
@@ -124,7 +124,7 @@ public:
 
             //- Remove given pocket cards from possibilities
             //  Pocket cards must be sorted
-            short remove(const PktCards& pc);
+            short remove(PktCards pc);
 
             //- Remove any combinations with the given card
             short remove(const Card& c);
@@ -139,6 +139,19 @@ private:
 
 
     // Private member functions
+    
+        //- Remove from index
+        short removeIndex(short maskIndex) {
+            #ifdef DS_DEBUG
+            short removed = at(maskIndex);
+            operator[](maskIndex) = 0;
+            return removed;
+            #else
+            short removed = operator[](maskIndex);
+            operator[](maskIndex) = 0;
+            return removed;
+            #endif
+        }
     
         //- Helper for remove(PktCards)
         short removeFromVecDeckInd(const VecDeckInd& table);

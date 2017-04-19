@@ -26,8 +26,9 @@ short ds::PktMask::remove(const Board& b) {
 }
 
 
-short ds::PktMask::remove(const PktCards& pc) {
+short ds::PktMask::remove(PktCards pc) {
     short nRemoved = 0;
+    pc.sort();
     const Card& ca(pc.first);
     const Card& cb(pc.second);
     
@@ -37,16 +38,21 @@ short ds::PktMask::remove(const PktCards& pc) {
     bool wildSuitB(cb.hasWildSuit());
     
     #ifdef DSDEBUG
-        if (ca.partsUnknown() || cb.partsUnknown()) {
-            FatalError << "One of the parts has unknown components. Cards are:"
-                << "\n    " << pc << std::endl;
-            abort();
-        }
-        if (ca < cb) {
-            FatalError << "Supplied PocketCards are unsorted. Cards are:\n"
-                << "    " << pc << std::endl;
-                
-        }
+    if (ca.partsUnknown() || cb.partsUnknown()) {
+        FatalError << "One of the parts has unknown components. Cards are:"
+            << "\n    " << pc << std::endl;
+        abort();
+    }
+    if (ca.value() == Card::lowAce || cb.value() == Card::lowAce) {
+        FatalError << "lowAce detected in pktCards. Cards are:\n"
+            << "    " << pc << std::endl;
+        abort();
+    }
+    if (ca < cb && !wildValB) {
+        FatalError << "Unsorted cards detected. Cards are:\n    "
+            << pc << std::endl;
+        abort();
+    }
     #endif
     if (!wildValA && !wildSuitA && !wildValB && !wildSuitB) {
         const DeckInd diA(ca.deckIndex());
@@ -61,13 +67,12 @@ short ds::PktMask::remove(const PktCards& pc) {
         #ifdef DSDEBUG
         if (maskIndex < 0) {
             FatalError << "Attempting to remove cards with deck indices: ("
-                << diA << " " << diB << "), but the mask index in not "
+                << diA << " " << diB << "), but the mask index is not "
                 << "positive." << std::endl;
             abort();
         }
         #endif
-        nRemoved = operator[](maskIndex);
-        operator[](maskIndex) = 0;
+        nRemoved = removeIndex(maskIndex);
     }
     else if (wildValA) {
         // implies wildValB (sorted requirement)
@@ -104,11 +109,15 @@ short ds::PktMask::remove(const PktCards& pc) {
         //  2. one value    V* **
         //  X. not allowed  V* *S, VS *S
         #ifdef DSDEBUG
-        if (!wildSuitB) {
-            // Algorithms should never deliver a suited B card in this case
-            FatalError << "Unexpected wild combination. Cards are: \n"
-                << "    " << pc << std::endl;
-        }
+        // It's true we should never deliver a suited B card, but for
+        // we do sometimes when checking for straightFlushes.  For efficiency
+        // it is best to just assume B is wildSuited.
+        //if (!wildSuitB) {
+        //    // Algorithms should never deliver a suited B card in this case
+        //    FatalError << "Unexpected wild combination. Cards are: \n"
+        //        << "    " << pc << std::endl;
+        //    abort();
+        //}
         #endif
         // wildSuitB is implied
         if (wildSuitA) {
@@ -131,14 +140,27 @@ short ds::PktMask::remove(const PktCards& pc) {
         short index = (ca.value() - 2) + (cb.value() - 2)*12;
         const VecDeckInd& myTable = twoValTables_[index];
         #ifdef DSDEBUG
+        if (myTable.size() == 0) {
             FatalError << "Encountered empty entry in twoValTables with cards "
                 << ca << ", " << cb << std::endl;
             abort();
+        }
         #endif
         nRemoved += removeFromVecDeckInd(myTable);
     }
     
     nRemaining_ -= nRemoved;
+    #ifdef DS_DEBUG
+    short count = 0;
+    for (short i = 0; i < size(); ++i) {
+        count += operator[](i);
+    }
+    if (count != nRemaining_) {
+        FatalError << "count (" << count << ") and nRemaining ("
+            << nRemaining_ << ") mismatch" << std::endl;
+        abort();
+    }
+    #endif
     return nRemoved;
 }
 
@@ -159,8 +181,14 @@ short ds::PktMask::removeFromVecDeckInd(
         it!= table.end();
         ++it
     ) {
-        nRemoved += operator[](*it);
-        operator[](*it) = 0;
+        #ifdef DS_DEBUG
+        if (*it < 0 || *it >= size()) {
+            FatalError << "Array index (" << short(*it) << ") out of bounds (0.."
+                << short(size() - 1) << ")" << std::endl;
+            abort();
+        }
+        #endif
+        nRemoved += removeIndex(*it);
     }
     return nRemoved;
 }

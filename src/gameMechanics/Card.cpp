@@ -9,14 +9,15 @@ const ds::Card ds::Card::wildCard(Card::wildValue, Card::wildSuit);
 
 const short ds::Card::nSuits(4);
 
-const ds::Suit ds::Card::unknownSuit(-1);
+const ds::Suit ds::Card::unknownSuit(-2);
+const ds::Suit ds::Card::wildSuit(-1);
 const ds::Suit ds::Card::clubs(0);
 const ds::Suit ds::Card::diamonds(1);
 const ds::Suit ds::Card::hearts(2);
 const ds::Suit ds::Card::spades(3);
-const ds::Suit ds::Card::wildSuit(4);
 
-const ds::BinCardVal ds::Card::binUnknownValue(-2);
+const ds::BinCardVal ds::Card::binUnknownValue(-3);
+const ds::BinCardVal ds::Card::binWildValue(-2);
 const ds::BinCardVal ds::Card::binLowAce(-1);
 const ds::BinCardVal ds::Card::binTwo(0);
 const ds::BinCardVal ds::Card::binThree(1);
@@ -31,9 +32,9 @@ const ds::BinCardVal ds::Card::binJack(9);
 const ds::BinCardVal ds::Card::binQueen(10);
 const ds::BinCardVal ds::Card::binKing(11);
 const ds::BinCardVal ds::Card::binAce(12);
-const ds::BinCardVal ds::Card::binWildValue(13);
 
-const ds::CardVal ds::Card::unknownValue(0);
+const ds::CardVal ds::Card::unknownValue(-1);
+const ds::CardVal ds::Card::wildValue(0);
 const ds::CardVal ds::Card::lowAce(1);
 const ds::CardVal ds::Card::two(2);
 const ds::CardVal ds::Card::three(3);
@@ -48,7 +49,6 @@ const ds::CardVal ds::Card::jack(11);
 const ds::CardVal ds::Card::queen(12);
 const ds::CardVal ds::Card::king(13);
 const ds::CardVal ds::Card::ace(14);
-const ds::CardVal ds::Card::wildValue(15);
 
 
 // *** Constructors *** //
