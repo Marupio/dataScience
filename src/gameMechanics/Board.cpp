@@ -372,7 +372,7 @@ void ds::Board::updateDerivedData() {
             if (missingSuits.size() != 1) {
                 FatalError << "Expecting only one missing suit from: ";
                 writeSuitCount(itS->suits(), std::cerr);
-                std::cerr << std::endl;
+                std::cerr << "\n" << cards_ << std::endl;
                 abort();
             }
             #endif
@@ -385,9 +385,9 @@ void ds::Board::updateDerivedData() {
                 const VecSuit missingSuits = getMissingSuits(itS->suits());
                 #ifdef DSDEBUG
                 if (missingSuits.size() != 2) {
-                    FatalError << "Expecting two missing suit from: ";
+                    FatalError << "Expecting two missing suits from: ";
                     writeSuitCount(itS->suits(), std::cerr);
-                    std::cerr << std::endl;
+                    std::cerr << "\n" << cards_ << std::endl;
                     abort();
                 }
                 #endif
@@ -398,9 +398,9 @@ void ds::Board::updateDerivedData() {
                 const VecSuit missingSuits = getMissingSuits(itS->suits());
                 #ifdef DSDEBUG
                 if (missingSuits.size() != 2) {
-                    FatalError << "Expecting two missing suit from: ";
+                    FatalError << "Expecting two missing suits from: ";
                     writeSuitCount(itS->suits(), std::cerr);
-                    std::cerr << std::endl;
+                    std::cerr << "\n" << cards_ << std::endl;
                     abort();
                 }
                 #endif

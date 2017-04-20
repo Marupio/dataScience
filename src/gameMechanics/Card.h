@@ -37,24 +37,6 @@ public:
         static const Suit hearts;           // 2
         static const Suit spades;           // 3
 
-        //- Static binary value data
-        static const BinCardVal binUnknownValue;  // -3
-        static const BinCardVal binWildValue;     // -2
-        static const BinCardVal binLowAce;        // -1
-        static const BinCardVal binTwo;           // 0
-        static const BinCardVal binThree;         // 1
-        static const BinCardVal binFour;          // 2
-        static const BinCardVal binFive;          // 3
-        static const BinCardVal binSix;           // 4
-        static const BinCardVal binSeven;         // 5
-        static const BinCardVal binEight;         // 6
-        static const BinCardVal binNine;          // 7
-        static const BinCardVal binTen;           // 8
-        static const BinCardVal binJack;          // 9
-        static const BinCardVal binQueen;         // 10
-        static const BinCardVal binKing;          // 11
-        static const BinCardVal binAce;           // 12
-
         //- Static integer value data
         static const CardVal unknownValue;    // -1
         static const CardVal wildValue;       // 0
@@ -82,9 +64,6 @@ public:
         //- Construct from integer value and suit
         Card(CardVal value, Suit suit);
 
-        //- Construct from bin values
-        Card(BinCardVal value, Suit suit);
-        
         //- Construct from human-readable char array
         Card(const char* chStr);
 
@@ -108,23 +87,11 @@ public:
 
             // Conversions for card value
 
-                //- Convert human-readable char to internal value
-                static BinCardVal readCharToBinValue(char value);
-
                 //- Convert human-readable char to card value
                 static CardVal readCharToValue(char value);
 
-                //- Convert internal value to human-readable char
-                static char binValueToWriteChar(BinCardVal value);
-
                 //- Convert card value to human-readable char
                 static char valueToWriteChar(CardVal value);
-
-                //- Convert internal value to card value
-                static CardVal binValueToValue(BinCardVal value);
-
-                //- Convert integer value to internal value
-                static BinCardVal valueToBinValue(CardVal value);
 
 
             // Conversions for card suit
@@ -148,9 +115,6 @@ public:
             //- Return card value
             CardVal value() const;
 
-            //- Return internal bin value
-            BinCardVal binValue() const;
-            
             //- Return suit
             Suit suit() const;
             
@@ -203,7 +167,7 @@ public:
 private:
 
     //- Internal value of card
-    BinCardVal binValue_;
+    CardVal value_;
 
     //- Internal suit of card
     Suit suit_;

@@ -119,8 +119,8 @@ short ds::PktMask::remove(PktCards pc) {
         // wildSuitB is implied
         if (wildSuitA) {
             // one value tables
-            const BinCardVal bv = ca.binValue();
-            const VecDeckInd& myTable = oneValTables_[bv];
+            const CardVal cv = ca.value() - 2;
+            const VecDeckInd& myTable = oneValTables_[cv];
             nRemoved += removeFromVecDeckInd(myTable);
         } else {
             // one card tables

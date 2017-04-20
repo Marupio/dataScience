@@ -108,7 +108,8 @@ short ds::HandRanker::getRank() {
                         FatalError << "Board stats and derived data do not "
                             << "agree. Pair value " << it->value() << " "
                             << "expected, but board pairA = " << bd_.pairA()
-                            << ", and pairB = " << bd_.pairB() << std::endl;
+                            << ", and pairB = " << bd_.pairB() << "\n" << bd_
+                            << " " << pkt_ << std::endl;
                         abort();
                     }
                 #endif
@@ -329,7 +330,8 @@ short ds::HandRanker::getRank() {
     }
     default: {
         FatalError << "Unexpected number of flush value cards on board. Flush "
-            << "values are:\n" << flushValues << std::endl;
+            << "values are:\n" << flushValues << "\n" << bd_ << " "
+            << pkt_ << std::endl;
         abort();
     } // end default
     } // end switch
@@ -524,7 +526,7 @@ short ds::HandRanker::getRank() {
                 if (setCards.size() != 2) {
                     FatalError << "Expecting setCards size to be 2. Is "
                         << setCards.size() << ". setCards are:\n" << setCards
-                        << std::endl;
+                        << "\n" << bd_ << " " << pkt_ << std::endl;
                     abort();
                 }
                 #endif
@@ -552,7 +554,8 @@ short ds::HandRanker::getRank() {
         }
         default: {
             FatalError << "Unexpected nCards when checking for set. nCards "
-                << "is: " << it->nCards() << std::endl;
+                << "is: " << it->nCards() << "\n" << bd_ << " " << pkt_
+                << std::endl;
             abort();
         } // end default
         } // end switch
@@ -638,7 +641,8 @@ short ds::HandRanker::getRank() {
                     #ifdef DSDEBUG
                     if (itA->nCards() != 1) {
                         FatalError << "Expecting number of cards to be 1. Is "
-                            << itA->nCards() << std::endl;
+                            << itA->nCards() << "\n" << bd_ << " " << pkt_
+                            << std::endl;
                         abort();
                     }
                     #endif
@@ -714,7 +718,8 @@ short ds::HandRanker::getRank() {
                 #ifdef DSDEBUG
                 if (itB->nCards() != 1) {
                     FatalError << "Expecting number of cards to be 1. Is "
-                        << itB->nCards() << std::endl;
+                        << itB->nCards() << "\n" << bd_ << " " << pkt_
+                        << std::endl;
                     abort();
                 }
                 #endif

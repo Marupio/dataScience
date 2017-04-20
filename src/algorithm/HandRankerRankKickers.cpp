@@ -196,8 +196,8 @@ void ds::HandRanker::rankKickersThreeFlush(short& rank) {
             }
         }
     }
-    FatalError << "Rank should have been returned for flush."
-        << std::endl;
+    FatalError << "Rank should have been returned for flush.\n" << bd_ << " "
+        << pkt_ << std::endl;
     abort();
 }
 
@@ -248,8 +248,8 @@ void ds::HandRanker::rankKickersFourFlush(short& rank) {
             rank += mask_.remove(testPkt);
         }
     }
-    FatalError << "Rank should have been returned for flush."
-        << std::endl;
+    FatalError << "Rank should have been returned for flush.\n" << bd_ << " "
+        << pkt_ << std::endl;
     abort();
 }
 
