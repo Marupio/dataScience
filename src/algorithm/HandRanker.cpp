@@ -7,7 +7,8 @@
 ds::HandRanker::HandRanker(const Board& bd, const PktCards& pkt):
     bd_(bd),
     pkt_(pkt),
-    baseMask_(bd, pkt),
+//    baseMask_(bd, pkt),
+    baseMask_(bd),
     mask_(baseMask_)
 {}
 

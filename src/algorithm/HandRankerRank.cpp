@@ -594,7 +594,7 @@ short ds::HandRanker::getRank() {
                 if (itA->nCards() == 2) {
                     // pairA is paired on the board, pairB can be pocket pairs
                     const CardVal lowest =
-                        std::max(bd_.lowestValue(), bd_.pairB());
+                        std::max(bd_.lowestValue(itA->value()), bd_.pairB());
                     auto itB = itA + 1;
                     for (CardVal pairB = pairA - 1; pairB > lowest; --pairB) {
                         if (itB != stats.cend() && itB->value() == pairB) {
@@ -692,10 +692,11 @@ short ds::HandRanker::getRank() {
         
         // boardPairA is pairA, pairB can be pocketPairs
         const CardVal pairA = boardPairA;
+        auto itB = itA + 1;
         for (CardVal pairB = pairA - 1; pairB > Card::lowAce; --pairB) {
-            if (itA != stats.cend() && itA->value() == pairB) {
+            if (itB != stats.cend() && itB->value() == pairB) {
                 // pairB is on the board
-                if (itA->nCards() == 2) {
+                if (itB->nCards() == 2) {
                     // pairB is paired on the board, look for kickers
                     // AABB? ??
                     rankOneKicker(
@@ -708,9 +709,9 @@ short ds::HandRanker::getRank() {
                 }
                 
                 #ifdef DSDEBUG
-                if (itA->nCards() != 1) {
+                if (itB->nCards() != 1) {
                     FatalError << "Expecting number of cards to be 1. Is "
-                        << itA->nCards() << std::endl;
+                        << itB->nCards() << std::endl;
                     abort();
                 }
                 #endif
@@ -728,7 +729,14 @@ short ds::HandRanker::getRank() {
                     );
                     return rank;
                 }
-                ++itA;
+                ++itB;
+            }
+            // Pair B is not on the board, must be pocket pairs
+            PktCards testPkt(pairB, Card::wildSuit, pairB, Card::wildSuit);
+            if (pkt_ == testPkt) {
+                return rank;
+            } else {
+                rank += mask_.remove(testPkt);
             }
         }
     } else {

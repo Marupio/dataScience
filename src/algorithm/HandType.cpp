@@ -303,6 +303,15 @@ void ds::HandType::getHandType(
                 }
             }
         }
+    } else {
+        for (auto itA = stats.cbegin(); itA != stats.cend(); ++itA) {
+            for (auto itB = itA + 1; itB != stats.cend(); ++itB) {
+                if (pkt.has(itA->value()) && pkt.has(itB->value())) {
+                    setHandType(HtTwoPair, itA->value(), itB->value());
+                    return;
+                }
+            }
+        }
     }
 
     // Check for a pair

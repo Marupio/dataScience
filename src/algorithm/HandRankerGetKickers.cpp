@@ -208,7 +208,7 @@ ds::PktVals ds::HandRanker::getKickers(
         if (itA->nCards() == 2 && itB->nCards() == 2) {
             // Both pairs are on board, pocket is free
             kickers.first = pkt.highestValue();
-            CardVal lowVal = bd.lowestValue(ht.values());
+            CardVal lowVal = bd.highestValue(ht.values());
             if (kickers.first <= lowVal) {
                 kickers.first = Card::unknownValue;
             }
@@ -227,8 +227,8 @@ ds::PktVals ds::HandRanker::getKickers(
             kickers.first = pkt.first.value();
         }
 
-        const PktVals lowVals(bd.lowestTwoValues(ht.values()));
-        if (kickers.first <= lowVals.second) {
+        const CardVal lowVal(bd.highestValue(ht.values()));
+        if (kickers.first <= lowVal) {
             kickers.first = Card::unknownValue;
         }
         return kickers;
