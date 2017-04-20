@@ -17,9 +17,13 @@ short ds::HandRanker::getRank() {
         ) {
             PktCards testPkt(
                 sfit->second.first,
-                flushSuit,
+                sfit->second.first == Card::wildValue
+                  ? Card::wildSuit
+                  : flushSuit,
                 sfit->second.second,
-                flushSuit
+                sfit->second.second == Card::wildValue
+                  ? Card::wildSuit
+                  : flushSuit
             );
             if (testPkt == pkt_) {
                 return rank;
@@ -287,7 +291,6 @@ short ds::HandRanker::getRank() {
             // and move on
             // Else move through existing ranks
             // Continue
-
     // Check for flush
     switch (flushValues.size()) {
     case 5: {

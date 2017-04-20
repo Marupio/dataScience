@@ -60,8 +60,14 @@ void ds::HandType::getHandType(
             ++sfit
         ) {
             PktCards testPkt(
-                sfit->second.first, flushSuit,
-                sfit->second.second, flushSuit
+                sfit->second.first,
+                sfit->second.first == Card::wildValue
+                  ? Card::wildSuit
+                  : flushSuit,
+                sfit->second.second,
+                sfit->second.second == Card::wildValue
+                  ? Card::wildSuit
+                  : flushSuit
             );
             if (testPkt == pkt) {
                 setHandType(HtStraightFlush, sfit->first, Card::unknownValue);

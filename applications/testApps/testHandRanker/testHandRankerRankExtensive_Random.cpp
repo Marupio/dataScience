@@ -52,12 +52,12 @@ int main() {
                 short rankB = rankArray[iB];
                 short comp = HandRanker::compare(bd, pktA, pktB);
                 std::cout << "    " << pktA << " (" << rankA << ") ";
-                if (
+/*                if (
                     pktA.first == pktB.first || pktA.first == pktB.second
                  || pktA.second == pktB.first || pktA.second == pktB.second
                 ) {
                     std::cout << "x";
-                } else if (comp > 0) {
+                } else*/ if (comp > 0) {
                     std::cout << ">";
                 } else if (comp == 0) {
                     std::cout << "=";

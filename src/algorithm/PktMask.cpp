@@ -109,15 +109,12 @@ short ds::PktMask::remove(PktCards pc) {
         //  2. one value    V* **
         //  X. not allowed  V* *S, VS *S
         #ifdef DSDEBUG
-        // It's true we should never deliver a suited B card, but for
-        // we do sometimes when checking for straightFlushes.  For efficiency
-        // it is best to just assume B is wildSuited.
-        //if (!wildSuitB) {
-        //    // Algorithms should never deliver a suited B card in this case
-        //    FatalError << "Unexpected wild combination. Cards are: \n"
-        //        << "    " << pc << std::endl;
-        //    abort();
-        //}
+        if (!wildSuitB) {
+            // Algorithms should never deliver a suited B card in this case
+            FatalError << "Unexpected wild combination. Cards are: \n"
+                << "    " << pc << std::endl;
+            abort();
+        }
         #endif
         // wildSuitB is implied
         if (wildSuitA) {

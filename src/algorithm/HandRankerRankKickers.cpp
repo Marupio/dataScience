@@ -206,19 +206,43 @@ void ds::HandRanker::rankKickersFourFlush(short& rank) {
     const Suit flushSuit = bd_.flushSuit();
     const VecCardVal& flushValues(bd_.flushValues());
 
-    // Sort by pocket card that completes the flush
+    CardVal lowest = bd_.lowestFlushValue();
     auto itH = flushValues.cbegin();
     for (
-        CardVal kicker = Card::ace;
-        kicker > Card::lowAce;
-        --kicker
+        CardVal highKicker = Card::ace;
+        highKicker > Card::lowAce;
+        --highKicker
     ) {
-        if (itH != flushValues.cend() && kicker == *itH) {
+        if (itH != flushValues.cend() && highKicker == *itH) {
             ++itH;
             continue;
         }
-        PktCards testPkt(kicker, flushSuit, Card::wildCard);
-        if (pkt_ == testPkt) {
+        auto itL = itH;
+        for (
+            CardVal lowKicker = highKicker - 1;
+            lowKicker > lowest;
+            --lowKicker
+        ) {
+            if (itL != flushValues.cend() && lowKicker == *itL) {
+                ++itL;
+                continue;
+            }
+            PktCards testPkt(
+                highKicker, flushSuit,
+                lowKicker, flushSuit
+            );
+            if (testPkt == pkt_) {
+                return;
+            } else {
+                rank += mask_.remove(testPkt);
+            }
+        }
+        // Low kicker too low
+        PktCards testPkt(
+            highKicker, flushSuit,
+            Card::wildCard
+        );
+        if (testPkt == pkt_) {
             return;
         } else {
             rank += mask_.remove(testPkt);
@@ -260,26 +284,13 @@ void ds::HandRanker::rankKickersFiveFlush(short& rank) {
                 rank += mask_.remove(testPkt);
             }
         }
-        
-        // Low kicker too low, continue to save iterations
-        short rankOffset = 0;
-        for (
-            CardVal lowKicker = lowVals.first - 1;
-            lowKicker > Card::lowAce;
-            --lowKicker
-        ) {
-            if (itL != flushValues.cend() && lowKicker == *itL) {
-                ++itL;
-                continue;
-            }
-            PktCards testPkt(highKicker, flushSuit, lowKicker, flushSuit);
-            if (pkt_ == testPkt) {
-                return;
-            } else {
-                rankOffset += mask_.remove(testPkt);
-            }
+        // No low kicker
+        PktCards testPkt(highKicker, flushSuit, Card::wildCard);
+        if (pkt_ == testPkt) {
+            return;
+        } else {
+            rank += mask_.remove(testPkt);
         }
-        rank += rankOffset;
     }
     // High kicker could still beat lowest value
     for (
