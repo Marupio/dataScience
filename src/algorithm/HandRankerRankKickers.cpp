@@ -7,7 +7,7 @@ void ds::HandRanker::rankOneKicker(
     CardVal bdKicker,
     Avoider avoid
 ) {
-    const VecValStats& stats(bd_.stats());
+    const VecValStats& stats(cbd_.stats());
     auto itA = stats.cbegin();
     for (CardVal kicker = Card::ace; kicker > bdKicker; --kicker) {
         if (itA != stats.cend() && itA->value() == kicker) {
@@ -44,7 +44,7 @@ void ds::HandRanker::rankTwoKickers(
     const PktVals& bdKickers,
     Avoider avoid
 ) {
-    const VecValStats& stats(bd_.stats());
+    const VecValStats& stats(cbd_.stats());
     auto itH = stats.cbegin();
     for (
         CardVal highKicker = Card::ace;
@@ -161,8 +161,8 @@ void ds::HandRanker::rankTwoKickers(
 
 
 void ds::HandRanker::rankKickersThreeFlush(short& rank) {
-    const Suit flushSuit = bd_.flushSuit();
-    const VecCardVal& flushValues(bd_.flushValues());
+    const Suit flushSuit = cbd_.flushSuit();
+    const VecCardVal& flushValues(cbd_.flushValues());
     auto itH = flushValues.cbegin();
     for (
         CardVal highKicker = Card::ace;
@@ -196,17 +196,17 @@ void ds::HandRanker::rankKickersThreeFlush(short& rank) {
             }
         }
     }
-    FatalError << "Rank should have been returned for flush.\n" << bd_ << " "
+    FatalError << "Rank should have been returned for flush.\n" << cbd_ << " "
         << pkt_ << std::endl;
     abort();
 }
 
 
 void ds::HandRanker::rankKickersFourFlush(short& rank) {
-    const Suit flushSuit = bd_.flushSuit();
-    const VecCardVal& flushValues(bd_.flushValues());
+    const Suit flushSuit = cbd_.flushSuit();
+    const VecCardVal& flushValues(cbd_.flushValues());
 
-    CardVal lowest = bd_.lowestFlushValue();
+    CardVal lowest = cbd_.lowestFlushValue();
     auto itH = flushValues.cbegin();
     for (
         CardVal highKicker = Card::ace;
@@ -248,15 +248,15 @@ void ds::HandRanker::rankKickersFourFlush(short& rank) {
             rank += mask_.remove(testPkt);
         }
     }
-    FatalError << "Rank should have been returned for flush.\n" << bd_ << " "
+    FatalError << "Rank should have been returned for flush.\n" << cbd_ << " "
         << pkt_ << std::endl;
     abort();
 }
 
 void ds::HandRanker::rankKickersFiveFlush(short& rank) {
-    const Suit flushSuit = bd_.flushSuit();
-    const VecCardVal& flushValues(bd_.flushValues());
-    const PktVals lowVals(bd_.lowestTwoFlushValues());
+    const Suit flushSuit = cbd_.flushSuit();
+    const VecCardVal& flushValues(cbd_.flushValues());
+    const PktVals lowVals(cbd_.lowestTwoFlushValues());
     auto itH = flushValues.cbegin();
     for (
         CardVal highKicker = Card::ace;

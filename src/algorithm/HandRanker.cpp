@@ -4,17 +4,26 @@
 
 // ****** Constructors ****** //
 
-ds::HandRanker::HandRanker(const Board& bd, const PktCards& pkt):
-    bd_(bd),
+ds::HandRanker::HandRanker(
+    const Board& bd,
+    const PktCards& pkt,
+    bool includePktInMask
+):
     pkt_(pkt),
-//    baseMask_(bd, pkt),
-    baseMask_(bd),
+    bd_(bd),
+    cbd_(bd),
+    baseMask_(
+        includePktInMask
+      ? PktMask(bd, pkt)
+      : PktMask(bd)
+    ),
     mask_(baseMask_)
 {}
 
 
 #include<HandRankerGetKickers.cpp>
 #include<HandRankerCompare.cpp>
+#include<HandRankerPredict.cpp>
 #include<HandRankerRank.cpp>
 
 // ****** END ****** //

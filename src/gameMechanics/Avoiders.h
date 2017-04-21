@@ -1,3 +1,5 @@
+// A set of functors allowing algorithms to skip over card values
+
 #ifndef Avoiders_h
 #define Avoiders_h
 

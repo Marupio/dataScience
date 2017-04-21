@@ -2,12 +2,13 @@
 
 // ****** Public Member Functions ****** //
 
-short ds::HandRanker::getRank() {
+short ds::HandRanker::rank() {
     short rank = 0;
+    mask_ = baskMask_;
 
     // Check for straight flushes
-    const Suit flushSuit = bd_.flushSuit();
-    const VecCardVal& flushValues(bd_.flushValues());
+    const Suit flushSuit = cbd_.flushSuit();
+    const VecCardVal& flushValues(cbd_.flushValues());
     if (flushSuit != Card::unknownSuit) {
         const StraightCompleters straightFlushes(flushValues);
         for (
@@ -51,7 +52,7 @@ short ds::HandRanker::getRank() {
             // pairs - specific pkt_ only
 
     // Check for four-of-a-kind (FOAK)
-    const VecValStats& stats(bd_.stats());
+    const VecValStats& stats(cbd_.stats());
     for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
         switch (it->nCards()) {
         case 4: {
@@ -64,14 +65,14 @@ short ds::HandRanker::getRank() {
             rankOneKicker(
                 rank,
                 VecCard(1, Card::wildCard),
-                bd_.highestValue(it->value()),
+                cbd_.highestValue(it->value()),
                 AvoidValue(it->value())
             );
             return rank;
         }
         case 3: {
             // Set is on the board
-            const Card setCard(it->value(), bd_.setMissingSuit());
+            const Card setCard(it->value(), cbd_.setMissingSuit());
             if (pkt_.has(it->value())) {
                 // Player has FOAK
                 // FFF?? F?
@@ -80,7 +81,7 @@ short ds::HandRanker::getRank() {
                 rankOneKicker(
                     rank,
                     VecCard(1, setCard),
-                    bd_.highestValue(it->value()),
+                    cbd_.highestValue(it->value()),
                     AvoidValue(it->value())
                 );
                 return rank;
@@ -94,30 +95,30 @@ short ds::HandRanker::getRank() {
         case 2: {
             // Pair is on the board
             PktCards foakPkt;
-            if (it->value() == bd_.pairA()) {
+            if (it->value() == cbd_.pairA()) {
                 foakPkt = PktCards(
                     it->value(),
-                    bd_.pairAMissingSuits().first,
+                    cbd_.pairAMissingSuits().first,
                     it->value(),
-                    bd_.pairAMissingSuits().second
+                    cbd_.pairAMissingSuits().second
                 );
             } else {
                 // Must be pairB
                 #ifdef DSDEBUG
-                    if (it->value() != bd_.pairB()) {
+                    if (it->value() != cbd_.pairB()) {
                         FatalError << "Board stats and derived data do not "
                             << "agree. Pair value " << it->value() << " "
-                            << "expected, but board pairA = " << bd_.pairA()
-                            << ", and pairB = " << bd_.pairB() << "\n" << bd_
+                            << "expected, but board pairA = " << cbd_.pairA()
+                            << ", and pairB = " << cbd_.pairB() << "\n" << cbd_
                             << " " << pkt_ << std::endl;
                         abort();
                     }
                 #endif
                 foakPkt = PktCards(
                     it->value(),
-                    bd_.pairBMissingSuits().first,
+                    cbd_.pairBMissingSuits().first,
                     it->value(),
-                    bd_.pairBMissingSuits().second
+                    cbd_.pairBMissingSuits().second
                 );
             }
             if (foakPkt == pkt_) {
@@ -135,7 +136,7 @@ short ds::HandRanker::getRank() {
 
     // Check for full house
         // Set or pair must be present
-        // Only sets possible are present in bd_.values
+        // Only sets possible are present in cbd_.values
         // Start with the highest and move down
         // If it's a set
             // Run through all other cards for pair:
@@ -143,22 +144,22 @@ short ds::HandRanker::getRank() {
                 // (val wild) if present as a single
                 // Exit with (wild wild) if present as a pair
         // If two pairs, then start with highest (call it valA)
-            // Run through all other bd_.values as (valA, val)
+            // Run through all other cbd_.values as (valA, val)
             // Once you reach the other pair, it's (valA, wild)
             // Then repeat with (valB)
         // If one pair
-            // Run through bd_.values for set first (valA)
+            // Run through cbd_.values for set first (valA)
                 // If it is the pair:
-                    // then run through bd_.values for pair (valA val)
+                    // then run through cbd_.values for pair (valA val)
                 // If it is single:
                     // pocket pairs only (valB valB)
         // Continue
 
     // Check for full house
     if (
-        bd_.pairA() != Card::unknownValue
-     || bd_.pairB() != Card::unknownValue
-     || bd_.set() != Card::unknownValue
+        cbd_.pairA() != Card::unknownValue
+     || cbd_.pairB() != Card::unknownValue
+     || cbd_.set() != Card::unknownValue
     ) {
         // Full house is possible
         for (auto it = stats.cbegin(); it != stats.cend(); ++it) {
@@ -256,7 +257,7 @@ short ds::HandRanker::getRank() {
             case 1: {
                 // single is the set, needs pocket pairs and pair on the board
                 // SPP?? SS
-                if (bd_.pairA() != Card::unknownValue) {
+                if (cbd_.pairA() != Card::unknownValue) {
                     PktCards testPkt(
                         it->value(),
                         Card::wildSuit,
@@ -330,7 +331,7 @@ short ds::HandRanker::getRank() {
     }
     default: {
         FatalError << "Unexpected number of flush value cards on board. Flush "
-            << "values are:\n" << flushValues << "\n" << bd_ << " "
+            << "values are:\n" << flushValues << "\n" << cbd_ << " "
             << pkt_ << std::endl;
         abort();
     } // end default
@@ -359,7 +360,7 @@ short ds::HandRanker::getRank() {
     }
     
     // Check for sets
-        // Run through all bd_.value
+        // Run through all cbd_.value
             // If exists as set:
                 // Run through (valA, valB) higher than lowest two on board
                 // Then through (valA wild) higher than lowest on board
@@ -379,7 +380,7 @@ short ds::HandRanker::getRank() {
             // set is on board, look for two kickers
 
             // Look for two kickers
-            const PktVals highVals(bd_.highestTwoValues(it->value()));
+            const PktVals highVals(cbd_.highestTwoValues(it->value()));
             
             auto itA = stats.cbegin();
             for (
@@ -496,9 +497,9 @@ short ds::HandRanker::getRank() {
         case 2: {
             // set uses a pair on the board, one pocket card is free
             const PktSuits& missingSuits (
-                it->value() == bd_.pairA()
-              ? bd_.pairAMissingSuits()
-              : bd_.pairBMissingSuits()
+                it->value() == cbd_.pairA()
+              ? cbd_.pairAMissingSuits()
+              : cbd_.pairBMissingSuits()
             );
             
             // We could use wildSuit, but we know what suits are missing, so
@@ -516,7 +517,7 @@ short ds::HandRanker::getRank() {
                 rankOneKicker(
                     rank,
                     setCards,
-                    bd_.highestTwoValues(it->value()).second,
+                    cbd_.highestTwoValues(it->value()).second,
                     AvoidValue(it->value())
                 );
                 return rank;
@@ -526,7 +527,7 @@ short ds::HandRanker::getRank() {
                 if (setCards.size() != 2) {
                     FatalError << "Expecting setCards size to be 2. Is "
                         << setCards.size() << ". setCards are:\n" << setCards
-                        << "\n" << bd_ << " " << pkt_ << std::endl;
+                        << "\n" << cbd_ << " " << pkt_ << std::endl;
                     abort();
                 }
                 #endif
@@ -554,7 +555,7 @@ short ds::HandRanker::getRank() {
         }
         default: {
             FatalError << "Unexpected nCards when checking for set. nCards "
-                << "is: " << it->nCards() << "\n" << bd_ << " " << pkt_
+                << "is: " << it->nCards() << "\n" << cbd_ << " " << pkt_
                 << std::endl;
             abort();
         } // end default
@@ -588,9 +589,9 @@ short ds::HandRanker::getRank() {
                 // If pairs exist on board, remove (valA valA) and continue
 
     // Check for two pair
-    if (bd_.pairA() != Card::unknownValue) {
+    if (cbd_.pairA() != Card::unknownValue) {
         // Pocket pair could be highest, have to iterate through all cards
-        const CardVal boardPairA = bd_.pairA();
+        const CardVal boardPairA = cbd_.pairA();
 
         auto itA = stats.cbegin();
 
@@ -600,7 +601,7 @@ short ds::HandRanker::getRank() {
                 if (itA->nCards() == 2) {
                     // pairA is paired on the board, pairB can be pocket pairs
                     const CardVal lowest =
-                        std::max(bd_.lowestValue(itA->value()), bd_.pairB());
+                        std::max(cbd_.lowestValue(itA->value()), cbd_.pairB());
                     auto itB = itA + 1;
                     for (CardVal pairB = pairA - 1; pairB > lowest; --pairB) {
                         if (itB != stats.cend() && itB->value() == pairB) {
@@ -611,7 +612,7 @@ short ds::HandRanker::getRank() {
                                 rankOneKicker(
                                     rank,
                                     VecCard(1, Card::wildCard),
-                                    bd_.highestValue(PktVals(pairA, pairB)),
+                                    cbd_.highestValue(PktVals(pairA, pairB)),
                                     AvoidPktVals(pairA, pairB)
                                 );
                                 return rank;
@@ -628,7 +629,7 @@ short ds::HandRanker::getRank() {
                                     rankOneKicker(
                                         rank,
                                         VecCard(1, Card(pairB, Card::wildSuit)),
-                                        bd_.highestValue(PktVals(pairA, pairB)),
+                                        cbd_.highestValue(PktVals(pairA, pairB)),
                                         AvoidPktVals(pairA, pairB)
                                     );
                                     return rank;
@@ -641,7 +642,7 @@ short ds::HandRanker::getRank() {
                     #ifdef DSDEBUG
                     if (itA->nCards() != 1) {
                         FatalError << "Expecting number of cards to be 1. Is "
-                            << itA->nCards() << "\n" << bd_ << " " << pkt_
+                            << itA->nCards() << "\n" << cbd_ << " " << pkt_
                             << std::endl;
                         abort();
                     }
@@ -662,7 +663,7 @@ short ds::HandRanker::getRank() {
                                 rankOneKicker(
                                     rank,
                                     VecCard(1, Card(pairA, Card::wildSuit)),
-                                    bd_.lowestValue(
+                                    cbd_.lowestValue(
                                         PktVals(pairA, itB->value())
                                     ),
                                     AvoidPktVals(pairA, itB->value())
@@ -709,7 +710,7 @@ short ds::HandRanker::getRank() {
                     rankOneKicker(
                         rank,
                         VecCard(1, Card::wildCard),
-                        bd_.highestValue(PktVals(pairA, pairB)),
+                        cbd_.highestValue(PktVals(pairA, pairB)),
                         AvoidPktVals(pairA, pairB)
                     );
                     return rank;
@@ -718,7 +719,7 @@ short ds::HandRanker::getRank() {
                 #ifdef DSDEBUG
                 if (itB->nCards() != 1) {
                     FatalError << "Expecting number of cards to be 1. Is "
-                        << itB->nCards() << "\n" << bd_ << " " << pkt_
+                        << itB->nCards() << "\n" << cbd_ << " " << pkt_
                         << std::endl;
                     abort();
                 }
@@ -732,7 +733,7 @@ short ds::HandRanker::getRank() {
                     rankOneKicker(
                         rank,
                         VecCard(1, Card(pairB, Card::wildSuit)),
-                        bd_.highestValue(PktVals(pairA, pairB)),
+                        cbd_.highestValue(PktVals(pairA, pairB)),
                         AvoidPktVals(pairA, pairB)
                     );
                     return rank;
@@ -785,7 +786,7 @@ short ds::HandRanker::getRank() {
                     // Find two low values, no need for iterator checking
                     rankTwoKickers(
                         rank,
-                        bd_.lowestTwoValues(pairVal),
+                        cbd_.lowestTwoValues(pairVal),
                         AvoidValue(it->value())
                     );
                     return rank;
@@ -802,7 +803,7 @@ short ds::HandRanker::getRank() {
                         rankOneKicker(
                             rank,
                             VecCard(1, Card(pairVal, Card::wildSuit)),
-                            bd_.lowestValue(pairVal),
+                            cbd_.lowestValue(pairVal),
                             AvoidValue(pairVal)
                         );
                         return rank;
@@ -831,7 +832,7 @@ short ds::HandRanker::getRank() {
     // Check for high card
     rankTwoKickers(
         rank,
-        bd_.lowestTwoValues(),
+        cbd_.lowestTwoValues(),
         AvoidNone()
     );
     return rank;

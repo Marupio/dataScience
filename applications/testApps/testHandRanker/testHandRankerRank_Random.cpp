@@ -18,7 +18,7 @@ int main() {
         bd.turn(dk.draw());
         bd.river(dk.draw());
         HandRanker hr(bd, pkt);
-        short rank = hr.getRank();
+        short rank = hr.rank();
         std::cout << i << ": " << bd.cards() << " " << pkt << " = " << rank
             << std::endl;
     }

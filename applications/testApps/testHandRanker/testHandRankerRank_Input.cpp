@@ -14,7 +14,7 @@ int main() {
     std::cout << bd << ", " << pkt << std::endl;
 
     HandRanker hr(bd, pkt);
-    short rank = hr.getRank();
+    short rank = hr.rank();
     std::cout << "\n" << bd << " " << pkt << " = " << rank << std::endl;
     return 0;
 }

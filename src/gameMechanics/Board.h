@@ -144,6 +144,9 @@ public:
 
             //- Deliver flop
             void flop(const VecDeckInd& vd);
+
+            //- Deliver flop
+            void flop(DeckInd diA, DeckInd diB, DeckInd diC);
             
             //- Deliver turn
             void turn(DeckInd di);

@@ -75,7 +75,7 @@ short ds::DeckMask::remove(DeckInd di) {
     }
     #endif
     auto it = std::lower_bound(begin(), end(), di);
-    if (it != end()) {
+    if (it != end() && *it == di) {
         erase(it);
         return 1;
     }

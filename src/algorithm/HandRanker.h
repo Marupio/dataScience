@@ -18,25 +18,47 @@ public:
     // Constructors
     
         //- Construct from board and pocket
-        HandRanker(const Board& bd, const PktCards& pkt);
+        //  includePktInMask allows ranking to eliminate possible hand
+        //  combinations that include one of the pkt cards.  This gives a more
+        //  accurate ranking.
+        //      For example:
+        //      Board (A A 3 7 9), pkt is [A7]
+        //      Looking at the board alone, the best hand is quad aces, but
+        //      pkt proves there is no quad aces.
+        //  However, including this information makes it harder to test the 
+        //  ranking algorithm by comparing possible hands.
+        HandRanker(
+            const Board& bd,
+            const PktCards& pkt,
+            bool includePktInMask = true
+        );
 
 
     // Public member functions
 
-        //- Return the exact ranking of the pocket cards among all possibilities
-        //  *** Located in HandRankerRank.cpp
-        short getRank();
-
         //- Compare two pockets against the board
         //  Returns:
-        //  -1: pktA < pktB
-        //   0: pktA == pktB
-        //   1: pktA > pktB
+        //      -1: pktA < pktB
+        //       0: pktA == pktB
+        //       1: pktA > pktB
+        //  ** Located in HandRankerCompare.cpp
         static short compare(
             const Board& bd,
             const PktCards& pktA,
             const PktCards& pktB
         );
+
+        //- Return the exact ranking of the pocket cards among all possibilities
+        //  *** Located in HandRankerRank.cpp
+        short rank();
+
+        //- Return array of rank values based on what the next card might be
+        //  Suitable only after the flop and before the river.
+        void predict(std::vector<short>& pa);
+
+        //- Return array of rank values based on what the flop might be
+        //  Suitable only when the board is empty
+        void predictFlop(std::vector<short>& pa);
 
 
 private:
@@ -86,11 +108,14 @@ private:
 
     // Private Member Data
     
+        //- Reference to the pocket
+        const PktCards& pkt_;
+        
         //- Reference to the board
         const Board& bd_;
         
-        //- Reference to the pocket
-        const PktCards& pkt_;
+        //- Working copy of the board
+        Board cbd_;
         
         //- Base pocket mask - only has board and pocket removed, used to reset
         //  pocketMask for iterating over future possibilities

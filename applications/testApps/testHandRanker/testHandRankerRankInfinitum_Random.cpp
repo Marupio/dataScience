@@ -10,7 +10,8 @@
 
 using namespace ds;
 
-void checkAllCombinations(int i, const Board& bd, std::ostream& os) {
+short checkAllCombinations(int i, const Board& bd, std::ostream& os) {
+    short maxRank = 0;
     VecDeckInd::size_type arraySizes(1326);
     DeckMask dm(bd);
 
@@ -23,7 +24,7 @@ void checkAllCombinations(int i, const Board& bd, std::ostream& os) {
         for (auto itB = itA + 1; itB != dm.cend(); ++itB) {
             pktCardsArray.push_back(PktCards(*itA, *itB));
             HandRanker hr(bd, pktCardsArray.back());
-            rankArray.push_back(hr.getRank());
+            rankArray.push_back(hr.rank());
         }
     }
     // Custom sorting
@@ -36,6 +37,7 @@ void checkAllCombinations(int i, const Board& bd, std::ostream& os) {
             {return rankArray[i1] < rankArray[i2];}
     );
     if (sorted.size()) {
+        maxRank = rankArray.front();
         for (auto it = sorted.cbegin(); (it + 1) != sorted.cend(); ++it) {
             size_t iA = *it;
             size_t iB = *(it + 1);
@@ -43,6 +45,7 @@ void checkAllCombinations(int i, const Board& bd, std::ostream& os) {
             const PktCards& pktB = pktCardsArray[iB];
             short rankA = rankArray[iA];
             short rankB = rankArray[iB];
+            maxRank = std::max(rankB, maxRank);
             short comp = HandRanker::compare(bd, pktA, pktB);
             if (comp < 0) {
                 os << i << " - " << bd << ": " << pktA << " (" << rankA
@@ -50,24 +53,29 @@ void checkAllCombinations(int i, const Board& bd, std::ostream& os) {
             }
         }
     }
+    return maxRank;
 }
 
 int main() {
     int nIters = 1000000;
     std::ofstream os("testHandRankerRankInfinitum_output");
+    short maxRankFlop = 0;
+    short maxRankTurn = 0;
+    short maxRankRiver = 0;
     for (int i = 0; i < nIters; ++i) {
         if (i%1000 == 0) {
-            std::cout << i << std::endl;
+            std::cout << i << ": " << maxRankFlop << " " << maxRankTurn 
+                << " " << maxRankRiver << std::endl;
         }
         Board bd;
         Deck dk;
         dk.shuffle();
         bd.flop(dk.draw(3));
-        checkAllCombinations(i, bd, os);
+        maxRankFlop = std::max(maxRankFlop, checkAllCombinations(i, bd, os));
         bd.turn(dk.draw());
-        checkAllCombinations(i, bd, os);
+        maxRankTurn = std::max(maxRankTurn, checkAllCombinations(i, bd, os));
         bd.river(dk.draw());
-        checkAllCombinations(i, bd, os);
+        maxRankRiver = std::max(maxRankRiver, checkAllCombinations(i, bd, os));
     }
     return 0;
 }

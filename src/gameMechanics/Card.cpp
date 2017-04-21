@@ -83,8 +83,6 @@ ds::Card::Card(DeckInd di):
             abort();
         }
     #endif
-//    binValue_ = di % 13;
-//    suit_ = (di-binValue_)/13;
     value_ = di%13 + 2;
     suit_ = (di - value_ + 2)/13;
 }
@@ -222,8 +220,6 @@ ds::Card ds::Card::deckIndexToCard(DeckInd di) {
     if (di < 0 || di > 51) {
         return Card();
     }
-//    BinCardVal value = di % 13;
-//    Suit suit = (di-value)/13;
     CardVal value = di%13 + 2;
     Suit suit = (di - value + 2)/13;
 

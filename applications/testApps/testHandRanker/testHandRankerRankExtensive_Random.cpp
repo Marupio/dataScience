@@ -29,8 +29,8 @@ int main() {
         for (auto itA = dm.cbegin(); itA != dm.cend(); ++itA) {
             for (auto itB = itA + 1; itB != dm.cend(); ++itB) {
                 pktCardsArray.push_back(PktCards(*itA, *itB));
-                HandRanker hr(bd, pktCardsArray.back());
-                rankArray.push_back(hr.getRank());
+                HandRanker hr(bd, pktCardsArray.back(), false);
+                rankArray.push_back(hr.rank());
             }
         }
         // Custom sorting
