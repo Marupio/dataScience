@@ -4,7 +4,7 @@
 
 short ds::HandRanker::rank() {
     short rank = 0;
-    mask_ = baskMask_;
+    mask_ = baseMask_;
 
     // Check for straight flushes
     const Suit flushSuit = cbd_.flushSuit();

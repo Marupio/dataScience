@@ -64,13 +64,12 @@ void ds::Board::flop(DeckInd diA, DeckInd diB, DeckInd diC) {
     if (cards_.size()) {
         FatalError << "Flop delivered to non-empty board.  Board cards are:\n"
             << cards_ << "\nAnd delivered cards are:\n"
-            << vd << std::endl;
+            << diA << " " << diB << " " << diC << std::endl;
         abort();
     }
     cards_.push_back(Card(diA));
     cards_.push_back(Card(diB));
     cards_.push_back(Card(diC));
-    }
     updateDerivedData();
 }
 

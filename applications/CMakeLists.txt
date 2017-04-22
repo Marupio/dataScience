@@ -130,4 +130,13 @@ install_targets(
 )
 
 
+add_executable(
+    makePreFlopPredictions
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makePreFlopPredictions/makePreFlopPredictions.cpp
+)
+target_link_libraries(makePreFlopPredictions core)
+install_targets(
+    ${BIN_DIR}
+    makePreFlopPredictions
+)
 

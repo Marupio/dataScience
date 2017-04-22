@@ -7,7 +7,7 @@ void ds::HandRanker::predictFlop
 (
     std::vector<short>& pa
 ) {
-    if (bd.size()) {
+    if (bd_.size()) {
         FatalError << "Board must be clear to use this function." << std::endl;
         abort();
     }
