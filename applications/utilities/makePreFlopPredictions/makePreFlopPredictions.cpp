@@ -13,6 +13,43 @@
 
 using namespace ds;
 
+class Accumulator:
+    public std::array<int, 900>
+{
+public:
+
+    string match;
+
+    bool operator<(const Accumulator& a) {
+        for (
+            std::pair<auto, auto> itPair(this->crbegin(), a.crBegin());
+            itPair.first != this->crend();
+            ++itPair.first, ++itPair.second
+        ) {
+            if (*itPair.first == *itPair.second) {
+                continue;
+            }
+            return (*itPair.first < *itPair.second);
+        }
+        return false;
+    }
+    
+};
+
+
+typedef std::array<Accumulator, 169> ArrAccumulator;
+
+
+void writeArrAccumulator(std::ostream& os, const ArrAccumulator& a) {
+    for (auto it = a.cbegin(); it != a.cend(); ++it) {
+        os << it->match << " ";
+        for (auto itR = it->cbegin(); itR != it->cend(); ++itR) {
+            os << *itR << " ";
+        }
+        os << std::endl;
+    }
+}
+
 template<class InputIt, class OutputIt, class Type, class MeanType>
 void makeHistogramFromSortedData(
     InputIt istart,
@@ -27,7 +64,7 @@ void makeHistogramFromSortedData(
     Type delta = (maxValue - minValue)/nBuckets;
     InputIt lastIt = istart;
     for (Type cur = minValue; cur < maxValue; cur += delta) {
-        InputIt it = std::lower_bound(istart, iend, cur);
+        InputIt it = std::lower_bound(istart, iend, cur+1);
         *ostart = std::distance(lastIt, it);
         lastIt = it;
         average += *(ostart++)*(*it);
@@ -62,7 +99,9 @@ void calculateStatisticsGivenMean(
 void makePreFlopData(
     const PktCards& pkt,
     const std::string& filename,
-    std::ofstream& oss
+    size_t index,
+    ArrAccumulator& acc,
+    std::ofstream& oss,
 ) {
     Board bd;
     HandRanker hr(bd, pkt);
@@ -77,12 +116,12 @@ void makePreFlopData(
     }
     {
         float mean;
-        std::vector<short> hist(90);
+        std::vector<short> hist(900);
         makeHistogramFromSortedData(
             pa.cbegin(),
             pa.cend(),
             hist.begin(),
-            90,
+            900,
             0,
             900,
             mean
@@ -103,24 +142,19 @@ void makePreFlopData(
             stdev,
             skewness
         );
+        acc[index] = accumulations(hist.size());
+        Accumulator& accI = acc[index];
+        accI[0] = hist.front();
+        for (size_t i = 1; i < hist.size(); ++i) {
+            accI[i] = accI[i-1] + hist[i];
+        }
         oss << filename << " " << mean << " " << stdev << " " << skewness
             << std::endl;
-        std::vector<int> accumulations(180);
-        accumulations[0] =
-            std::accumulate(hist.cbegin(), hist.cbegin() + 5, 0);
-        for (size_t i = 1; i < 180; ++i) {
-            accumulations[i] = accumulations[i-1] +
-                std::accumulate(
-                    hist.cbegin() + 5*i,
-                    hist.cbegin() + 5*(i+1),
-                    0
-                );
-        }
         {
             std::ofstream os(filename + "_accum");
             for (
-                auto it = accumulations.cbegin();
-                it != accumulations.cend();
+                auto it = accI.cbegin();
+                it != accI.cend();
                 ++it
             ) {
                 os << *it << "\n";
@@ -134,6 +168,8 @@ void makePreFlopData(
 int main() {
     std::ofstream oss("summary");
     oss << "pkt mean stdev skewness" << std::endl;
+    ArrAccumulator acc;
+    size_t index = 0;
     for (CardVal cvA = Card::ace; cvA > Card::lowAce; --cvA) {
         std::cout << "Working on " << Card::valueToWriteChar(cvA) << std::endl;
         for (CardVal cvB = cvA; cvB > Card::lowAce; --cvB) {
@@ -143,9 +179,13 @@ int main() {
                 std::stringstream ss;
                 std::string filename;
                 ss << Card::valueToWriteChar(cvA) << Card::valueToWriteChar(cvB);
-                ss << "u";
+                if (cvA != cvB) {
+                    ss << "u";
+                }
+                acc[index].match = filename;
                 ss >> filename;
-                makePreFlopData(pkt, filename, oss);
+                makePreFlopData(pkt, filename, index, acc, oss);
+                index++;
             }
             if (cvA != cvB) {
                 // Suited next
@@ -155,9 +195,14 @@ int main() {
                 ss << Card::valueToWriteChar(cvA) << Card::valueToWriteChar(cvB);
                 ss << "s";
                 ss >> filename;
-                makePreFlopData(pkt, filename, oss);
+                acc[index].match = filename;
+                makePreFlopData(pkt, filename, index, acc, oss);
+                index++;
             }
         }
+        std::sort(acc.begin(), acc.end());
+        std::ofstream os("accumulations");
+        os << acc << std::endl;
     }
     return 0;
 }
