@@ -5,9 +5,10 @@
 #include<string>
 #include<types.h>
 #include<dsConfig.h>
-#include<HandRanker.h>
+#include<Card.h>
 #include<Deck.h>
 #include<DeckMask.h>
+#include<HandRanker.h>
 #include<PktCards.h>
 #include<error.h>
 
@@ -18,18 +19,21 @@ class Accumulator:
 {
 public:
 
-    string match;
+    std::string match;
 
     bool operator<(const Accumulator& a) {
         for (
-            std::pair<auto, auto> itPair(this->crbegin(), a.crBegin());
+            std::pair<
+                Accumulator::const_reverse_iterator,
+                Accumulator::const_reverse_iterator
+            > itPair(this->crbegin(), a.crbegin());
             itPair.first != this->crend();
             ++itPair.first, ++itPair.second
         ) {
             if (*itPair.first == *itPair.second) {
                 continue;
             }
-            return (*itPair.first < *itPair.second);
+            return (*itPair.first > *itPair.second);
         }
         return false;
     }
@@ -101,7 +105,7 @@ void makePreFlopData(
     const std::string& filename,
     size_t index,
     ArrAccumulator& acc,
-    std::ofstream& oss,
+    std::ofstream& oss
 ) {
     Board bd;
     HandRanker hr(bd, pkt);
@@ -142,13 +146,12 @@ void makePreFlopData(
             stdev,
             skewness
         );
-        acc[index] = accumulations(hist.size());
         Accumulator& accI = acc[index];
         accI[0] = hist.front();
         for (size_t i = 1; i < hist.size(); ++i) {
             accI[i] = accI[i-1] + hist[i];
         }
-        oss << filename << " " << mean << " " << stdev << " " << skewness
+        oss << mean << " " << stdev << " " << skewness
             << std::endl;
         {
             std::ofstream os(filename + "_accum");
@@ -167,12 +170,48 @@ void makePreFlopData(
 
 int main() {
     std::ofstream oss("summary");
-    oss << "pkt mean stdev skewness" << std::endl;
+    oss << "pkt chen mean stdev skewness" << std::endl;
     ArrAccumulator acc;
     size_t index = 0;
     for (CardVal cvA = Card::ace; cvA > Card::lowAce; --cvA) {
         std::cout << "Working on " << Card::valueToWriteChar(cvA) << std::endl;
         for (CardVal cvB = cvA; cvB > Card::lowAce; --cvB) {
+            int chen = 0;
+            if (cvA <= 10) {
+                chen = cvA/2;
+            } else if (cvA == Card::ace) {
+                chen = 10;
+            } else if (cvA == Card::king) {
+                chen = 8;
+            } else if (cvA == Card::queen) {
+                chen = 7;
+            } else if (cvA == Card::jack) {
+                chen = 6;
+            }
+            short delta = cvA - cvB;
+            switch (delta) {
+            case 0:
+                chen *= 2;
+                // fall through
+            case 1:
+                if (cvA < Card::king) {
+                    chen += 1;
+                }
+                break;
+            case 2:
+                chen -= 1;
+                break;
+            case 3:
+                chen -= 2;
+                break;
+            case 4:
+                chen -= 4;
+                break;
+            default:
+                chen -= 5;
+                break;
+            } // end switch
+            
             // Unsuited first
             {
                 PktCards pkt(cvA, Card::clubs, cvB, Card::diamonds);
@@ -182,13 +221,15 @@ int main() {
                 if (cvA != cvB) {
                     ss << "u";
                 }
-                acc[index].match = filename;
                 ss >> filename;
+                acc[index].match = filename;
+                oss << filename << " " << chen << " ";
                 makePreFlopData(pkt, filename, index, acc, oss);
                 index++;
             }
             if (cvA != cvB) {
                 // Suited next
+                chen += 2;
                 PktCards pkt(cvA, Card::clubs, cvB, Card::clubs);
                 std::stringstream ss;
                 std::string filename;
@@ -196,13 +237,14 @@ int main() {
                 ss << "s";
                 ss >> filename;
                 acc[index].match = filename;
+                oss << filename << " " << chen << " ";
                 makePreFlopData(pkt, filename, index, acc, oss);
                 index++;
             }
         }
         std::sort(acc.begin(), acc.end());
         std::ofstream os("accumulations");
-        os << acc << std::endl;
+        writeArrAccumulator(os, acc);
     }
     return 0;
 }
