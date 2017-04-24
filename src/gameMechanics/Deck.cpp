@@ -20,6 +20,7 @@ ds::Deck::Deck(bool randomise) {
 
 void ds::Deck::shuffle() {
     std::random_shuffle(cards_.begin(), cards_.end());
+    drawIt_ = cards_.begin();
 }
 
 

@@ -16,6 +16,8 @@ typedef std::vector<PktDeckInd> VecPktDeckInd;
 typedef short CardVal;
 typedef std::vector<CardVal> VecCardVal;
 
+typedef float Money;
+
 class PktVals;
 //typedef std::pair<VecCardVal, VecPktVals> StraightCompleters;
 //typedef std::vector<std::pair<CardVal, PktVals>> StraightCompleters;

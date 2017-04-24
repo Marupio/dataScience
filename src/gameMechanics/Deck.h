@@ -52,8 +52,6 @@ public:
         size_type nRemaining() const noexcept;
 
 
-
-
 //    // Operators
 //    
 //    // Friend functions

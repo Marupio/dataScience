@@ -153,6 +153,9 @@ public:
             
             //- Deliver river
             void river(DeckInd di);
+            
+            //- Clear the board
+            void clear();
         
         
         // Derived searches

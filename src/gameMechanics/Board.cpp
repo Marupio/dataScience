@@ -96,6 +96,12 @@ void ds::Board::river(DeckInd di) {
 }
 
 
+void ds::Board::clear() {
+    cards_.clear();
+    updateDerivedData();
+}
+
+
 ds::CardVal ds::Board::lowestValue() const {
     if (!stats_.size()) {
         return Card::lowAce;
