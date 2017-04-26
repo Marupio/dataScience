@@ -1,6 +1,7 @@
 #ifndef Table_h
 #define Table_h
 
+#include<atomic>
 #include<Board.h>
 #include<Blinds.h>
 #include<PlayerRef.h>
@@ -13,17 +14,16 @@ class Table {
 
 public:
 
-    // Public Data Types
+    // Public Static Data
     
-    enum statusEnum {
-        seUnknown,
-        seEmpty,
-        sePaused,
-        sePreFlop,
-        seFlop,
-        seTurn,
-        seRiver,
-    };
+    static atomic<short> seUnknown = 0;
+    static atomic<short> seEmpty = 1;
+    static atomic<short> sePaused = 2;
+    static atomic<short> sePreFlop = 3;
+    static atomic<short> seFlop = 4;
+    static atomic<short> seTurn = 5;
+    static atomic<short> seRiver = 6;
+
 
     // Constructors
     
@@ -49,7 +49,7 @@ public:
             size_t nSeats() const;
 
             //- Get the current status
-            statusEnum status() const;
+            atomic<short> status() const;
             
             //- Get the number of active players
             size_t nPlayers() const;

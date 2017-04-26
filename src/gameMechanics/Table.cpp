@@ -72,7 +72,7 @@ const ds::VecPlayerRef& ds::Table::players() const {
 
 void ds::Table::play() {
     checkReadyForPlay();
-    status_ = sePreFlop;
+    setStatus(sePreFlop);
     if (seated_[dealer_].second == nullptr) {
         moveDealerButton();
     }

@@ -6,13 +6,15 @@
 ds::Blinds::Blinds():
     ante(0),
     smallBlind(0),
-    bigBlind(0)
+    bigBlind(0),
+    startTime(0)
 {}
         
-ds::Blinds::Blinds(Money ant, Money sb, Money bb):
+ds::Blinds::Blinds(Money ant, Money sb, Money bb, int st):
     ante(ant),
     smallBlind(sb),
-    bigBlind(bb)
+    bigBlind(bb),
+    startTime(startTime)
 {}
 
 

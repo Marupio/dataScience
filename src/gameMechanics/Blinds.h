@@ -18,7 +18,7 @@ struct Blinds {
     Money ante;
     Money smallBlind;
     Money bigBlind;
-    
+    int startTime;
     
     // Constructors
     
@@ -26,7 +26,7 @@ struct Blinds {
         Blinds();
         
         //- Construct from components
-        Blinds(Money ant, Money sb, Money bb);
+        Blinds(Money ant, Money sb, Money bb, int st);
 
     
     // Friend functions
