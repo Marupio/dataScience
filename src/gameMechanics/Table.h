@@ -10,13 +10,14 @@
 
 class GameManager;
 
-class Table {
+class Table:
+    public Seats {
 
 public:
 
     // Public Data Types
     
-        //- Status
+        //- Play status
         enum statusEnum {
             seUnknown,
             seEmpty,
@@ -25,6 +26,13 @@ public:
             seFlop,
             seTurn,
             seRiver
+        };
+        
+        //- Post play actions
+        enum postPlayEnum {
+            ppContinue,
+            ppPause,
+            ppDisband
         };
 
 
@@ -62,30 +70,22 @@ public:
 
             //- Query current blinds
             const Blinds& blinds() const;
-
-            //- Return all seated players
-            const VecPlayer& players() const;
             
 
         // Actions        
             
-            //- Start / resume play
+            //- Start
             void play();
 
             //- Finish current hand and halt play until released
             void pause();
-            
-            //- Finish current hand and remove all players from the table
-            void disband();
 
-            //- Add player
-            void addPlayer(PlayerRef& player);
+            //- Set ppAction to ppContinue
+            void resume();
             
-            //- Add players
-            void addPlayers(VecPlayerRef& players);
-        
-            //- Access leavingTable buffer
-            VecPlayerRef& leavingTable();
+            //- Finish current hand and remove all players from the table,
+            //  appending their id to leaving_
+            void disband();
 
             //- Change blinds
             void setBlinds(const Blinds& newBlinds);
@@ -110,22 +110,12 @@ private:
         //- Board
         Board bd_;
 
-        //- Number of seats available
-        const size_t nSeats_;
-
-        //- Players seated at the table
-        VecPlayerRef seated_;
-
-        //- Position of the dealer button, indexed according to seated_
-        VecPlayerRef::iterator dealer_;
+        //- Seats
+        Seats seats_;
         
-        //- Number of players seated - this is derived data that must be kept
-        //  up to date
-        size_t nSeated_;
+        //- Position of the dealer button
+        SeatedPlayer dealer_;
         
-        //- Players leaving the table
-        std::vector<size_t> leaving_;
-
         //- Current blinds
         const Blinds* blinds_;
         
@@ -134,6 +124,15 @@ private:
         
         //- Current status
         atomic<statusEnum> status_;
+
+        //- Post play action
+        atomic<postPlayEnum> ppAction_;
+
+        
+        // Data generated during play
+        
+            //- Pot structure
+            VecPot pots_;
 };
 
 #endif

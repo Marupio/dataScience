@@ -9,8 +9,8 @@
 
 class Player;
 
-typedef Player* PlayerRef;
-typedef std::vector<Player*> VecPlayerRef;
+typedef Player* PlayerPtr;
+typedef std::vector<PlayerPtr> VecPlayerPtr;
 
 class Player {
 
@@ -33,16 +33,13 @@ public:
         // be less with all-in situations
 
             //- Collect ante
-            Money ante(Money amount);
-            
-            //- Collect small blind
-            Money smallBlind(Money amount);
-            
-            //- Collect big blind
-            Money bigBlind(Money amount);
+            Money collect(Money amount);
 
 
         // Access
+
+            //- True if player cannot be dealt until has the dealer button
+            bool waitingForButton() const;
 
             //- True if the player has not yet folded
             bool hasCards() const;
@@ -61,6 +58,9 @@ private:
     
         //- Stack size
         Money stack_;
+
+        //- Waiting for button flag
+        bool waitingForButton_;
 
         //- All-in flag
         bool allIn_;
