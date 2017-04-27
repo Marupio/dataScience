@@ -4,6 +4,7 @@
 #include<list>
 #include<Table.h>
 #include<vector.h>
+#include<Player.h>
 
 // Forward declarations
 
@@ -43,9 +44,6 @@ private:
             //- Seats per table
             size_t seatsPerTable_;
 
-            // TODO
-            // Buy in, rake, rewards
-            
 
         // Active data
 

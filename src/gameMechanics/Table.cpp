@@ -72,25 +72,34 @@ const ds::VecPlayerRef& ds::Table::players() const {
 
 void ds::Table::play() {
     checkReadyForPlay();
-    setStatus(sePreFlop);
-    if (seated_[dealer_].second == nullptr) {
+    status_.store(sePreFlop);
+    if (seated_[dealer_] == nullptr) {
         moveDealerButton();
     }
-    if (blinds_->ante > 0) {
-        for (auto it = seated_.begin(); it!= seated_.end(); ++it) {
-            if (it->second == nullptr) {
-                continue;
-            }
-            it->second->ante(blinds_->ante());
+    std::vector<Money> potLimits(0, 0);
+    for (auto it = seated_.begin(); it!= seated_.end(); ++it) {
+        if (it == nullptr) {
+            continue;
+        }
+        Money antedUp = it->ante(blinds_->ante());
+        if (antedUp < blinds_->ante()) {
+            &&&
         }
     }
     auto itp = dealer_;
     if (nPlayers_ != 2) {
+        // Small blind is next to dealer unless heads-up, where it is dealer
         nextPlayer(itp);
     }
     itp->smallBlind(blinds_->smallBlind);
-    auto itSb = itp;
+    
+    // First-to-act (after the flop) is small blind (unless heads-up)
+    auto itFta = itp;
     nextPlayer(itp);
+    if (nPlayers_ == 2) {
+        // If heads-up, first-to-act after the flop is the big-blind
+        itFta = itp;
+    }
     itp->bigBlind(blinds_->bigBlind);
     dealCards();
     nextPlayer(itp);
@@ -98,15 +107,20 @@ void ds::Table::play() {
         return;
     }
     board_.flop(deck_.draw(3));
+    status_.store(seFlop);
     if (!takeBets(itSb)) {
         return;
     }
     board_.turn(deck_.draw());
+    status_.store(seTurn);
     if (!takeBets(itSb)) {
         return;
     }
     board_.river(deck_.draw());
+    status_.store(seRiver);
     takeBets(itSb);
+    moveDealerButton();
+    // &&& add naseum
 }
 
 
@@ -121,19 +135,37 @@ void ds::Table::setBlinds(const Blinds& newBlinds);
 // ****** Private Member Functions ****** //
 
 void ds::Table::takeBets(VecPlayerRef::iterator& it) {
-    Money payToPlay = blinds_->bigBlind;
-    
+    auto stopIt = it;
+    Money totalBet = blinds_->bigBlind;
+    Money minBet = costOfRound;
+    nextBettingPlayer(it);
+    do {
+        Money nextBet = it->takeBet(totalBet, minBet);
+        if (nextBet > 0) {
+            totalBet = nextBet;
+            stopIt = it;
+        }
+        nextBettingPlayer(it);
+    } while (it != stopIt);
 }
 
 void ds::Table::dealCards() {
     deck_.shuffle();
     for (auto it = seated_.begin(); it!= seated_.end(); ++it) {
-        if (it->second == nullptr) {
+        if (it == nullptr) {
             continue;
         }
-        it->second->dealPocket(deck_.draw(2));
+        it->dealPocket(deck_.draw(2));
     }
 }
+
+
+void ds::Table::nextBettingPlayer(VecPlayerRef::iterator& it) {
+    do {
+        nextPlayer(it);
+    } while (!(it->hasCards()));
+}
+
 
 void ds::Table::nextPlayer(VecPlayerRef::iterator& it) {
     do {
@@ -141,7 +173,7 @@ void ds::Table::nextPlayer(VecPlayerRef::iterator& it) {
         if (it == seated_.end()) {
             it = seated_.begin();
         }
-    } while (it->second == nullptr);
+    } while (it == nullptr);
 }
 
 
@@ -163,7 +195,7 @@ void ds::Table::moveDealerButton() {
         if (dealer_ == seated_.end()) {
             dealer_ = seated_.begin();
         }
-    } while (dealer->second == nullptr);
+    } while (dealer_ == nullptr);
 }
 
 // ****** END ****** //

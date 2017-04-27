@@ -4,7 +4,7 @@
 #include<atomic>
 #include<Board.h>
 #include<Blinds.h>
-#include<PlayerRef.h>
+#include<Player.h>
 
 // Forward declarations
 
@@ -14,15 +14,18 @@ class Table {
 
 public:
 
-    // Public Static Data
+    // Public Data Types
     
-    static atomic<short> seUnknown = 0;
-    static atomic<short> seEmpty = 1;
-    static atomic<short> sePaused = 2;
-    static atomic<short> sePreFlop = 3;
-    static atomic<short> seFlop = 4;
-    static atomic<short> seTurn = 5;
-    static atomic<short> seRiver = 6;
+        //- Status
+        enum statusEnum {
+            seUnknown,
+            seEmpty,
+            sePaused,
+            sePreFlop,
+            seFlop,
+            seTurn,
+            seRiver
+        };
 
 
     // Constructors
@@ -61,7 +64,7 @@ public:
             const Blinds& blinds() const;
 
             //- Return all seated players
-            const VecPlayerRef& players() const;
+            const VecPlayer& players() const;
             
 
         // Actions        
@@ -121,7 +124,7 @@ private:
         size_t nSeated_;
         
         //- Players leaving the table
-        VecPlayerRef leaving_;
+        std::vector<size_t> leaving_;
 
         //- Current blinds
         const Blinds* blinds_;
@@ -130,7 +133,7 @@ private:
         const Blinds* nextBlinds_;
         
         //- Current status
-        statusEnum status_;
+        atomic<statusEnum> status_;
 };
 
 #endif
