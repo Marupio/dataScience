@@ -21,7 +21,18 @@ struct PushedMoney:
     }
 };
 
-typedef std::vector<PushedMoney> VecPushedMoney;
+struct VecPushedMoney:
+    public std::vector<PushedMoney>
+{
+    std::vector<PushedMoney>::iterator find(const SeatedPlayer& player) {
+        for (auto it = begin(); it != end(); ++it) {
+            if (it->second == player) {
+                return it;
+            }
+        }
+        return end();
+    }
+};
 
 // Money is the amount in this pot, VecSeatedPlayer are all the players vying
 // for this pot. Duplicates occur when two players are all in with the same
@@ -37,57 +48,68 @@ struct Pot:
 struct VecPot:
     public std::vector<Pot>
 {
-    void collect(const VecPushedMoney& pm) {
-        VecPushedMoney sortedPm = std::sort(pm.begin(), pm.end());
-        auto itPm = sortedPm.begin();
-        Money sum;
+    void collect(VecPushedMoney& pm) {
+        std::sort(pm.begin(), pm.end());
+        auto itPm = pm.begin();
+        Money sum = 0;
         VecSeatedPlayer playersInPot;
-        if (itPm != sortedPm.end()) {
-            sum = itPm->first;
-            playersInPot.push_back(itPm->second);
-            for (
-                auto itPmNxt = itPm + 1;
-                itPmNext != sortedPm.end();
-                ++itPmNext
-            ) {
-                if (itPm->first == itPmNxt->first) {
-                    sum += itPmNxt->first;
-                    playersInPot.push_back(itPmNxt->second);
-                } else {
-                    // Remove this amount from remaining pushes
-                    Money remove = itPm->first;
-                    for (auto itR = itPmNxt; itR != sortedPm.end(); ++itR) {
-                        sum += remove;
-                        itR->first -= remove;
-                    }
-                    // Then search *this to find playersInPot
-                    if (size()) {
-                        VecSeatedPlayer& lastPlayerList(back().second());
-                        // If one player is found, replace its player list with
-                        // players in pot, and add sum to pot
-                        bool found = (
-                            std::find(
-                                lastPlayerList.begin(),
-                                lastPlayerList.end(),
-                                playersInPot.back()
-                            ) != lastPlayerList.end()
-                        );
-                        if (found) {
-                            back().first += sum;
-                            back().second = playersInPot;
-                            sum = 0;
-                            playersInPot.clear();
-                            continue;
-                        }
-                    }
-                    // If not found, create a new pot
-                    push_back(sum, playersInPot);
-                    sum = 0;
-                    playersInPot.clear();
-                }
+        while (itPm != pm.end()) {
+            sum += itPm->first;
+            if (itPm->second == nullptr) {
+                ++itPm;
+            } else {
+                playersInPot.push_back(itPm->second);
+                break;
             }
         }
+        for (
+            auto itPmNxt = itPm + 1;
+            itPmNext != pm.end();
+            ++itPmNext
+        ) {
+            if (itPm->first == itPmNxt->first || itPmNxt->second == nullptr) {
+                sum += itPmNxt->first;
+                if (itPmNxt->second != nullptr) {
+                    playersInPot.push_back(itPmNxt->second);
+                }
+            } else {
+                // A(nother) player is all-in
+                
+                // Remove this amount from remaining pushes
+                Money remove = itPm->first;
+                for (auto itR = itPmNxt; itR != pm.end(); ++itR) {
+                    sum += remove;
+                    itR->first -= remove;
+                }
+                // Then search *this to find playersInPot
+                if (size() && playersInPot.size()) {
+                    VecSeatedPlayer& lastPlayerList(back().second());
+                    // If one player is found, replace its player list with
+                    // players in pot, and add sum to pot
+                    bool found = (
+                        std::find(
+                            lastPlayerList.begin(),
+                            lastPlayerList.end(),
+                            playersInPot.back()
+                        ) != lastPlayerList.end()
+                    );
+                    if (found) {
+                        back().first += sum;
+                        back().second = playersInPot;
+                        sum = 0;
+                        playersInPot.clear();
+                        continue;
+                    }
+                }
+                // If not found, create a new pot
+                push_back(sum, playersInPot);
+                sum = 0;
+                playersInPot.clear();
+            }
+        }
+        pm.clear();
     }
+
 };
 
 } // end namespace ds

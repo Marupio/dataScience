@@ -32,7 +32,7 @@ public:
         // All these functions return the amount actually provided, which can
         // be less with all-in situations
 
-            //- Collect ante
+            //- Collect ante or blinds
             Money collect(Money amount);
 
 

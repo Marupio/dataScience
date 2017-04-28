@@ -131,6 +131,9 @@ private:
         
         // Data generated during play
         
+            //- Money the players have pushed forward in this round
+            VecPushedMoney pushedMoney_;
+
             //- Pot structure
             VecPot pots_;
 };
