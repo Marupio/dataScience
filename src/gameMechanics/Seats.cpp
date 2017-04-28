@@ -153,16 +153,27 @@ void ds::Seats::addQueue() {
 }
 
 
-size_t ds::Seats::kickPlayer(SeatedPlayer& sp) {
-    leaving_.push_back(sp->id());
-    *sp = nullptr;
+void ds::Seats::kickPlayer(SeatedPlayer& sp) {
+    if (*sp != nullptr) {
+        leaving_.push_back(sp->id());
+        *sp = nullptr;
+    }
 }
 
 
-std::vector<size_t> ds::Seats::kickPlayers(VecSeatedPlayer& vsp) {
+void ds::Seats::kickPlayers(VecSeatedPlayer& vsp) {
     for (auto itVsp = vsp.begin(); itVsp != vsp.end(); ++itVsp) {
-        leaving_.push_back((*itVsp)->id());
-        *(*itVsp) = nullptr;
+        if (**itVsp != nullPtr) {
+            leaving_.push_back((*itVsp)->id());
+            *(*itVsp) = nullptr;
+        }
+    }
+}
+
+
+void ds::Seats::kickAllPlayers() {
+    for (auto it = seated_.begin(); it != seated_.end(); ++it) {
+        kickPlayer(it);
     }
 }
 
@@ -170,7 +181,6 @@ std::vector<size_t> ds::Seats::kickPlayers(VecSeatedPlayer& vsp) {
 ds::VecPlayerPtr& ds::Seats::leavingSeats() {
     return leaving_;
 }
-
 
 
 // ****** Private Member Functions ****** //

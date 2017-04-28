@@ -69,12 +69,19 @@ public:
             //- Add players waiting in the queue
             void addQueue();
 
-            //- Kick player, returns player number
-            size_t kickPlayer(SeatedPlayer& sp);
+            //- Kick player:
+            //      appends player ID to leavingSeats array and sets
+            //      player pointer to nullptr
+            void kickPlayer(SeatedPlayer& sp);
 
-            //- Kick players, returns kicked player numbers
-            std::vector<size_t> kickPlayers(VecSeatedPlayer& vsp);
-                    
+            //- Kick players:
+            //      appends player IDs to leavingSeats array and sets
+            //      player pointers to nullptr
+            void kickPlayers(VecSeatedPlayer& vsp);
+            
+            //- Kicks all players
+            void kickAllPlayers();
+            
             //- Access leavingSeats buffer
             std::vector<size_t>& leavingSeats();
         

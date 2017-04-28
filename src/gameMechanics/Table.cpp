@@ -57,49 +57,50 @@ void ds::Table::play() {
                 moveDealerButton();
             }
             ante(blinds_->ante());
-            auto itp = dealer_;
+            SeatedPlayer player = dealer_;
             if (nPlayers_ != 2) {
                 // Small blind is next to dealer unless heads-up, where it is dealer
-                nextPlayer(itp);
+                nextPlayer(player);
             }
             
             // Small blind
-            collectBlinds(itp, blinds_->smallBlind);
+            collectBlinds(player, blinds_->smallBlind);
             
             // First-to-act (after the flop) is small blind (unless heads-up)
-            auto itFta = itp;
-            nextPlayer(itp);
+            SeatedPlayer ftaPlayer = player;
+            nextPlayer(player);
             if (nPlayers_ == 2) {
                 // If heads-up, first-to-act after the flop is the big-blind
-                itFta = itp;
+                ftaPlayer = player;
             }
             
             // Big blind
-            collectBlinds(itp, blinds_->bigBlind);
+            collectBlinds(player, blinds_->bigBlind);
+            SeatedPlayer bbPlayer = player;
 
             dealCards();
-            nextPlayer(itp);
+            nextPlayer(player);
 
             // check for fast folds and new players
-            checkForFastFolds();
+            checkForFastFolds(bbPlayer);
             checkForWaitingToSit();
 
-            if (!takeBets(itp)) {
+            if (!takeBets(player)) {
                 break;
             }
             board_.flop(deck_.draw(3));
             status_.store(seFlop);
-            if (!takeBets(itSb)) {
+            if (!takeBets(ftaPlayer)) {
                 break;
             }
             board_.turn(deck_.draw());
             status_.store(seTurn);
-            if (!takeBets(itSb)) {
+            if (!takeBets(ftaPlayer)) {
                 break;
             }
             board_.river(deck_.draw());
             status_.store(seRiver);
-            takeBets(itSb);
+            takeBets(ftaPlayer);
 
             // Do hand compares
             compareHands();
@@ -109,8 +110,7 @@ void ds::Table::play() {
 
     // check post play action
     if (ppAction_.load() == ppDisband) {
-        // Take some kind of action
-        // &&&
+        everyoneGoHome();
     }
 }
 
@@ -182,61 +182,73 @@ void ds::Table::dealCards() {
 }
 
 
-void ds::Table::checkForFastFolds() {
-// &&&
+void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
+    if (!gm_.allowFastFolds()) {
+        return;
+    }
+    SeatedPlayer player(sp);
+    nextCardedPlayer(player);
+    while (player != sp) {
+        if (!player->allIn()) {
+            if (player->fastFoldOption(totalBet)) {
+                kick(player);
+            }
+        }
+    }
 }
 
 
 void ds::Table::checkForWaitingToSit() {
-// &&&
+//&&&
 }
 
 
-void ds::Table::takeBets(VecPlayerRef::iterator& it) {
-    auto stopIt = it;
+void ds::Table::takeBets(SeatedPlayer player) {
+    auto stopPlayer = player;
     
     Money totalBet = blinds_->bigBlind;
     Money minRaise = totalBet;
-    nextCardedPlayer(it);
+    nextCardedPlayer(player);
     do {
-        auto itPushed = pushedMoney_.find(it);
+        auto itPushed = pushedMoney_.find(player);
         if (itPushed != pushedMoney_.end()) {
             Money alreadyPushed = itPushed->first;
-            Money newlyPushed = it->takeBet(totalBet, alreadyPushed, minRaise);
+            Money newlyPushed =
+                player->takeBet(totalBet, alreadyPushed, minRaise);
             if (!it->hasCards()) {
                 // Folded
                 itPushed->second = nullptr;
             }
 
-            // check for fast folds and new players
-            checkForFastFolds();
-            checkForWaitingToSit();
-
             if (newlyPushed + alreadyPushed > totalBet) {
                 itPushed->first += newlyPushed;
                 minRaise = std::max(minRaise, itPushed->first - totalBet);
                 totalBet = itPushed->first;
-                stopIt = it;
+                stopPlayer = player;
+
+                // check for fast folds and new players
+                checkForFastFolds(player, totalBet);
+                checkForWaitingToSit();
             }
         } else {
             // Player has not pushed anything yet
-            Money newlyPushed = it->takeBet(totalBet, 0, minRaise);
-
-            // check for fast folds and new players
-            checkForFastFolds();
-            checkForWaitingToSit();
+            Money newlyPushed = player->takeBet(totalBet, 0, minRaise);
 
             if (newlyPushed > 0) {
-                pushedMoney_.push_back(PushedMoney(newlyPushed, it));
+                pushedMoney_.push_back(PushedMoney(newlyPushed, player));
                 if (newlyPushed > totalBet) {
                     minRaise = std::max(minRaise, newlyPushed - totalBet);
                     totalBet = newlyPushed;
-                    stopIt = it;
+                    stopPlayer = player;
+
+                    // check for fast folds and new players
+                    checkForFastFolds(player, totalBet);
+                    checkForWaitingToSit();
                 }
             }
         }
-        nextCardedPlayer(it);
-    } while (it != stopIt);
+        nextCardedPlayer(player);
+    } while (player != stopPlayer);
     pots_.collect(pushedMoney_);
     
     // Detect if only one player remaining in bet
@@ -251,5 +263,11 @@ void ds::Table::takeBets(VecPlayerRef::iterator& it) {
 void ds::Table::compareHands() {
     // &&&
 }
+
+
+void ds::Table::everyoneGoHome() {
+    kickAllPlayers();
+}
+
 
 // ****** END ****** //

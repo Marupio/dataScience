@@ -11,7 +11,8 @@
 class GameManager;
 
 class Table:
-    public Seats {
+    public Seats
+{
 
 public:
 
@@ -110,9 +111,6 @@ private:
         //- Board
         Board bd_;
 
-        //- Seats
-        Seats seats_;
-        
         //- Position of the dealer button
         SeatedPlayer dealer_;
         
