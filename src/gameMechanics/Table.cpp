@@ -50,7 +50,7 @@ const ds::Blinds& ds::Table::blinds() const {
 void ds::Table::play() {
     checkReadyForPlay();
 
-    while (ppAction_.load() == ppContinue) {
+    do {
         while (1) {
             status_.store(sePreFlop);
             if (*dealer_ == nullptr) {
@@ -100,10 +100,18 @@ void ds::Table::play() {
             board_.river(deck_.draw());
             status_.store(seRiver);
             takeBets(itSb);
-        }
 
-        moveDealerButton();
-        // check post play action
+            // Do hand compares
+            compareHands();
+
+            moveDealerButton();
+        } while (ppAction_.load() == ppContinue);
+
+    // check post play action
+    if (ppAction_.load() == ppDisband) {
+        // Take some kind of action
+        // &&&
+    }
 }
 
 
@@ -127,6 +135,26 @@ void ds::Table::setBlinds(const Blinds& newBlinds);
 
 // ****** Private Member Functions ****** //
 
+void ds::Table::checkReadyForPlay() const {
+    if (blinds_ == nullptr) {
+        FatalError << "Attempting to play without blinds" << std::endl;
+        abort();
+    }
+    if (nPlayers() < 2) {
+        FatalError << "Not enough players to start play" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Table::moveDealerButton() {
+    nextPlayer(dealer);
+    if (dealer->waitingForButton()) {
+        dealer->setWaitingForButton(false);
+    }
+}
+
+
 void ds::Table::ante(Money an) {
     pushedMoney_.clear();
 
@@ -141,6 +169,26 @@ void ds::Table::ante(Money an) {
 
 void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
     pushedMoney_.push_back(PushedMoney(player->collect(blinds), player));
+}
+
+
+void ds::Table::dealCards() {
+    deck_.shuffle();
+    auto it = dealer_;
+    do {
+        nextActivePlayer(it);
+        it->dealPocket(deck_.draw(2));
+    } while (it != dealer_);
+}
+
+
+void ds::Table::checkForFastFolds() {
+// &&&
+}
+
+
+void ds::Table::checkForWaitingToSit() {
+// &&&
 }
 
 
@@ -200,36 +248,8 @@ void ds::Table::takeBets(VecPlayerRef::iterator& it) {
 }
 
 
-void ds::Table::dealCards() {
-    deck_.shuffle();
-    for (auto it = seated_.begin(); it!= seated_.end(); ++it) {
-        if (it == nullptr) {
-            continue;
-        }
-        it->dealPocket(deck_.draw(2));
-    }
-}
-
-
-void ds::Table::checkReadyForPlay() const {
-    if (blinds_ == nullptr) {
-        FatalError << "Attempting to play without blinds" << std::endl;
-        abort();
-    }
-    if (nPlayers() < 2) {
-        FatalError << "Not enough players to start play" << std::endl;
-        abort();
-    }
-}
-
-
-void ds::Table::moveDealerButton() {
-    do {
-        ++dealer;
-        if (dealer_ == seated_.end()) {
-            dealer_ = seated_.begin();
-        }
-    } while (dealer_ == nullptr);
+void ds::Table::compareHands() {
+    // &&&
 }
 
 // ****** END ****** //

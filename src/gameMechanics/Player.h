@@ -35,6 +35,9 @@ public:
             //- Collect ante or blinds
             Money collect(Money amount);
 
+            //- Set waitingForButton
+            void setWaitingForButton(bool newValue);
+
 
         // Access
 
