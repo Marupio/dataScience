@@ -8,6 +8,7 @@
 // Forward declarations
 
 class Player;
+class Table;
 
 typedef Player* PlayerPtr;
 typedef std::vector<PlayerPtr> VecPlayerPtr;
@@ -15,6 +16,10 @@ typedef std::vector<PlayerPtr> VecPlayerPtr;
 class Player {
 
 public:
+
+    // Friend classes
+    friend class Table;
+
 
     // Constructors
     

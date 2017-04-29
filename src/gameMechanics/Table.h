@@ -134,6 +134,9 @@ private:
 
             //- Pot structure
             VecPot pots_;
+            
+            //- First to show hand
+            SeatedPlayer firstToShow_;
 };
 
 #endif

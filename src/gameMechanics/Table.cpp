@@ -68,6 +68,7 @@ void ds::Table::play() {
             
             // First-to-act (after the flop) is small blind (unless heads-up)
             SeatedPlayer ftaPlayer = player;
+            firstToShow_ = ftaPlayer;
             nextPlayer(player);
             if (nPlayers_ == 2) {
                 // If heads-up, first-to-act after the flop is the big-blind
@@ -261,6 +262,69 @@ void ds::Table::takeBets(SeatedPlayer player) {
 
 
 void ds::Table::compareHands() {
+    // The types I'm dealing with
+    //struct VecPot: public std::vector<Pot>
+    //struct Pot: public std::pair<Money, VecSeatedPlayer>
+    //typedef VecPlayerPtr::iterator SeatedPlayer;
+    //typedef std::vector<SeatedPlayer> VecSeatedPlayer;
+
+    //for each pot, compare the players
+    std::vector<VecSeatedPlayer> winnersInEachPot;
+    for (auto potI = pots_.begin(); potI != pots_.end(); ++potI) {
+        VecSeatedPlayer& players(potI->second);
+        VecSeatedPlayer winners;
+        #ifdef DSDEBUG
+        if (!players.size()) {
+            FatalError << "Pot contains zero players." << std::endl;
+            abort();
+        }
+        #endif
+        if (players.size() == 1) {
+            winners.push_back(players.begin());
+        } else {
+            winners.push_back(players.begin());
+            for (
+                SeatedPlayer playerJ = players.begin() + 1;
+                playerJ != players.end();
+                ++playerJ
+            ) {
+                short res = HandRanker::compare(
+                    bd_,
+                    winners_.front()->pocket(),
+                    playerJ->pocket()
+                );
+                switch (res) {
+                case -1:
+                    winners_.clear();
+                    winners_.push_back(playerJ);
+                    break;
+                case 0:
+                    winners_.push_back(playerJ);
+                    break;
+                case 1:
+                    // do nothing
+                    break;
+                }
+            }
+        }
+        winnersInEachPot.push_back(winners);
+    }
+
+    if (pots_.size() == 1) {
+        
+    }
+    //compare in reverse down the pots, the best player in each one
+//    std::vector<VecSeatedPlayer> winnersInEachPot;
+    for (
+        std::pair<
+            std::vector<VecSeatedPlayer>::reverse_iterator,
+            VecPot::reverse_iterator
+        > itPair(winnersInEachPot.rbegin(), pots_.rbegin);
+        itPair.second != pots_.rend();
+        ++itPair.first, ++itPair.second) {
+            
+        }
+    
     // &&&
 }
 
