@@ -214,26 +214,62 @@ void ds::Table::takeBets(SeatedPlayer player) {
         auto itPushed = pushedMoney_.find(player);
         if (itPushed != pushedMoney_.end()) {
             Money alreadyPushed = itPushed->first;
+            #ifdef DSDEBUG
+            if (alreadyPushed != player->pushedMoney()) {
+                FatalError << "alreadyPushed (" << alreadyPushed << ") and "
+                    << "player->pushedMoney (" << player->pushedMoney()
+                    << ") do not agree." << std::endl;
+                abort();
+            }
+            #endif
             Money newlyPushed =
-                player->takeBet(totalBet, alreadyPushed, minRaise);
+                player->takeBet(totalBet, minRaise);
             if (!it->hasCards()) {
                 // Folded
                 itPushed->second = nullptr;
+                shareAction(player, Player::acFold);
+                continue;
             }
 
-            if (newlyPushed + alreadyPushed > totalBet) {
+            if (newlyPushed == 0) {
+                // Tell everyone about it
+                shareAction(player, Player::acCheck, totalBet);
+            } else if (newlyPushed + alreadyPushed > totalBet) {
                 itPushed->first += newlyPushed;
                 minRaise = std::max(minRaise, itPushed->first - totalBet);
                 totalBet = itPushed->first;
                 stopPlayer = player;
 
+                // Set player first to show for showdown
+                firstToShow_ = player;
+
+                // Tell everyone about it
+                if (player->allIn()) {
+                    shareAction(player, Player::acRaiseAllIn, totalBet);
+                } else {
+                    shareAction(player, Player::acRaise, totalBet);
+                }
+
                 // check for fast folds and new players
                 checkForFastFolds(player, totalBet);
                 checkForWaitingToSit();
+            } else if (newlyPushed + alreadyPushed <= totalBet) {
+                // Tell everyone about it
+                if (player->allIn()) {
+                    shareAction(player, Player::acCallAllIn, totalBet);
+                } else {
+                    shareAction(player, Player::acCall, totalBet);
+                }
             }
         } else {
             // Player has not pushed anything yet
-            Money newlyPushed = player->takeBet(totalBet, 0, minRaise);
+            Money newlyPushed = player->takeBet(totalBet, minRaise);
+
+            if (!it->hasCards()) {
+                // Folded
+                shareAction(player, Player::acFold, 0);
+                continue;
+            }
 
             if (newlyPushed > 0) {
                 pushedMoney_.push_back(PushedMoney(newlyPushed, player));
@@ -242,19 +278,38 @@ void ds::Table::takeBets(SeatedPlayer player) {
                     totalBet = newlyPushed;
                     stopPlayer = player;
 
+                    // Set player first to show for showdown
+                    firstToShow_ = player;
+
+                    // Tell everyone about it
+                    if (player->allIn()) {
+                        shareAction(player, Player::acRaiseAllIn, totalBet);
+                    } else {
+                        shareAction(player, Player::acRaise, totalBet);
+                    }
+
                     // check for fast folds and new players
                     checkForFastFolds(player, totalBet);
                     checkForWaitingToSit();
+                } else {
+                    if (player->allIn()) {
+                        shareAction(player, Player::acCallAllIn, totalBet);
+                    } else {
+                        shareAction(player, Player::acCall, totalBet);
+                    }
                 }
             }
         }
         nextCardedPlayer(player);
     } while (player != stopPlayer);
-    pots_.collect(pushedMoney_);
+    collectPushedMoney();
     
     // Detect if only one player remaining in bet
     if (pots_.size() == 1 && pots_.front().second.size() == 1) {
-        pots_.front().second.front()->reward(pots_.front().first);
+        SeatedPlayer winner = pots_.front().second.front();
+        winner->reward(pots_.front().first);
+        winner->revealCardsOption();
+        shareResults();
         return false;
     }
     return true;
@@ -326,6 +381,38 @@ void ds::Table::compareHands() {
         }
     
     // &&&
+}
+
+
+void ds::Table::collectPushedMoney() {
+    pots_.collect(pushedMoney_);
+    SeatedPlayer player = dealer_;
+    do {
+        player->clearPushedMoney();
+        nextActivePlayer(player);
+    } while (player != dealer_);
+}
+
+
+void ds::Table::shareAction(
+    const SeatedPlayer& player,
+    Player::actionEnum action,
+    Money amount
+) {
+    SeatedPlayer tellPlayer(player);
+    do {
+        nextPlayer(tellPlayer);
+        tellPlayer->observeAction(player, action, amount);
+    } while (tellPlayer != player);
+}
+
+
+void ds::Table::shareResults() {
+    SeatedPlayer player = dealer_;
+    do {
+        player->observeResults();
+        nextPlayer(player);
+    } while (player != dealer_);
 }
 
 

@@ -13,12 +13,44 @@ class Table;
 typedef Player* PlayerPtr;
 typedef std::vector<PlayerPtr> VecPlayerPtr;
 
+
 class Player {
 
 public:
 
     // Friend classes
     friend class Table;
+
+
+    // Public Data Types
+
+        //- Summary structure contains everything other players can see
+        struct Summary {
+            std::string name;
+            Money stack;
+            Money pushedMoney;
+            Money rewardedMoney;
+            bool allIn;
+            bool hasCards;
+            bool waitingForButton;
+            bool sittingOut;
+            bool disconnected;
+            PktCards revealedPkt;
+        };
+
+        //- Player actions
+        enum actionEnum {
+            acUnknown,
+            acFold,
+            acCheck,
+            acCall,
+            acCallAllIn,
+            acBet,
+            acBetAllIn,
+            acRaise,
+            acRaiseAllIn
+        };
+
 
 
     // Constructors
@@ -44,27 +76,74 @@ public:
 
             //- Deal cards to this player
             void dealPocket(VecDeckInd cardIndices);
-            
+
+            //- Show cards
+            //  Copies pkt_ to revealedPkt_
+            void showPocket();
+                        
 
         // Access
+        
+            //- Return entire summary structure
+            const Summary& summary() const;
+        
+            //- Return player name
+            const std::string& name() const;
 
-            //- True if player cannot be dealt until has the dealer button
-            bool waitingForButton() const;
+            //- Return stack size
+            Money stack() const;        
+            
+            //- Return pushed money
+            Money pushedMoney() const;
+            
+            //- Return rewarded money
+            Money rewardedMoney() const;
+
+            //- Return all-in flag
+            bool allIn() const;
 
             //- True if the player has not yet folded
             bool hasCards() const;
         
-            //- Return stack size
-            Money stack() const;        
+            //- True if player cannot be dealt until has the dealer button
+            bool waitingForButton() const;
             
-            //- Return all-in flag
-            bool allIn() const;
+            //- True if player is sitting out
+            bool sittingOut() const;
+            
+            //- True if player is disconnected
+            bool disconnected() const;
+
+            //- Return revealedPkt
+            const PktCards& revealedPocket() const;
 
 
         // Action
         
             //- Gives player the option to fastFold
-            bool fastFoldOption(Money totalBet);
+            virtual bool fastFoldOption(Money totalBet);
+
+            //- Take a bet
+            //  Calls betOption and adds result to pushedMoney
+            Money takeBet(Money totalBet, Money minRaise);
+
+            //- Bet option for player interface
+            virtual Money betOption(Money totalBet, Money minRaise);
+
+            //- Option to reveal cards
+            //  Copy any or all cards into revealedPkt if the player wants to
+            virtual void revealCardsOption();
+
+            //- Called at the end of a hand of poker to allow players to take
+            //  note of the results
+            virtual void observeResults() void;
+
+            //- Called at each action to allow players to take note of game
+            //  play
+            virtual void observeAction(
+                const SeatedPlayer& player,
+                
+            ) void;
 
 
 protected:
@@ -75,19 +154,28 @@ protected:
         const PktCards& pocket();
 
 
+    // Protected Member Data
+    
+        //- Reference to the table
+        const Table& table_;
+
+
 private:
+
+    // Private Member Functions
+    
+        //- Reward player with a pot
+        void reward(Money amount);
+
+        //- Remove pushed money
+        void clearPushedMoney();
+        
 
     // Private Member Data
     
-        //- Stack size
-        Money stack_;
-
-        //- Waiting for button flag
-        bool waitingForButton_;
-
-        //- All-in flag
-        bool allIn_;
-
+        //- Player summary
+        Summary summary_;
+    
         //- Pocket cards
         PktCards pkt_;
 };
