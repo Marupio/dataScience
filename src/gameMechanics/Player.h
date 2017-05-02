@@ -26,6 +26,7 @@ public:
 
         //- Summary structure contains everything other players can see
         struct Summary {
+            size_t id;
             std::string name;
             Money stack;
             Money pushedMoney;
@@ -67,25 +68,15 @@ public:
 
         // Forced actions
 
-            //- Set waitingForButton
-            void setWaitingForButton(bool newValue);
-
-            //- Collect ante or blinds
-            //  Returns actual amount collected
-            Money collect(Money amount);
-
-            //- Deal cards to this player
-            void dealPocket(VecDeckInd cardIndices);
-
-            //- Show cards
-            //  Copies pkt_ to revealedPkt_
-            void showPocket();
-                        
+                       
 
         // Access
         
             //- Return entire summary structure
             const Summary& summary() const;
+        
+            //- Return player ID number
+            size_t id() const;
         
             //- Return player name
             const std::string& name() const;
@@ -132,7 +123,11 @@ public:
 
             //- Option to reveal cards
             //  Copy any or all cards into revealedPkt if the player wants to
-            virtual void revealCardsOption();
+            virtual void revealWinningCardsOption();
+
+            //- Option to reveal cards
+            //  Copy any or all cards into revealedPkt if the player wants to
+            virtual void revealLosingCardsOption();
 
             //- Called at the end of a hand of poker to allow players to take
             //  note of the results
@@ -163,12 +158,32 @@ protected:
 private:
 
     // Private Member Functions
-    
-        //- Reward player with a pot
-        void reward(Money amount);
 
-        //- Remove pushed money
-        void clearPushedMoney();
+        // Forced actions - friend Table interface
+        
+            //- Set waitingForButton
+            void setWaitingForButton(bool newValue);
+
+            //- Collect ante or blinds
+            //  Returns actual amount collected
+            Money collect(Money amount);
+
+            //- Deal cards to this player
+            void dealPocket(VecDeckInd cardIndices);
+
+            //- Show cards
+            //  Copies pkt_ to revealedPkt_
+            void showPocket();
+
+            //- Reward player with a pot
+            void reward(Money amount);
+
+            //- Take back an overbet (when other players don't have that much)
+            void returnExcess(Money amount);
+            
+
+            //- Remove pushed money
+            void clearPushedMoney();
         
 
     // Private Member Data

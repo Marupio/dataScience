@@ -308,7 +308,7 @@ void ds::Table::takeBets(SeatedPlayer player) {
     if (pots_.size() == 1 && pots_.front().second.size() == 1) {
         SeatedPlayer winner = pots_.front().second.front();
         winner->reward(pots_.front().first);
-        winner->revealCardsOption();
+        winner->revealWinningCardsOption();
         shareResults();
         return false;
     }
@@ -322,6 +322,13 @@ void ds::Table::compareHands() {
     //struct Pot: public std::pair<Money, VecSeatedPlayer>
     //typedef VecPlayerPtr::iterator SeatedPlayer;
     //typedef std::vector<SeatedPlayer> VecSeatedPlayer;
+
+    // First, check if top pot contains one player, and remove it.
+    if (pots_.size() > 1 && pots_.back().second.size() == 1) {
+        Pot overPot(pots_.pop_back());
+        SeatedPlayer player(*overPot.second.front());
+        player->returnExcess(overPot.first);
+    }
 
     //for each pot, compare the players
     std::vector<VecSeatedPlayer> winnersInEachPot;
@@ -345,16 +352,16 @@ void ds::Table::compareHands() {
             ) {
                 short res = HandRanker::compare(
                     bd_,
-                    winners_.front()->pocket(),
+                    winners.front()->pocket(),
                     playerJ->pocket()
                 );
                 switch (res) {
                 case -1:
-                    winners_.clear();
-                    winners_.push_back(playerJ);
+                    winners.clear();
+                    winners.push_back(playerJ);
                     break;
                 case 0:
-                    winners_.push_back(playerJ);
+                    winners.push_back(playerJ);
                     break;
                 case 1:
                     // do nothing
@@ -366,21 +373,84 @@ void ds::Table::compareHands() {
     }
 
     if (pots_.size() == 1) {
-        
+        // winner(s) gets it and return
+        VecSeatedPlayer& winners(winnersInEachPot.front());
+        Money award = pots_.first / winners.size();
+        for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
+            itp->reward(award);
+            itp->revealWinningCardsOption();
+        }
+        shareResults();
+        return;
     }
-    //compare in reverse down the pots, the best player in each one
-//    std::vector<VecSeatedPlayer> winnersInEachPot;
+
+    // List of all winners to assist with showdown, initialise with winners of
+    // highest pot
+    std::vector<size_t> allWinners;
+    VecSeatedPlayer& winners(winnersInEachPot.back());
+    for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
+        allWinners.push_back((*itp)->id());
+    }
+
+    // Compare the best player in each pot, in reverse order, and adjust pot
+    // winners accordingly
     for (
         std::pair<
             std::vector<VecSeatedPlayer>::reverse_iterator,
             VecPot::reverse_iterator
-        > itPair(winnersInEachPot.rbegin(), pots_.rbegin);
+        > itPair(winnersInEachPot.rbegin()+1, pots_.rbegin+1);
         itPair.second != pots_.rend();
-        ++itPair.first, ++itPair.second) {
-            
+        ++itPair.first, ++itPair.second
+    ) {
+        SeatedPlayer highPlayer = (itPair.first-1)->front();
+        SeatedPlayer lowPlayer = itPair.first->front();
+        short res = HandRanker::compare(
+            bd_,
+            highPlayer->pocket(),
+            lowPlayer->pocket()
+        );
+        if (res > 1) {
+            // High player wins, stomps lowPlayer
+            itPair.first->clear();
+            *itPair.first = *(itPair.first-1)
+        } else if (res == 1) {
+            // Split
+            itPair.first->insert(
+                itPair.first->end(),
+                (itPair.first-1)->begin(),
+                (itPair.first-1)->end()
+            );
+        } else {
+            const VecSeatedPlayer& lowWinners(*itPair.first);
+            for (
+                auto itp = lowWinners.begin();
+                itp != lowWinners.end();
+                ++itp
+            ) {
+                allWinners.push_back((*itp)->id());
+            }
         }
-    
-    // &&&
+    }
+
+    // Showdown
+    SeatedPlayer showingPlayer = firstToShow_;
+    do {
+        if (
+            find(
+                allWinners.begin(),
+                allWinners.end(),
+                showingPlayer->id()
+            ) == allWinners.end()
+        ) {
+            // Not winner
+            showingPlayer->revealLosingCardsOption();
+        } else {
+            // Winner
+            showingPlayer->showPocket();
+        }
+        nextCardedPlayer(showingPlayer);
+    } while (showingPlayer != firstToShow_);
+    shareResults();
 }
 
 
