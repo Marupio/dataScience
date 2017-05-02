@@ -101,13 +101,16 @@ void ds::Table::play() {
             }
             board_.river(deck_.draw());
             status_.store(seRiver);
-            takeBets(ftaPlayer);
+            if (!takeBets(ftaPlayer)) {
+                break;
+            }
 
             // Do hand compares
             compareHands();
-
-            moveDealerButton();
-        } while (ppAction_.load() == ppContinue);
+        }
+        moveDealerButton();
+        clearGhostPlayers();
+    } while (ppAction_.load() == ppContinue);
 
     // check post play action
     if (ppAction_.load() == ppDisband) {
@@ -192,7 +195,7 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
     while (player != sp) {
         if (!player->allIn()) {
             if (player->fastFoldOption(totalBet)) {
-                kick(player);
+                ghostKick(player);
             }
         }
     }
@@ -200,7 +203,10 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
 
 
 void ds::Table::checkForWaitingToSit() {
-//&&&
+    if (seatQueue_.size()) {
+        SeatedPlayer emptySeat = dealer_;
+        
+    }
 }
 
 

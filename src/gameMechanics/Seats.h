@@ -51,6 +51,10 @@ public:
             void nextCardedPlayer(SeatedPlayer& st);
             void nextCardedPlayer(ConstSeatedPlayer& cst) const;
 
+            //- Move to the next empty seat
+            void nextEmptySeat(SeatedPlayer& st);
+            void nextEmptySeat(ConstSeatedPlayer& cst) const;
+
 
         // Actions
             
@@ -70,17 +74,26 @@ public:
             void addQueue();
 
             //- Kick player:
-            //      appends player ID to leavingSeats array and sets
-            //      player pointer to nullptr
-            void kickPlayer(SeatedPlayer& sp);
+            //      appends player ID to leavingSeats array and sets player
+            //      pointer to nullptr
+            void kick(SeatedPlayer& sp);
 
             //- Kick players:
-            //      appends player IDs to leavingSeats array and sets
-            //      player pointers to nullptr
-            void kickPlayers(VecSeatedPlayer& vsp);
+            //      appends player IDs to leavingSeats array and sets player
+            //      pointers to nullptr
+            void kick(VecSeatedPlayer& vsp);
             
             //- Kicks all players
             void kickAllPlayers();
+
+            //- Ghost kick player - for fastFolds
+            //      appends player ID to leavingSeats array and sets player
+            //      pointer to a new local ghostPlayer that has the same
+            //      Summary as the kicked player
+            void ghostKick(SeatedPlayer& sp);
+            
+            //- Remove all ghost players from the seats
+            void clearGhostPlayers();
             
             //- Access leavingSeats buffer
             std::vector<size_t>& leavingSeats();
@@ -109,6 +122,12 @@ private:
         //- Number of players seated - this is derived data that must be kept
         //  up to date
         size_t nSeated_;
+        
+        //- Ghost players left behind from fast-folded players
+        std::vector<Player> ghostPlayers_;
+        
+        //- The seats occupied by ghostPlayers
+        VecSeatedPlayer ghostPlayerSeats_;
 };
 
 #endif

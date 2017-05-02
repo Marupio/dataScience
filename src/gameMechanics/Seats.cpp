@@ -89,6 +89,27 @@ void ds::Seats::nextCardedPlayer(ConstSeatedPlayer& cst) const {
 }
 
 
+void ds::Seats::nextEmptySeat(SeatedPlayer& st) {
+    do {
+        ++st;
+        if (st == seated_.end()) {
+            st = seated_.begin();
+        }
+    } while (st != nullptr);
+}
+
+
+void ds::Seats::nextEmptySeat(ConstSeatedPlayer& cst) const {
+    do {
+        ++cst;
+        if (cst == seated_.end()) {
+            cst = seated_.begin();
+        }
+    } while (cst != nullptr);
+}
+}
+
+
 void ds::Seats::addPlayer(PlayerPtr& player) {
     if (seatQueue_.size()) {
         FatalError << "Attempting to add players when seatQueue exists."
@@ -153,7 +174,7 @@ void ds::Seats::addQueue() {
 }
 
 
-void ds::Seats::kickPlayer(SeatedPlayer& sp) {
+void ds::Seats::kick(SeatedPlayer& sp) {
     if (*sp != nullptr) {
         leaving_.push_back(sp->id());
         *sp = nullptr;
@@ -161,7 +182,7 @@ void ds::Seats::kickPlayer(SeatedPlayer& sp) {
 }
 
 
-void ds::Seats::kickPlayers(VecSeatedPlayer& vsp) {
+void ds::Seats::kick(VecSeatedPlayer& vsp) {
     for (auto itVsp = vsp.begin(); itVsp != vsp.end(); ++itVsp) {
         if (**itVsp != nullPtr) {
             leaving_.push_back((*itVsp)->id());
@@ -173,41 +194,35 @@ void ds::Seats::kickPlayers(VecSeatedPlayer& vsp) {
 
 void ds::Seats::kickAllPlayers() {
     for (auto it = seated_.begin(); it != seated_.end(); ++it) {
-        kickPlayer(it);
+        kick(it);
     }
+}
+
+
+void ds::Seats::ghostKick(SeatedPlayer& sp) {
+    if (*sp != nullptr) {
+        leaving_.push_back(sp->id());
+        ghostPlayers_.push_back(GhostPlayer(*sp));
+        *sp = &ghostPlayers_.back();
+        ghostPlayerSeats_.push_back(sp);
+    }
+}
+
+
+void ds::Seats::clearGhostPlayers() {
+    for (
+        auto it = ghostPlayerSeats_.begin();
+        it != ghostPlayerSeats_.end();
+        ++it
+    ) {
+        *it = nullptr;
+    }
+    ghostPlayers_.clear();
 }
 
 
 ds::VecPlayerPtr& ds::Seats::leavingSeats() {
     return leaving_;
-}
-
-
-// ****** Private Member Functions ****** //
-
-void ds::Seats::takeBets(VecPlayerPtr::iterator& it) {
-    auto stopIt = it;
-    Money totalBet = blinds_->bigBlind;
-    Money minBet = costOfRound;
-    nextBettingPlayer(it);
-    do {
-        Money nextBet = it->takeBet(totalBet, minBet);
-        if (nextBet > 0) {
-            totalBet = nextBet;
-            stopIt = it;
-        }
-        nextBettingPlayer(it);
-    } while (it != stopIt);
-}
-
-void ds::Seats::dealCards() {
-    deck_.shuffle();
-    for (auto it = seated_.begin(); it!= seated_.end(); ++it) {
-        if (it == nullptr) {
-            continue;
-        }
-        it->dealPocket(deck_.draw(2));
-    }
 }
 
 
