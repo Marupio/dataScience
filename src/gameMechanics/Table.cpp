@@ -32,18 +32,41 @@ const ds::GameManager& ds::Table::manager() const {
 }
 
 
-size_t ds::Table::nSeats() const {
-    return nSeats_;
+ds::Table::statusEnum ds::Table::status() const {
+    return status_.load();
 }
 
 
-ds::Table::statusEnum ds::Table::status() const {
-    return status_;
+ds::Table::postPlayEnum ds::Table::postPlayAction() const {
+    return ppAction_.load();
+}
+
+
+void ds::Table::setPostPlayAction(postPlayEnum ppe) {
+    ppAction_.store(ppe);
 }
 
 
 const ds::Blinds& ds::Table::blinds() const {
     return *blinds_;
+}
+
+
+void ds::Table::playContinuous() {
+    ppAction_.store(ppContinue);
+    play();
+}
+
+
+void ds::Table::playOnceThenPause() {
+    ppAction_.store(ppPause);
+    play();
+}
+
+
+void ds::Table::playOnceThenDisband() {
+    ppAction_.store(ppDisband);
+    play();
 }
 
 
@@ -58,7 +81,7 @@ void ds::Table::play() {
             }
             ante(blinds_->ante());
             SeatedPlayer player = dealer_;
-            if (nPlayers_ != 2) {
+            if (nPlayers_.load() != 2) {
                 // Small blind is next to dealer unless heads-up, where it is dealer
                 nextPlayer(player);
             }
@@ -70,7 +93,7 @@ void ds::Table::play() {
             SeatedPlayer ftaPlayer = player;
             firstToShow_ = ftaPlayer;
             nextPlayer(player);
-            if (nPlayers_ == 2) {
+            if (nPlayers_.load() == 2) {
                 // If heads-up, first-to-act after the flop is the big-blind
                 ftaPlayer = player;
             }
@@ -84,7 +107,7 @@ void ds::Table::play() {
 
             // check for fast folds and new players
             checkForFastFolds(bbPlayer);
-            checkForWaitingToSit();
+            seatWaitingPlayers(dealer_);
 
             if (!takeBets(player)) {
                 break;
@@ -116,25 +139,43 @@ void ds::Table::play() {
     if (ppAction_.load() == ppDisband) {
         everyoneGoHome();
     }
+    status_.store(sePaused);
 }
 
 
-void ds::Table::pause() {
+void ds::Table::setTableToPause() {
     ppAction_.store(ppPause);
 }
 
 
-void ds::Table::resume() {
+void ds::Table::setTableToContinuousPlay() {
     ppAction_store(ppContinue);
 }
 
 
-void ds::Table::disband() {
+void ds::Table::setTableToDisband() {
     ppAction_.store(ppDisband);
 }
 
 
-void ds::Table::setBlinds(const Blinds& newBlinds);
+void ds::Table::disband() {
+    statusEnum tableStatus = status_.load();
+    if (tableStatus != sePause || tableStatus != seEmpty) {
+        FatalError << "Cannot disband a table that is still in action. Action "
+            "= "<< int(tableStatus) << "." << std::endl;
+        abort();
+    }
+    if (ppAction_.load() != ppDisband) {
+        FatalError << "Table is not ready to disband." << std::endl;
+        abort();
+    }
+    everyoneGoHome();
+}
+
+
+void ds::Table::setBlinds(const Blinds& newBlinds) {
+    blinds_ = &newBlinds;
+}
 
 
 // ****** Private Member Functions ****** //
@@ -144,7 +185,7 @@ void ds::Table::checkReadyForPlay() const {
         FatalError << "Attempting to play without blinds" << std::endl;
         abort();
     }
-    if (nPlayers() < 2) {
+    if (nPlayers_.load() < 2) {
         FatalError << "Not enough players to start play" << std::endl;
         abort();
     }
@@ -159,13 +200,13 @@ void ds::Table::moveDealerButton() {
 }
 
 
-void ds::Table::ante(Money an) {
+void ds::Table::ante(Money amount) {
     pushedMoney_.clear();
 
     auto it = dealer_;
     do {
         nextActivePlayer(it);
-        pushedMoney_.push_back(PushedMoney(it->collect(an), it));
+        pushedMoney_.push_back(PushedMoney(it->collect(amount), it));
     } while (it != dealer_);
     pots_.collect(pushedMoney_);
 }
@@ -198,14 +239,6 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
                 ghostKick(player);
             }
         }
-    }
-}
-
-
-void ds::Table::checkForWaitingToSit() {
-    if (seatQueue_.size()) {
-        SeatedPlayer emptySeat = dealer_;
-        
     }
 }
 
@@ -258,7 +291,7 @@ void ds::Table::takeBets(SeatedPlayer player) {
 
                 // check for fast folds and new players
                 checkForFastFolds(player, totalBet);
-                checkForWaitingToSit();
+                seatWaitingPlayers(dealer_);
             } else if (newlyPushed + alreadyPushed <= totalBet) {
                 // Tell everyone about it
                 if (player->allIn()) {
@@ -296,7 +329,7 @@ void ds::Table::takeBets(SeatedPlayer player) {
 
                     // check for fast folds and new players
                     checkForFastFolds(player, totalBet);
-                    checkForWaitingToSit();
+                    seatWaitingPlayers(dealer_);
                 } else {
                     if (player->allIn()) {
                         shareAction(player, Player::acCallAllIn, totalBet);

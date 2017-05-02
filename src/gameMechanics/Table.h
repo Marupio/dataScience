@@ -42,7 +42,8 @@ public:
         //- Construct from components
         Table(
             const GameManager& gm,
-            size_t nSeats,
+            size_t 
+            nSeats,
             const Blinds& blinds
         );
     
@@ -57,13 +58,16 @@ public:
             //- Return the GameManager
             const GameManager& manager() const;
 
-            //- Return the number of seats
-            size_t nSeats() const;
-
             //- Get the current status
-            atomic<short> status() const;
+            statusEnum status() const;
             
-            //- Get the number of active players
+            //- Get the current post-play action
+            postPlayEnum postPlayAction() const;
+
+            //- Set the post-play action
+            void setPostPlayAction(postPlayEnum ppe);
+            
+            //- Get the number of seated players
             size_t nPlayers() const;
 
             //- Get the number of players leaving the table
@@ -75,19 +79,35 @@ public:
 
         // Actions        
             
-            //- Start
+            //- Start continuous play
+            void playContinuous();
+
+            //- Play one hand
+            void playOnceThenPause();
+
+            //- Play one hand then close table
+            void playOnceThenDisband();
+
+            //- Start, play based on ppAction
             void play();
 
-            //- Finish current hand and halt play until released
-            void pause();
+            //- Sets ppAction to ppPause.
+            //  If playing, finish current hand and stop
+            void setTableToPause();
 
             //- Set ppAction to ppContinue
-            void resume();
-            
-            //- Finish current hand and remove all players from the table,
-            //  appending their id to leaving_
-            void disband();
+            //  If action is underway, it may end before ppAction is changed
+            void setTableToContinuousPlay();
 
+            //- Sets ppAction to ppDisband.
+            //  If playing, finish current hand and disband.
+            void setTableToDisband();
+
+            //- Kicks all players from the table
+            //  It is an error to call this while play is in action.
+            //  ppAction must be ppDisband
+            void disband();
+            
             //- Change blinds
             void setBlinds(const Blinds& newBlinds);
 
@@ -97,7 +117,23 @@ private:
     // Private Member Functions
 
         //- Throws an error if the table is not ready for play
-        void ds::Table::checkReadyForPlay() const;
+        void checkReadyForPlay() const;
+
+        //- Advances dealer button to next valid seated player
+        void moveDealerButton();
+
+        //- Collects ante from every player that is not waiting for button
+        void ante(Money amount);
+
+        //- Collects the given blinds value from the given player
+        void collectBlinds(PlayerRef& player, Money blinds);
+
+        //- Deals cards to the active players
+        void dealCards();
+
+        //- Poll carded players if they wish to fast-fold
+        //  Only does anything if game manager allows fast folds
+        void checkForFastFolds(const SeatedPlayer& sp, Money totalBet)
 
 
     // Private Data

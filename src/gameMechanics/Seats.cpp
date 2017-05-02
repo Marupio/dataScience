@@ -4,115 +4,35 @@
 // ****** Constructors ****** //
 
 ds::Seats::Seats(size_t nSeats):
+    nSeats_(nSeats),
+    nPlayers_(0),
     seated_(nSeats, PlayerPtr(nullptr)),
-    leaving_(0),
-    seatQueue_(0),
-    nSeated_(0)
+    waitingToLeave_(0),
+    waitingToSit_(0)
 {}
 
 
 // ****** Member Functions ****** //
 
-size_t ds::Seats::nSeats() const {
-    return seated_.size();
+size_t ds::Table::nSeats() const {
+    return nSeats_.load();
 }
 
 
 size_t ds::Seats::nPlayers() const {
-    return nSeated_;
-//    size_t nPlayers = 0;
-//    for (auto it = seated_.cbegin(); it != seated_.cend(); ++it) {
-//        if (it->second == nullptr) {
-//            continue;
-//        }
-//        ++nPlayers;
-//    }
-//    return nPlayers;
+    return nPlayers_.load();
 }
 
 
-size_t ds::Seats::nLeaving() const {
-    return leaving_.size();
-}
-
-
-const ds::VecPlayerPtr& ds::Seats::seated() const {
-    return seated_;
-}
-
-
-void ds::Seats::nextPlayer(SeatedPlayer& st) {
-    do {
-        ++st;
-        if (st == seated_.end()) {
-            st = seated_.begin();
-        }
-    } while (st == nullptr);
-}
-
-
-void ds::Seats::nextPlayer(ConstSeatedPlayer& cst) const {
-    do {
-        ++cst;
-        if (cst == seated_.end()) {
-            cst = seated_.begin();
-        }
-    } while (cst == nullptr);
-}
-
-
-void ds::Seats::nextActivePlayer(SeatedPlayer& st) {
-    do {
-        nextPlayer(st);
-    } while (st->waitingForButton());
-}
-
-
-void ds::Seats::nextActivePlayer(ConstSeatedPlayer& cst) {
-    do {
-        nextPlayer(cst);
-    } while (cst->waitingForButton());
-}
-
-
-void ds::Seats::nextCardedPlayer(SeatedPlayer& st) {
-    do {
-        nextPlayer(st);
-    } while (!(st->hasCards()));
-}
-
-
-void ds::Seats::nextCardedPlayer(ConstSeatedPlayer& cst) const {
-    do {
-        nextPlayer(cst);
-    } while (!(cst->hasCards()));
-}
-
-
-void ds::Seats::nextEmptySeat(SeatedPlayer& st) {
-    do {
-        ++st;
-        if (st == seated_.end()) {
-            st = seated_.begin();
-        }
-    } while (st != nullptr);
-}
-
-
-void ds::Seats::nextEmptySeat(ConstSeatedPlayer& cst) const {
-    do {
-        ++cst;
-        if (cst == seated_.end()) {
-            cst = seated_.begin();
-        }
-    } while (cst != nullptr);
-}
+size_t roomInQueue() const {
+    std::lock_guard<std::mutex> guard(waitingToSitMutex_);
+    return nSeats_() - nPlayers() - waitingToSit_.size();
 }
 
 
 void ds::Seats::addPlayer(PlayerPtr& player) {
-    if (seatQueue_.size()) {
-        FatalError << "Attempting to add players when seatQueue exists."
+    if (waitingToSit_.size()) {
+        FatalError << "Attempting to add players when waitingToSit exists."
             << std::endl;
         abort();
     }
@@ -132,8 +52,8 @@ void ds::Seats::addPlayer(PlayerPtr& player) {
 
 
 void ds::Seats::addPlayers(VecPlayerPtr& players) {
-    if (seatQueue_.size()) {
-        FatalError << "Attempting to add players when seatQueue exists."
+    if (waitingToSit_.size()) {
+        FatalError << "Attempting to add players when waitingToSit exists."
             << std::endl;
         abort();
     }
@@ -157,36 +77,165 @@ void ds::Seats::addPlayers(VecPlayerPtr& players) {
 
 
 void ds::Seats::queuePlayer(PlayerPtr& player) {
-    seatQueue_.push_back(player);
+    std::lock_guard<std::mutex> guard(waitingToSitMutex_);
+    waitingToSit_.push_back(player);
 }
 
 
 void ds::Seats::queuePlayers(VecPlayerPtr& players) {
+    std::lock_guard<std::mutex> guard(waitingToSitMutex_);
     for (auto it = players.begin(); it != players.end(); ++it) {
-        seatQueue_.push_back(*it);
+        waitingToSit_.push_back(*it);
+    }
+}
+
+
+void ds::Seats::takeLeavingPlayers(std::vector<size_t>& left) {
+    std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
+    waitingToLeave_.swap(left);
+}
+
+
+// ****** Protected Member Functions ****** //
+
+const ds::VecPlayerPtr& ds::Seats::seated() const {
+    return seated_;
+}
+
+
+void ds::Seats::nextPlayer(SeatedPlayer& st) {
+    SeatedPlayer startedAt = st;
+    do {
+        ++st;
+        if (st == seated_.end()) {
+            st = seated_.begin();
+        }
+    } while (*st == nullptr && st != startedAt)
+
+    if (st == startedAt) {
+        FatalError << "No other player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextPlayer(ConstSeatedPlayer& cst) const {
+    const SeatedPlayer startedAt = cst;
+    do {
+        ++cst;
+        if (cst == seated_.end()) {
+            cst = seated_.begin();
+        }
+    } while (*cst == nullptr && cst != startedAt);
+    if (cst == startedAt) {
+        FatalError << "No other player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextActivePlayer(SeatedPlayer& st) {
+    SeatedPlayer startedAt = st;
+    do {
+        nextPlayer(st);
+    } while (st->waitingForButton() && st != startedAt);
+    if (st == startedAt) {
+        FatalError << "No other active player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextActivePlayer(ConstSeatedPlayer& cst) {
+    const SeatedPlayer startedAt = cst;
+    do {
+        nextPlayer(cst);
+    } while (cst->waitingForButton() && cst != startedAt);
+    if (cst == startedAt) {
+        FatalError << "No other active player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextCardedPlayer(SeatedPlayer& st) {
+    SeatedPlayer startedAt = st;
+    do {
+        nextPlayer(st);
+    } while (!st->hasCards() && st != startedAt);
+    if (st == startedAt) {
+        FatalError << "No other carded player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextCardedPlayer(ConstSeatedPlayer& cst) const {
+    const SeatedPlayer startedAt = cst;
+    do {
+        nextPlayer(cst);
+    } while (!cst->hasCards() && cst != startedAt);
+    if (cst == startedAt) {
+        FatalError << "No other carded player exists" << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextEmptySeat(SeatedPlayer& st) {
+    SeatedPlayer startedAt = st;
+    do {
+        ++st;
+        if (st == seated_.end()) {
+            st = seated_.begin();
+        }
+    } while (*st != nullptr && st != startedAt);
+    if (st == startedAt) {
+        FatalError << "No other empty seat exists." << std::endl;
+        abort();
+    }
+}
+
+
+void ds::Seats::nextEmptySeat(ConstSeatedPlayer& cst) const {
+    const SeatedPlayer startedAt = cst;
+    do {
+        ++cst;
+        if (cst == seated_.end()) {
+            cst = seated_.begin();
+        }
+    } while (*cst != nullptr && cst != startedAt);
+    if (cst == startedAt) {
+        FatalError << "No other empty seat exists." << std::endl;
+        abort();
     }
 }
 
 
 void ds::Seats::addQueue() {
-    addPlayers(seatQueue_);
-    seatQueue_.clear();
+    std::lock_guard<std::mutex> guard(waitingToSitMutex_);
+    addPlayers(waitingToSit_);
+    waitingToSit_.clear();
 }
 
 
 void ds::Seats::kick(SeatedPlayer& sp) {
+    std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     if (*sp != nullptr) {
-        leaving_.push_back(sp->id());
+        waitingToLeave_.push_back(sp->id());
         *sp = nullptr;
+        nPlayers_--;
     }
 }
 
 
 void ds::Seats::kick(VecSeatedPlayer& vsp) {
+    std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     for (auto itVsp = vsp.begin(); itVsp != vsp.end(); ++itVsp) {
         if (**itVsp != nullPtr) {
-            leaving_.push_back((*itVsp)->id());
+            waitingToLeave_.push_back((*itVsp)->id());
             *(*itVsp) = nullptr;
+            nPlayers_--;
         }
     }
 }
@@ -200,8 +249,9 @@ void ds::Seats::kickAllPlayers() {
 
 
 void ds::Seats::ghostKick(SeatedPlayer& sp) {
+    std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     if (*sp != nullptr) {
-        leaving_.push_back(sp->id());
+        waitingToLeave_.push_back(sp->id());
         ghostPlayers_.push_back(GhostPlayer(*sp));
         *sp = &ghostPlayers_.back();
         ghostPlayerSeats_.push_back(sp);
@@ -221,9 +271,22 @@ void ds::Seats::clearGhostPlayers() {
 }
 
 
-ds::VecPlayerPtr& ds::Seats::leavingSeats() {
-    return leaving_;
+void ds::Seats::seatWaitingPlayers(SeatedPlayer dealer) {
+    std::lock_guard<std::mutex> guard(waitingToSitMutex);
+    if (waitingToSit_.size()) {
+        SeatedPlayer emptySeat = dealer;
+        for (
+            auto itSit = waitingToSit_.begin();
+            itSit != waitingToSit_.end();
+            ++itSit
+        ) {
+            nextEmptySeat(emptySeat);
+            *emptySeat = &(*itSit);
+        }
+    }
 }
+
+
 
 
 // ****** END ****** //

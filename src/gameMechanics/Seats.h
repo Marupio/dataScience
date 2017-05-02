@@ -23,19 +23,48 @@ public:
     // Public Member Functions
 
         // Access
-        
+
             //- Return the number of seats
             size_t nSeats() const;
 
             //- Get the number of active players
             size_t nPlayers() const;
+            
+            //- How many players can be added to the queue
+            size_t roomInQueue() const;
 
-            //- Get the number of players leaving the Seats
-            size_t nLeaving() const;
 
+        // Actions
+            
+            //- Add player
+            //  ** Not thread safe **
+            //  For use only before play has started
+            void addPlayer(PlayerPtr& player);
+            
+            //- Add players
+            //  ** Not thread safe **
+            //  For use only before play has started
+            void addPlayers(VecPlayerPtr& players);
+
+            //- Queue player (add to waiting list)
+            void queuePlayer(PlayerPtr& player);
+
+            //- Queue players (add to waiting list)
+            void queuePlayers(VecPlayerPtr& players);
+            
+            //- Transfer waitingToLeave_ to left
+            void takeLeavingPlayers(std::vector<size_t>& left);
+        
+
+protected:
+
+    // Protected Member Functions
+
+        // Access
+    
             //- Return raw data
             const VecPlayer& seated() const;
-            
+
 
         // Search
         
@@ -54,32 +83,20 @@ public:
             //- Move to the next empty seat
             void nextEmptySeat(SeatedPlayer& st);
             void nextEmptySeat(ConstSeatedPlayer& cst) const;
-
+    
 
         // Actions
-            
-            //- Add player
-            void addPlayer(PlayerPtr& player);
-            
-            //- Add players
-            void addPlayers(VecPlayerPtr& players);
 
-            //- Queue player (add to waiting list)
-            void queuePlayer(PlayerPtr& player);
-
-            //- Queue players (add to waiting list)
-            void queuePlayers(VecPlayerPtr& players);
-            
             //- Add players waiting in the queue
             void addQueue();
 
             //- Kick player:
-            //      appends player ID to leavingSeats array and sets player
+            //      appends player ID to waitingToLeave array and sets player
             //      pointer to nullptr
             void kick(SeatedPlayer& sp);
 
             //- Kick players:
-            //      appends player IDs to leavingSeats array and sets player
+            //      appends player IDs to waitingToLeave array and sets player
             //      pointers to nullptr
             void kick(VecSeatedPlayer& vsp);
             
@@ -87,7 +104,7 @@ public:
             void kickAllPlayers();
 
             //- Ghost kick player - for fastFolds
-            //      appends player ID to leavingSeats array and sets player
+            //      appends player ID to waitingToLeave array and sets player
             //      pointer to a new local ghostPlayer that has the same
             //      Summary as the kicked player
             void ghostKick(SeatedPlayer& sp);
@@ -95,34 +112,37 @@ public:
             //- Remove all ghost players from the seats
             void clearGhostPlayers();
             
-            //- Access leavingSeats buffer
-            std::vector<size_t>& leavingSeats();
-        
+            //- Check the waitingToSit, and if players are there, sit them at
+            //  any available seats starting from the dealer
+            void seatWaitingPlayers(SeatedPlayer dealer);
 
-protected:
 
     // Protected Data
+
+        //- Number of seats
+        std::atomic<size_t> nSeats_;
+
+        //- Number of players seated - this is derived data that must be kept
+        //  up to date
+        std::atomic<size_t> nPlayers_;
 
         //- Players seated at the Seats
         //  This is the raw data array
         VecPlayerPtr seated_;
 
         //- Players waiting to sit down
-        VecPlayerPtr seatQueue_;
+        VecPlayerPtr waitingToSit_;
+        std::mutex waitingToSitMutex_;
 
         //- Players leaving the Seats
-        std::vector<size_t> leaving_;
-
+        std::vector<size_t> waitingToLeave_;
+        std::mutex waitingToLeaveMutex_;
 
 
 private:
 
     // Private Data
     
-        //- Number of players seated - this is derived data that must be kept
-        //  up to date
-        size_t nSeated_;
-        
         //- Ghost players left behind from fast-folded players
         std::vector<Player> ghostPlayers_;
         
