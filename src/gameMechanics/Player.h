@@ -7,6 +7,7 @@
 
 // Forward declarations
 
+class GameManager;
 class Player;
 class Table;
 
@@ -37,6 +38,9 @@ public:
             bool sittingOut;
             bool disconnected;
             PktCards revealedPkt;
+            
+            // Constructors
+            Summary(size_t idIn, const std::string& nameIn);
         };
 
         //- Player actions
@@ -57,18 +61,10 @@ public:
     // Constructors
     
         //- Construct from components
-        Player(
-            const GameManager& gm,
-            size_t nSeats,
-            const Blinds& blinds
-        );
+        Player(const GameManager& gm, size_t id, const std::string& name);
     
     
     // Public Member Functions
-
-        // Forced actions
-
-                       
 
         // Access
         
@@ -112,6 +108,7 @@ public:
         // Action
         
             //- Gives player the option to fastFold
+            //  Defaults to false
             virtual bool fastFoldOption(Money totalBet);
 
             //- Take a bet
@@ -119,6 +116,9 @@ public:
             Money takeBet(Money totalBet, Money minRaise);
 
             //- Bet option for player interface
+            //  Return additional pushed money:
+            //      Call is (totalBet - summary_.pushedMoney)
+            //      Min raise is (totalBet + minRaise - summary_.pushedMoney)
             virtual Money betOption(Money totalBet, Money minRaise);
 
             //- Option to reveal cards
@@ -137,7 +137,8 @@ public:
             //  play
             virtual void observeAction(
                 const SeatedPlayer& player,
-                
+                actionEnum action,
+                Money amount
             ) void;
 
 
@@ -187,6 +188,9 @@ private:
         
 
     // Private Member Data
+
+        //- Reference to GameManager
+        const GameManager& gm_;
     
         //- Player summary
         Summary summary_;
