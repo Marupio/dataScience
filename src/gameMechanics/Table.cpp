@@ -243,7 +243,7 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
 }
 
 
-void ds::Table::takeBets(SeatedPlayer player) {
+bool ds::Table::takeBets(SeatedPlayer player) {
     auto stopPlayer = player;
     
     Money totalBet = blinds_->bigBlind;
@@ -275,23 +275,16 @@ void ds::Table::takeBets(SeatedPlayer player) {
                 shareAction(player, Player::acCheck, totalBet);
             } else if (newlyPushed + alreadyPushed > totalBet) {
                 itPushed->first += newlyPushed;
-                minRaise = std::max(minRaise, itPushed->first - totalBet);
                 totalBet = itPushed->first;
-                stopPlayer = player;
+                Money raisedAmount = itPushed->first - totalBet;
 
-                // Set player first to show for showdown
-                firstToShow_ = player;
-
-                // Tell everyone about it
-                if (player->allIn()) {
-                    shareAction(player, Player::acRaiseAllIn, totalBet);
-                } else {
-                    shareAction(player, Player::acRaise, totalBet);
-                }
-
-                // check for fast folds and new players
-                checkForFastFolds(player, totalBet);
-                seatWaitingPlayers(dealer_);
+                raiseHelper(
+                    raisedAmount,
+                    totalBet,
+                    minRaise,
+                    stopPlayer,
+                    player
+                );
             } else if (newlyPushed + alreadyPushed <= totalBet) {
                 // Tell everyone about it
                 if (player->allIn()) {
@@ -313,23 +306,16 @@ void ds::Table::takeBets(SeatedPlayer player) {
             if (newlyPushed > 0) {
                 pushedMoney_.push_back(PushedMoney(newlyPushed, player));
                 if (newlyPushed > totalBet) {
-                    minRaise = std::max(minRaise, newlyPushed - totalBet);
                     totalBet = newlyPushed;
-                    stopPlayer = player;
+                    Money raisedAmount = newlyPushed - totalBet;
 
-                    // Set player first to show for showdown
-                    firstToShow_ = player;
-
-                    // Tell everyone about it
-                    if (player->allIn()) {
-                        shareAction(player, Player::acRaiseAllIn, totalBet);
-                    } else {
-                        shareAction(player, Player::acRaise, totalBet);
-                    }
-
-                    // check for fast folds and new players
-                    checkForFastFolds(player, totalBet);
-                    seatWaitingPlayers(dealer_);
+                    raiseHelper(
+                        raisedAmount,
+                        totalBet,
+                        minRaise,
+                        stopPlayer,
+                        player
+                    );
                 } else {
                     if (player->allIn()) {
                         shareAction(player, Player::acCallAllIn, totalBet);
@@ -500,6 +486,48 @@ void ds::Table::collectPushedMoney() {
         player->clearPushedMoney();
         nextActivePlayer(player);
     } while (player != dealer_);
+}
+
+
+void ds::Table::raiseHelper(
+    Money raisedAmount,
+    Money totalBet,
+    Money& minRaise,
+    SeatedPlayer& stopPlayer,
+    const SeatedPlayer& player
+) {
+    int raiseFactor = int(raisedAmount/minRaise + 0.5);
+    minRaise = std::max(minRaise, raisedAmount);
+    stopPlayer = player;
+
+    // Set player first to show for showdown
+    firstToShow_ = player;
+
+    // Tell everyone about it
+    if (player->allIn()) {
+        shareAction(player, Player::acBetRaiseAllIn, totalBet);
+    } else {
+        Player::actionEnum raiseAction = Player::acUnknown;
+        if (raiseFactor == 1) {
+            raiseAction = Player::acBetRaise;
+        } else if (raiseFactor == 2) {
+            raiseAction = Player::acBetRaiseTwo;
+        } else if (raiseFactor == 3) {
+            raiseAction = Player::acBetRaiseThree;
+        } else if (raiseFactor > 3) {
+            raiseAction = Player::acBetRaiseFour;
+        } else {
+            FatalError << "Unexpected raise ratio (" << raiseFactor
+                << ") returned from player '" << player->name()
+                << "'." << std::endl;
+            abort();
+        }
+        shareAction(player, raiseAction, totalBet);
+    }
+
+    // check for fast folds and new players
+    checkForFastFolds(player, totalBet);
+    seatWaitingPlayers(dealer_);
 }
 
 

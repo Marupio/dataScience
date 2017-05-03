@@ -50,10 +50,11 @@ public:
             acCheck,
             acCall,
             acCallAllIn,
-            acBet,
-            acBetAllIn,
-            acRaise,
-            acRaiseAllIn
+            acBetRaise,
+            acBetRaiseTwo,
+            acBetRaiseThree,
+            acBetRaiseFour,
+            acBetRaiseAllIn
         };
 
 
@@ -116,10 +117,30 @@ public:
             Money takeBet(Money totalBet, Money minRaise);
 
             //- Bet option for player interface
-            //  Return additional pushed money:
-            //      Call is (totalBet - summary_.pushedMoney)
-            //      Min raise is (totalBet + minRaise - summary_.pushedMoney)
-            virtual Money betOption(Money totalBet, Money minRaise);
+            //  Return <action, amount>, which can be:
+            //      <acUnknown, amount>:
+            //          * action is determined based on amount
+            //          * amount refers to extra money pushed
+            //          * 0 is check (if enough was previously pushed) or fold
+            //          (if insufficient was pushed)
+            //          * bounds checked amount based on stack size (for
+            //              all-in), totalBet (to meet call), and minRaise.
+            //      <action, negativeAmount>:
+            //          * action is what the player wants to do
+            //          * actual amount is determined based on this request
+            //          * raise goes to minRaise
+            //      <action, amount>:
+            //          * action is taken as what the player intends to do
+            //          * actual action is determined by amount, similar to
+            //              the <acUnknown, amount> case
+            //          * if actual action deviates from intended action, a
+            //              warning is posted.
+            //      * amount is call / raise amount, i.e. extra pushed money,
+            //          not the total bet
+            virtual std::pair<actionEnum, Money> betOption(
+                Money totalBet,
+                Money minRaise
+            );
 
             //- Option to reveal cards
             //  Copy any or all cards into revealedPkt if the player wants to

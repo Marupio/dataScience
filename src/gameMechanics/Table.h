@@ -135,6 +135,31 @@ private:
         //  Only does anything if game manager allows fast folds
         void checkForFastFolds(const SeatedPlayer& sp, Money totalBet)
 
+        //- Collect bets
+        //  Returns false if one player wins
+        bool takeBets(SeatedPlayer player)
+
+        //- Once all cards are on the board and the final betting is over,
+        //  this function compares the remaining hands based on the pot they
+        //  are vying for.  Once it determines who wins each pot, it
+        //  distributes this information to the players via a showdown, giving
+        //  losing players the chance to muck or show their hands.
+        //  Upon completing this task, all players are given a chance to see
+        //  the final result.
+        void compareHands();
+
+        //- Collects all pushed money into pots and clears players' pushed
+        //  money
+        void collectPushedMoney();
+        
+        //- Helper for collectBets, mostly for code reduction 
+        void raiseHelper(
+            Money raisedAmount,
+            Money totalBet,
+            Money& minRaise,
+            SeatedPlayer& stopPlayer,
+            const SeatedPlayer& player
+        );
 
     // Private Data
     

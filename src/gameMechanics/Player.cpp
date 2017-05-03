@@ -93,9 +93,51 @@ bool fastFoldOption(Money totalBet) {
 
             //  Calls betOption and adds result to pushedMoney
 ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
-    Money newlyPushed = betOption(totalBet, minRaise);
-    // deduct from stack, bounds check&&&
-    summary_.pushedMoney += betOption(totalBet, minRaise);
+    std::pair<actionEnum, Money> actionPush = betOption(totalBet, minRaise);
+    actionEnum action = actionPush.first;
+    Money newlyPushed = actionPush.second;
+    if (newlyPushed < 0) {
+        // Player interacts based on actionEnum
+    } else {
+        // Player interacts based on newlyPushed
+        actionEnum expectedAction = acUnknown;
+        if (newlyPushed < 0) {
+            Warning << "Player '" << summary_.name << "', id " << summary_.id
+                << " attempting to bet negative amount (" << newlyPushed << ")."
+                << std::endl;
+            newlyPushed = 0;
+        }
+        if (newlyPushed < SMALL && summary_.pushedMoney < totalBet) {
+            // Folded
+            expectedAction = acFold;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+        } else if (newlyPushed > summary_.stack) {
+            Warning << "Player '" << summary_.name << "', id " << summary_.id
+                << " attempting to bet " << newlyPushed << " when stack is "
+                << summary_.stack << ". Bet reset to stack size and player is "
+                << "now all-in." << std::endl;
+                newlyPushed_ = summary_.stack;
+        }
+        if (newlyPushed - summary_.stack < SMALL) {
+            // Player is all-in
+            summary_.allIn = true;
+            expectedAction = 
+        } else if (summary_.pushedMoney + newlyPushed + SMALL < totalBet) {
+            // Below call limit
+            Warning << "Player '" << summary_.name << "', id " << summary_.id
+                << " attempting to call with "
+                << Money(summary_.pushedMoney + newlyPushed) << " from a stack "
+                << "size of " << summary_.stack << ", when required call is "
+                << totalBet << ".  Call adjusted to correct amount."
+                << std::endl;
+            newlyPushed = totalBet - summary_.pushedMoney;
+        } else if 
+        }
+
+        summary_.stack -= newlyPushed;
+        summary_.pushedMoney += newlyPushed;
+    }
 }
 
             //- Bet option for player interface

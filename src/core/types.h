@@ -18,6 +18,8 @@ typedef std::vector<CardVal> VecCardVal;
 
 typedef float Money;
 
+const static Money SMALL = 1e-6;
+
 class PktVals;
 //typedef std::pair<VecCardVal, VecPktVals> StraightCompleters;
 //typedef std::vector<std::pair<CardVal, PktVals>> StraightCompleters;
