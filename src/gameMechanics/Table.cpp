@@ -213,7 +213,13 @@ void ds::Table::ante(Money amount) {
 
 
 void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
-    pushedMoney_.push_back(PushedMoney(player->collect(blinds), player));
+    Money paid = player->collect(blinds);
+    pushedMoney_.push_back(PushedMoney(paid, player));
+    if (player->allIn()) {
+        shareAction(player, Player::acBlindsAllIn, paid);
+    } else {
+        shareAction(player, Player::acBlinds, paid);
+    }
 }
 
 
@@ -266,7 +272,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
             if (!it->hasCards()) {
                 // Folded
                 itPushed->second = nullptr;
-                shareAction(player, Player::acFold);
+                shareAction(player, Player::acFold, 0);
                 continue;
             }
 
@@ -458,6 +464,8 @@ void ds::Table::compareHands() {
     }
 
     // Showdown
+    // TODO &&& All-in showdowns
+    // TODO &&& All-in adjustments of minRaise
     SeatedPlayer showingPlayer = firstToShow_;
     do {
         if (

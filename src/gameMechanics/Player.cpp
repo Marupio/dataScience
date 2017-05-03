@@ -1,6 +1,28 @@
+#include<cmath>
 #include<Player.h>
 #include<Table.h>
 #include<GameManager.h>
+
+// ****** Static Data Members ****** //
+
+const std::array<std::string, 16> ds::Player::actionNames = {
+    "Unknown",
+    "Blinds",
+    "BlindsAllIn",
+    "Fold",
+    "Check",
+    "Call",
+    "CallAllIn",
+    "BetRaiseUnderAllIn",
+    "BetRaise",
+    "BetRaiseAllIn",
+    "BetRaiseTwo",
+    "BetRaiseTwoAllIn",
+    "BetRaiseThree",
+    "BetRaiseThreeAllIn",
+    "BetRaiseFour",
+    "BetRaiseFourAllIn"
+};
 
 // ****** Constructors ****** //
 
@@ -93,51 +115,262 @@ bool fastFoldOption(Money totalBet) {
 
             //  Calls betOption and adds result to pushedMoney
 ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
+    if (summary_.allIn) {
+        return 0;
+    }
+
     std::pair<actionEnum, Money> actionPush = betOption(totalBet, minRaise);
     actionEnum action = actionPush.first;
     Money newlyPushed = actionPush.second;
+
     if (newlyPushed < 0) {
         // Player interacts based on actionEnum
+        switch (action) {
+        acFold: {
+            if (std::abs(summary_.pushedMoney - totalBet) < SMALL) {
+                Warning << "Player '" << summary_.name << "', id "
+                    << summary_.id << " chose 'Fold' when pushedMoney ("
+                    << summary_.pushedMoney << ") was was equal to totalBet ("
+                    << totalBet << "). Hand is checked." << std::endl;
+                newlyPushed = 0;
+                break;
+            }
+            // Fold okay
+            newlyPushed = 0;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+            break;
+        }
+        acCheck: {
+            if (std::abs(summary_.pushedMoney - totalBet) > SMALL) {
+                Warning << "Player '" << summary_.name << "', id "
+                    << summary_.id << " chose 'Check' when pushedMoney ("
+                    << summary_.pushedMoney << ") was less than totalBet ("
+                    << totalBet << "). Hand is folded." << std::endl;
+            }
+            newlyPushed = 0;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+            break;
+        }
+        acCall: {
+            newlyPushed = totalBet - summary_.pushedMoney;
+            // check for all in
+            if (summary_.stack - newlyPushed < SMALL) {
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+            break;
+        }
+        acBetRaise: {
+            newlyPushed = totalBet + minRaise - summary_.pushedMoney;
+            // check for all in
+            if (summary_.stack - newlyPushed < SMALL) {
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+            break;
+        }
+        acBetRaiseTwo: {
+            newlyPushed = totalBet + 2*minRaise - summary_.pushedMoney;
+            // check for all in
+            if (summary_.stack - newlyPushed < SMALL) {
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+            break;
+        }
+        acBetRaiseThree: {
+            newlyPushed = totalBet + 3*minRaise - summary_.pushedMoney;
+            // check for all in
+            if (summary_.stack - newlyPushed < SMALL) {
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+            break;
+        }
+        acBetRaiseFour: {
+            newlyPushed = totalBet + 4*minRaise - summary_.pushedMoney;
+            // check for all in
+            if (summary_.stack - newlyPushed < SMALL) {
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+            break;
+        }
+        acBetRaiseAllIn: {
+            newlyPushed = summary_.stack;
+            summary_.allIn = true;
+            break;
+        }
+        default: {
+            Warning << "Player '" << summary_.name << "', id "
+                << summary_.id << " chose '" << actionNames[action] << "', "
+                << "which is not a valid action-based choice. Hand is checked/"
+                << "folded." << std::endl;
+            if (std::abs(summary_.pushedMoney - totalBet) > SMALL) {
+                summary_.hasCards = false;
+                pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+            }
+            newlyPushed = 0;
+            break;
+        } // end default
+        } // end switch
     } else {
         // Player interacts based on newlyPushed
         actionEnum expectedAction = acUnknown;
-        if (newlyPushed < 0) {
-            Warning << "Player '" << summary_.name << "', id " << summary_.id
-                << " attempting to bet negative amount (" << newlyPushed << ")."
-                << std::endl;
-            newlyPushed = 0;
-        }
-        if (newlyPushed < SMALL && summary_.pushedMoney < totalBet) {
-            // Folded
-            expectedAction = acFold;
-            summary_.hasCards = false;
-            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
-        } else if (newlyPushed > summary_.stack) {
+
+        // Bounds check
+        if (newlyPushed > summary_.stack) {
             Warning << "Player '" << summary_.name << "', id " << summary_.id
                 << " attempting to bet " << newlyPushed << " when stack is "
                 << summary_.stack << ". Bet reset to stack size and player is "
                 << "now all-in." << std::endl;
                 newlyPushed_ = summary_.stack;
         }
+
+        // Check for all-in
         if (newlyPushed - summary_.stack < SMALL) {
-            // Player is all-in
             summary_.allIn = true;
-            expectedAction = 
-        } else if (summary_.pushedMoney + newlyPushed + SMALL < totalBet) {
-            // Below call limit
-            Warning << "Player '" << summary_.name << "', id " << summary_.id
-                << " attempting to call with "
-                << Money(summary_.pushedMoney + newlyPushed) << " from a stack "
-                << "size of " << summary_.stack << ", when required call is "
-                << totalBet << ".  Call adjusted to correct amount."
-                << std::endl;
-            newlyPushed = totalBet - summary_.pushedMoney;
-        } else if 
+        }
+        
+        Money totalPushedBet = newlyPushed + summary_.pushedMoney;
+        Money raised = totalPushedBet - totalBet;
+
+        // Check for fold / check
+        if (newlyPushed < SMALL) {
+            if (summary_.pushedMoney + SMALL < totalBet) {
+                // Folded
+                expectedAction = acFold;
+                summary_.hasCards = false;
+                pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+            } else {
+                // Check
+                expectedAction = acCheck;
+            }
+        } else // check for under-call
+        if (totalPushedBet + SMALL < totalBet) {
+            // insufficient for call
+            if (summary_.allIn) {
+                expectedAction = acCallAllIn;
+            } else {
+                Warning << "Player '" << summary_.name << "', id " << summary_.id
+                    << " attempting to call with " << totalPushedBet << " from "
+                    << "a stack size of " << summary_.stack << ", when "
+                    << "required call is " << totalBet << ".  Hand is folded."
+                    << std::endl;
+                expectedAction = acFold;
+                summary_.hasCards = false;
+                pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+                newlyPushed = 0;
+            }
+        } else // check for call
+        if (totalPushedBet - totalBet < SMALL) {
+            expectedAction = acCall;
+        } else // check for under-raise
+        if (raised + SMALL < minRaise) {
+            if (summary_.allIn) {
+                expectedAction = acRaiseUnderAllIn;
+            } else {
+                Warning << "Player '" << summary_.name << "', id "
+                    << summary_.id << " attempting to raise with " << raised
+                    << " from a stack size of " << summary_.stack << ", when "
+                    << "min raise is " << minRaise << ".  Player calls instead."
+                    << std::endl;
+                newlyPushed = totalBet - summary_.pushedMoney;
+                expectedAction = acCall;
+            }
+        } else // check for raiseOne
+        if (raised + SMALL < 2*minRaise) {
+            if (summary_.allIn) {
+                expectedAction = acRaiseAllIn;
+            } else {
+                expectedAction = acRaise;
+            }
+        } else // check for raiseTwo
+        if (raised + SMALL < 3*minRaise) {
+            if (summary_.allIn) {
+                expectedAction = acRaiseTwoAllIn;
+            } else {
+                expectedAction = acRaiseTwo;
+            }
+        }
+        } else // check for raiseThree
+        if (raised + SMALL < 4*minRaise) {
+            if (summary_.allIn) {
+                expectedAction = acRaiseThreeAllIn;
+            } else {
+                expectedAction = acRaiseThree;
+            }
+        } else {
+            // All else is raiseFour
+            if (summary_.allIn) {
+                expectedAction = acRaiseFourAllIn;
+            } else {
+                expectedAction = acRaiseFour;
+            }
         }
 
-        summary_.stack -= newlyPushed;
-        summary_.pushedMoney += newlyPushed;
+        // These variables are now out of date
+        totalPushedBet = 0;
+        raised = 0;
+
+        if (action != acUnknown) {
+            // Player wants to double-check action
+            if (action != expectedAction) {
+                // Allow player to miss 'all-in' aspect
+                bool actionOkay = false;
+                switch (action) {
+                case acCall: {
+                    if (expectedAction == acCallAllIn) {
+                        actionOkay = true;
+                    }
+                    break;
+                }
+                case acBetRaise: {
+                    if (
+                        expectedAction == acBetRaiseAllIn
+                     || expectedAction == acBetRaiseUnderAllIn
+                    ) {
+                        actionOkay = true;
+                    }
+                    break;
+                }
+                case acBetRaiseTwo: {
+                    if (expectedAction == acBetRaiseTwoAllIn) {
+                        actionOkay = true;
+                    }
+                    break;
+                }
+                case acBetRaiseThree: {
+                    if (expectedAction == acBetRaiseThreeAllIn) {
+                        actionOkay = true;
+                    }
+                    break;
+                }
+                case acBetRaiseFour: {
+                    if (expectedAction == acBetRaiseFourAllIn) {
+                        actionOkay = true;
+                    }
+                    break;
+                }
+                default: {
+                    break;
+                } // end default
+                } // end switch
+                if (!actionOkay) {
+                    Warning << "Player '" << summary_.name << "', id "
+                        << summary_.id << " expected/actual action mismatch:\n"
+                        << "    Expected: " << actionNames[expectedAction]
+                        << "\n      Actual: " << actionNames[action]
+                        << std::endl;
+                }
+            }
+        }
     }
+    summary_.pushedMoney += newlyPushed;
+    summary_.stack -= newlyPushed;
+    return newlyPushed;
 }
 
             //- Bet option for player interface

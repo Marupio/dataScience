@@ -46,17 +46,26 @@ public:
         //- Player actions
         enum actionEnum {
             acUnknown,
+            acBlinds,
+            acBlindsAllIn,
             acFold,
             acCheck,
             acCall,
             acCallAllIn,
+            acBetRaiseUnderAllIn,
             acBetRaise,
+            acBetRaiseAllIn,
             acBetRaiseTwo,
+            acBetRaiseTwoAllIn,
             acBetRaiseThree,
+            acBetRaiseThreeAllIn,
             acBetRaiseFour,
-            acBetRaiseAllIn
+            acBetRaiseFourAllIn
         };
 
+    // Static Data
+    
+        static const std::array<std::string, 16> actionNames;
 
 
     // Constructors
@@ -122,13 +131,22 @@ public:
             //          * action is determined based on amount
             //          * amount refers to extra money pushed
             //          * 0 is check (if enough was previously pushed) or fold
-            //          (if insufficient was pushed)
+            //              (if insufficient was pushed)
             //          * bounds checked amount based on stack size (for
             //              all-in), totalBet (to meet call), and minRaise.
             //      <action, negativeAmount>:
             //          * action is what the player wants to do
             //          * actual amount is determined based on this request
-            //          * raise goes to minRaise
+            //          * options are:
+            //              - acFold (goes to 'check' if pushedMoney==totalBet)
+            //              - acCheck (only valid if pushedMoney==totalBet)
+            //              - acCall (goes to 'check' if pushedMoney==totalBet)
+            //              - acRaise (min raise)
+            //              - acRaiseTwo (2*minRaise)
+            //              - acRaiseThree (3*minRaise)
+            //              - acRaiseFour (4*minRaise)
+            //              - acRaiseAllIn
+            //              - invalid action goes to check/fold
             //      <action, amount>:
             //          * action is taken as what the player intends to do
             //          * actual action is determined by amount, similar to
