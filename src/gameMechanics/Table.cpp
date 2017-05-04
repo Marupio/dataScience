@@ -75,6 +75,7 @@ void ds::Table::play() {
 
     do {
         while (1) {
+            allInShowDown_ = false;
             status_.store(sePreFlop);
             if (*dealer_ == nullptr) {
                 moveDealerButton();
@@ -112,16 +113,22 @@ void ds::Table::play() {
             if (!takeBets(player)) {
                 break;
             }
+            dramaticPause();
+
             board_.flop(deck_.draw(3));
             status_.store(seFlop);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
+            dramaticPause();
+
             board_.turn(deck_.draw());
             status_.store(seTurn);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
+            dramaticPause();
+
             board_.river(deck_.draw());
             status_.store(seRiver);
             if (!takeBets(ftaPlayer)) {
@@ -232,6 +239,13 @@ void ds::Table::dealCards() {
 }
 
 
+void dramaticPause() {
+    if (allInShowDown_ && dramaticPause_ > 0) {
+        sleep(dramaticPause_ * 1000);
+    }
+}
+
+
 void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
     if (!gm_.allowFastFolds()) {
         return;
@@ -249,6 +263,10 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
 
 
 bool ds::Table::takeBets(SeatedPlayer player) {
+    if (allInShowDown_) {
+        return true;
+    }
+
     // When to stop the betting rounds - after every player has acted, but any
     // player who does a full raise resets the action - all other players get
     // another chance to act
@@ -262,6 +280,9 @@ bool ds::Table::takeBets(SeatedPlayer player) {
     //- Upon reaching callsOnlyPlayerPtr, callsOnly is set to true
     bool callsOnly = false;
     
+    // To keep track of allInShowDowns
+    size_t nActiveNotAllIn = 0;
+
     Money totalBet = blinds_->bigBlind;
     Money minRaise = totalBet;
     nextCardedPlayer(player);
@@ -297,6 +318,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
             if (newlyPushed == 0) {
                 // Tell everyone about it
                 shareAction(player, Player::acCheck, totalBet);
+                nActiveNotAllIn++;
             } else if (newlyPushed + alreadyPushed > totalBet) {
                 (*itPushed)->first += newlyPushed;
                 totalBet = (*itPushed)->first;
@@ -307,7 +329,8 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                     totalBet,
                     minRaise,
                     stopPlayer,
-                    player
+                    player,
+                    nActiveNotAllIn
                 );
             } else if (newlyPushed + alreadyPushed <= totalBet) {
                 // Tell everyone about it
@@ -315,6 +338,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                     shareAction(player, Player::acCallAllIn, totalBet);
                 } else {
                     shareAction(player, Player::acCall, totalBet);
+                    nActiveNotAllIn++;
                 }
             }
         } else {
@@ -343,13 +367,15 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                         totalBet,
                         minRaise,
                         stopPlayer,
-                        player
+                        player,
+                        nActiveNotAllIn
                     );
                 } else {
                     if ((*player)->allIn()) {
                         shareAction(player, Player::acCallAllIn, totalBet);
                     } else {
                         shareAction(player, Player::acCall, totalBet);
+                        nActiveNotAllIn++;
                     }
                 }
             }
@@ -366,6 +392,12 @@ bool ds::Table::takeBets(SeatedPlayer player) {
         shareResults();
         return false;
     }
+    
+    // Detects an all-in showdown
+    if (nActiveNotAllIn < 2) {
+        activateAllInShowDown();
+    }
+
     return true;
 }
 
@@ -487,7 +519,6 @@ void ds::Table::compareHands() {
     }
 
     // Showdown
-    // TODO &&& All-in showdowns
     SeatedPlayer showingPlayer = firstToShow_;
     do {
         if (
@@ -525,7 +556,8 @@ void ds::Table::raiseHelper(
     Money& minRaise,
     SeatedPlayer& stopPlayer,
     PlayerPtr& callsOnlyPtr,
-    const SeatedPlayer& player
+    const SeatedPlayer& player,
+    size_t& nActiveNotAllIn
 ) {
     if (raisedAmount + SMALL < minRaise) {
         #ifdef DSDEBUG
@@ -561,24 +593,28 @@ void ds::Table::raiseHelper(
             raiseAction = Player::acBetRaiseAllIn;
         } else {
             raiseAction = Player::acBetRaise;
+            nActiveNotAllIn++;
         }
     } else if (raiseFactor == 2) {
         if ((*player)->allIn) {
             raiseAction = Player::acBetRaiseTwoAllIn;
         } else {
             raiseAction = Player::acBetRaiseTwo;
+            nActiveNotAllIn++;
         }
     } else if (raiseFactor == 3) {
         if ((*player)->allIn) {
             raiseAction = Player::acBetRaiseThreeAllIn;
         } else {
             raiseAction = Player::acBetRaiseThree;
+            nActiveNotAllIn++;
         }
     } else if (raiseFactor > 3) {
         if ((*player)->allIn) {
             raiseAction = Player::acBetRaiseFourAllIn;
         } else {
             raiseAction = Player::acBetRaiseFour;
+            nActiveNotAllIn++;
         }
     } else {
         FatalError << "Unexpected raise ratio (" << raiseFactor
@@ -593,6 +629,17 @@ void ds::Table::raiseHelper(
     seatWaitingPlayers(dealer_);
 }
 
+
+void ds::Table::activateAllInShowDown() {
+    SeatedPlayer player(dealer_);
+    nextCardedPlayer(player);
+    SeatedPlayer startedAt(player);
+    do {
+        (*player)->showPocket();
+        nextCardedPlayer(player);
+    } (while player != startedAt);
+    allInShowDown_ = true;
+}
 
 void ds::Table::shareAction(
     const SeatedPlayer& player,

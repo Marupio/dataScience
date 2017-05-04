@@ -131,6 +131,9 @@ private:
         //- Deals cards to the active players
         void dealCards();
 
+        //- If allInShowDown, pause for dramaticPause_ seconds
+        void dramaticPause();
+        
         //- Poll carded players if they wish to fast-fold
         //  Only does anything if game manager allows fast folds
         void checkForFastFolds(const SeatedPlayer& sp, Money totalBet)
@@ -158,8 +161,13 @@ private:
             Money totalBet,
             Money& minRaise,
             SeatedPlayer& stopPlayer,
-            const SeatedPlayer& player
+            const SeatedPlayer& player,
+            size_t& nActiveNotAllIn
         );
+
+        //- Have all carded players show their hands, activate allInShowDown
+        //  flag
+        void activateAllInShowDown();
 
         //- Tell all players (except for player) about the action taken
         void shareAction(
@@ -195,6 +203,10 @@ private:
         //- Next blinds
         const Blinds* nextBlinds_;
         
+        //- Number of seconds to pause between dealer actions during an all-in
+        //  showdown. 0 or negative means no pause.
+        int dramaticPause_;
+        
         //- Current status
         atomic<statusEnum> status_;
 
@@ -212,6 +224,10 @@ private:
             
             //- First to show hand
             SeatedPlayer firstToShow_;
+            
+            //- Flag indicating that no more betting is necessary, it is an
+            //  all-in show-down
+            bool allInShowDown_;
 };
 
 #endif
