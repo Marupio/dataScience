@@ -8,8 +8,6 @@
 
 // Forward declarations
 
-class GameManager;
-
 class Table:
     public Seats
 {
@@ -41,44 +39,35 @@ public:
     
         //- Construct from components
         Table(
-            const GameManager& gm,
-            size_t 
-            nSeats,
-            const Blinds& blinds
+            size_t nSeats,
+            const Blinds& blinds,
+            bool allowFastFolds,
+            int dramaticPause
         );
     
     
     // Public Member Functions
 
-        // Access
+        // Thread-unsafe
+        // For use by play() thread, or after play() thread has joined
         
             //- Return the board
             const Board& board() const;
 
-            //- Return the GameManager
-            const GameManager& manager() const;
-
-            //- Get the current status
-            statusEnum status() const;
+            //- Returns true if players are allowed to 'fast-fold' their hands
+            bool allowFastFolds() const;
             
-            //- Get the current post-play action
-            postPlayEnum postPlayAction() const;
-
-            //- Set the post-play action
-            void setPostPlayAction(postPlayEnum ppe);
-            
-            //- Get the number of seated players
-            size_t nPlayers() const;
-
-            //- Get the number of players leaving the table
-            size_t nLeaving() const;
-
             //- Query current blinds
             const Blinds& blinds() const;
-            
 
-        // Actions        
-            
+            //- Kicks all players from the table
+            //  It is an error to call this while play is in action.
+            //  ppAction must be ppDisband
+            void disband();
+
+
+        // Thread starters
+        
             //- Start continuous play
             void playContinuous();
 
@@ -91,25 +80,37 @@ public:
             //- Start, play based on ppAction
             void play();
 
-            //- Sets ppAction to ppPause.
-            //  If playing, finish current hand and stop
-            void setTableToPause();
 
-            //- Set ppAction to ppContinue
-            //  If action is underway, it may end before ppAction is changed
-            void setTableToContinuousPlay();
+        // Thread-safe interface
 
-            //- Sets ppAction to ppDisband.
-            //  If playing, finish current hand and disband.
-            void setTableToDisband();
+            // Access
 
-            //- Kicks all players from the table
-            //  It is an error to call this while play is in action.
-            //  ppAction must be ppDisband
-            void disband();
-            
-            //- Change blinds
-            void setBlinds(const Blinds& newBlinds);
+                //- Get the current status
+                statusEnum status() const;
+                
+                //- Get the current post-play action
+                postPlayEnum postPlayAction() const;
+
+                //- Set the post-play action
+                void setPostPlayAction(postPlayEnum ppe);
+                
+
+            // Actions
+
+                //- Sets ppAction to ppPause.
+                //  If playing, finish current hand and stop
+                void setTableToPause();
+
+                //- Set ppAction to ppContinue
+                //  If action is underway, it may end before ppAction is changed
+                void setTableToContinuousPlay();
+
+                //- Sets ppAction to ppDisband.
+                //  If playing, finish current hand and disband.
+                void setTableToDisband();
+                
+                //- Change blinds
+                void setBlinds(const Blinds& newBlinds);
 
 
 private:
@@ -169,6 +170,9 @@ private:
         //  flag
         void activateAllInShowDown();
 
+        //- Tell all players about some event unrelated to any one player
+        void shareEvent(Player::eventEnum event);
+
         //- Tell all players (except for player) about the action taken
         void shareAction(
             const SeatedPlayer& player,
@@ -185,9 +189,6 @@ private:
 
     // Private Data
     
-        //- Reference to the game manager
-        const GameManager& gm_;
-    
         //- Deck
         Deck deck_;
     
@@ -201,11 +202,15 @@ private:
         const Blinds* blinds_;
         
         //- Next blinds
-        const Blinds* nextBlinds_;
+        atomic<const Blinds*> nextBlinds_;
         
+        //- When true, players can 'fast-fold' their hands and move to another
+        //  table
+        const bool allowFastFolds_;
+
         //- Number of seconds to pause between dealer actions during an all-in
         //  showdown. 0 or negative means no pause.
-        int dramaticPause_;
+        const int dramaticPause_;
         
         //- Current status
         atomic<statusEnum> status_;

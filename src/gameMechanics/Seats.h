@@ -68,14 +68,32 @@ protected:
 
         // Search
         
+            //- Returns first seated player, starting from st
+            SeatedPlayer firstPlayer(const SeatedPlayer& st);
+            ConstSeatedPlayer firstPlayer(const ConstSeatedPlayer& st) const;
+        
             //- Move to the next seated player
             void nextPlayer(SeatedPlayer& st);
             void nextPlayer(ConstSeatedPlayer& cst) const;
             
+            //- Returns first seated player who is not 'waitingForButton',
+            //  starting from st
+            SeatedPlayer firstActivePlayer(const SeatedPlayer& st);
+            ConstSeatedPlayer firstActivePlayer(
+                const ConstSeatedPlayer& st
+            ) const;
+        
             //- Move to the next seated player who is not 'waitingForButton'
             void nextActivePlayer(SeatedPlayer& st);
             void nextActivePlayer(ConstSeatedPlayer& cst) const;
 
+            //- Returns first seated player who still has pocket cards,
+            //  starting from st
+            SeatedPlayer firstCardedPlayer(const SeatedPlayer& st);
+            ConstSeatedPlayer firstCardedPlayer(
+                const ConstSeatedPlayer& st
+            ) const;
+        
             //- Move to the next seated player who still has pocket cards
             void nextCardedPlayer(SeatedPlayer& st);
             void nextCardedPlayer(ConstSeatedPlayer& cst) const;

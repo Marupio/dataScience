@@ -64,9 +64,15 @@ public:
             acBetRaiseFourAllIn
         };
 
-    // Static Data
-    
         static const std::array<std::string, 16> actionNames;
+
+        //- Events affecting players
+        enum eventEnum {
+            evUnknown,
+            evBlindsChanged,
+            evLeavingTable,
+            evJoiningTable
+        };
 
 
     // Constructors
@@ -211,9 +217,8 @@ public:
             //  Defaults to -1
             virtual void revealLosingCardsOption();
 
-            //- Called at the end of a hand of poker to allow players to take
-            //  note of the results
-            virtual void observeResults() void = 0;
+            //- Inform player that an event has occurred
+            virtual void observeEvent(eventEnum event) = 0;
 
             //- Called at each action to allow players to take note of game
             //  play
@@ -221,7 +226,11 @@ public:
                 const SeatedPlayer& player,
                 actionEnum action,
                 Money amount
-            ) void = 0;
+            ) = 0;
+
+            //- Called at the end of a hand of poker to allow players to take
+            //  note of the results
+            virtual void observeResults() = 0;
 
 
 protected:

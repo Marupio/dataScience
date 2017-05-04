@@ -4,15 +4,17 @@
 // ****** Constructors ****** //
 
 ds::Table::Table(
-    const GameManager& gm,
     size_t nSeats,
-    const Blinds& blinds
+    const Blinds& blinds,
+    bool allowFastFolds,
+    int dramaticPause
 ):
     Seats(nSeats),
-    gm_(gm),
     dealer_(seated_.begin()),
     blinds_(&blinds),
     nextBlinds_(nullptr),
+    allowFastFolds_(allowFastFolds),
+    dramaticPause_(dramaticPause),
     status_(seEmpty),
     ppAction_(ppContinue)
 {
@@ -27,28 +29,28 @@ const ds::Board& ds::Table::board() const {
 }
 
 
-const ds::GameManager& ds::Table::manager() const {
-    return gm_;
-}
-
-
-ds::Table::statusEnum ds::Table::status() const {
-    return status_.load();
-}
-
-
-ds::Table::postPlayEnum ds::Table::postPlayAction() const {
-    return ppAction_.load();
-}
-
-
-void ds::Table::setPostPlayAction(postPlayEnum ppe) {
-    ppAction_.store(ppe);
+bool ds::Table::allowFastFolds() const {
+    return allowFastFolds_;
 }
 
 
 const ds::Blinds& ds::Table::blinds() const {
     return *blinds_;
+}
+
+
+void ds::Table::disband() {
+    statusEnum tableStatus = status_.load();
+    if (tableStatus != sePause || tableStatus != seEmpty) {
+        FatalError << "Cannot disband a table that is still in action. Action "
+            "= "<< int(tableStatus) << "." << std::endl;
+        abort();
+    }
+    if (ppAction_.load() != ppDisband) {
+        FatalError << "Table is not ready to disband." << std::endl;
+        abort();
+    }
+    everyoneGoHome();
 }
 
 
@@ -84,7 +86,7 @@ void ds::Table::play() {
             SeatedPlayer player = dealer_;
             if (nPlayers_.load() != 2) {
                 // Small blind is next to dealer unless heads-up, where it is dealer
-                nextPlayer(player);
+                nextActivePlayer(player);
             }
             
             // Small blind
@@ -93,7 +95,7 @@ void ds::Table::play() {
             // First-to-act (after the flop) is small blind (unless heads-up)
             SeatedPlayer ftaPlayer = player;
             firstToShow_ = ftaPlayer;
-            nextPlayer(player);
+            nextActivePlayer(player);
             if (nPlayers_.load() == 2) {
                 // If heads-up, first-to-act after the flop is the big-blind
                 ftaPlayer = player;
@@ -104,7 +106,7 @@ void ds::Table::play() {
             SeatedPlayer bbPlayer = player;
 
             dealCards();
-            nextPlayer(player);
+            nextActivePlayer(player);
 
             // check for fast folds and new players
             checkForFastFolds(bbPlayer);
@@ -139,6 +141,11 @@ void ds::Table::play() {
             compareHands();
         }
         resetTable();
+        if (nextBlinds_.load() != nullptr) {
+            blinds_ = nextBlinds_.load();
+            nextBlinds_.store(nullptr);
+            shareEvent(Player::evBlindsChanged);
+        }
     } while (ppAction_.load() == ppContinue);
 
     // check post play action
@@ -146,6 +153,21 @@ void ds::Table::play() {
         everyoneGoHome();
     }
     status_.store(sePaused);
+}
+
+
+ds::Table::statusEnum ds::Table::status() const {
+    return status_.load();
+}
+
+
+ds::Table::postPlayEnum ds::Table::postPlayAction() const {
+    return ppAction_.load();
+}
+
+
+void ds::Table::setPostPlayAction(postPlayEnum ppe) {
+    ppAction_.store(ppe);
 }
 
 
@@ -164,23 +186,8 @@ void ds::Table::setTableToDisband() {
 }
 
 
-void ds::Table::disband() {
-    statusEnum tableStatus = status_.load();
-    if (tableStatus != sePause || tableStatus != seEmpty) {
-        FatalError << "Cannot disband a table that is still in action. Action "
-            "= "<< int(tableStatus) << "." << std::endl;
-        abort();
-    }
-    if (ppAction_.load() != ppDisband) {
-        FatalError << "Table is not ready to disband." << std::endl;
-        abort();
-    }
-    everyoneGoHome();
-}
-
-
 void ds::Table::setBlinds(const Blinds& newBlinds) {
-    blinds_ = &newBlinds;
+    nextBlinds_.store(&newBlinds);
 }
 
 
@@ -199,9 +206,9 @@ void ds::Table::checkReadyForPlay() const {
 
 
 void ds::Table::moveDealerButton() {
-    nextPlayer(dealer);
-    if ((*dealer)->waitingForButton()) {
-        (*dealer)->setWaitingForButton(false);
+    nextPlayer(dealer_);
+    if ((*dealer_)->waitingForButton()) {
+        (*dealer_)->setWaitingForButton(false);
     }
 }
 
@@ -209,7 +216,7 @@ void ds::Table::moveDealerButton() {
 void ds::Table::ante(Money amount) {
     pushedMoney_.clear();
 
-    SeatedPlayer it = dealer_;
+    SeatedPlayer it = firstActivePlayer(dealer_);
     do {
         nextActivePlayer(it);
         pushedMoney_.push_back(PushedMoney((*it)->collect(amount), it));
@@ -231,7 +238,7 @@ void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
 
 void ds::Table::dealCards() {
     deck_.shuffle();
-    auto it = dealer_;
+    SeatedPlayer it = firstActivePlayer(dealer_);
     do {
         nextActivePlayer(it);
         (*it)->dealPocket(deck_.draw(2));
@@ -247,7 +254,7 @@ void dramaticPause() {
 
 
 void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
-    if (!gm_.allowFastFolds()) {
+    if (!allowFastFolds_) {
         return;
     }
     SeatedPlayer player(sp);
@@ -542,7 +549,7 @@ void ds::Table::compareHands() {
 
 void ds::Table::collectPushedMoney() {
     pots_.collect(pushedMoney_);
-    SeatedPlayer player = dealer_;
+    SeatedPlayer player = firstActivePlayer(dealer_);
     do {
         (*player)->clearPushedMoney();
         nextActivePlayer(player);
@@ -641,6 +648,16 @@ void ds::Table::activateAllInShowDown() {
     allInShowDown_ = true;
 }
 
+
+void ds::Table::shareEvent(Player::eventEnum event) {
+    SeatedPlayer tellPlayer = firstPlayer(dealer_);
+    do {
+        (*tellPlayer)->observeEvent(event);
+        nextPlayer(tellPlayer);
+    } while (tellPlayer != dealer_);
+}
+
+
 void ds::Table::shareAction(
     const SeatedPlayer& player,
     Player::actionEnum action,
@@ -655,7 +672,7 @@ void ds::Table::shareAction(
 
 
 void ds::Table::shareResults() {
-    SeatedPlayer player = dealer_;
+    SeatedPlayer player = firstPlayer(dealer_);
     do {
         (*player)->observeResults();
         nextPlayer(player);
@@ -672,7 +689,7 @@ void ds::Table::resetTable() {
 
 
 void ds::Table::resetPlayers() {
-    SeatedPlayer player(dealer_);
+    SeatedPlayer player = firstPlayer(dealer_);
     do {
         (*player)->reset();
 

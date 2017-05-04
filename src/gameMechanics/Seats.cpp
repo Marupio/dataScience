@@ -103,6 +103,26 @@ const ds::VecPlayerPtr& ds::Seats::seated() const {
 }
 
 
+ds::SeatedPlayer ds::Seats::firstPlayer(const SeatedPlayer& st) {
+    SeatedPlayer rtnSt(st);
+    if (*st == nullptr) {
+        nextSeatedPlayer(st);
+    }
+    return rtnSt;
+}
+
+
+ds::ConstSeatedPlayer ds::Seats::firstPlayer(
+    const ConstSeatedPlayer& st
+) const {
+    ConstSeatedPlayer rtnSt(st);
+    if (*st == nullptr) {
+        nextSeatedPlayer(st);
+    }
+    return rtnSt;
+}
+
+
 void ds::Seats::nextPlayer(SeatedPlayer& st) {
     SeatedPlayer startedAt = st;
     do {
@@ -134,11 +154,31 @@ void ds::Seats::nextPlayer(ConstSeatedPlayer& cst) const {
 }
 
 
+ds::SeatedPlayer ds::Seats::firstActivePlayer(const SeatedPlayer& st) {
+    SeatedPlayer rtnSt(st);
+    if (*st == nullptr && !(*st)->waitingForButton()) {
+        nextActivePlayer(st);
+    }
+    return rtnSt;
+}
+
+
+ds::ConstSeatedPlayer ds::Seats::firstActivePlayer(
+    const ConstSeatedPlayer& st
+) const {
+    ConstSeatedPlayer rtnSt(st);
+    if (*st == nullptr && !(*st)->waitingForButton()) {
+        nextActivePlayer(st);
+    }
+    return rtnSt;
+}
+
+
 void ds::Seats::nextActivePlayer(SeatedPlayer& st) {
     SeatedPlayer startedAt = st;
     do {
         nextPlayer(st);
-    } while (st->waitingForButton() && st != startedAt);
+    } while ((*st)->waitingForButton() && st != startedAt);
     if (st == startedAt) {
         FatalError << "No other active player exists" << std::endl;
         abort();
@@ -150,7 +190,7 @@ void ds::Seats::nextActivePlayer(ConstSeatedPlayer& cst) {
     const SeatedPlayer startedAt = cst;
     do {
         nextPlayer(cst);
-    } while (cst->waitingForButton() && cst != startedAt);
+    } while ((*cst)->waitingForButton() && cst != startedAt);
     if (cst == startedAt) {
         FatalError << "No other active player exists" << std::endl;
         abort();
@@ -158,11 +198,31 @@ void ds::Seats::nextActivePlayer(ConstSeatedPlayer& cst) {
 }
 
 
+ds::SeatedPlayer ds::Seats::firstCardedPlayer(const SeatedPlayer& st) {
+    SeatedPlayer rtnSt(st);
+    if (*st == nullptr && !(*st)->hasCards()) {
+        nextCardedPlayer(st);
+    }
+    return rtnSt;
+}
+
+
+ds::ConstSeatedPlayer ds::Seats::firstCardedPlayer(
+    const ConstSeatedPlayer& st
+) const {
+    ConstSeatedPlayer rtnSt(st);
+    if (*st == nullptr && !(*st)->hasCards()) {
+        nextCardedPlayer(st);
+    }
+    return rtnSt;
+}
+
+
 void ds::Seats::nextCardedPlayer(SeatedPlayer& st) {
     SeatedPlayer startedAt = st;
     do {
         nextPlayer(st);
-    } while (!st->hasCards() && st != startedAt);
+    } while (!(*st)->hasCards() && st != startedAt);
     if (st == startedAt) {
         FatalError << "No other carded player exists" << std::endl;
         abort();
@@ -174,7 +234,7 @@ void ds::Seats::nextCardedPlayer(ConstSeatedPlayer& cst) const {
     const SeatedPlayer startedAt = cst;
     do {
         nextPlayer(cst);
-    } while (!cst->hasCards() && cst != startedAt);
+    } while (!(*cst)->hasCards() && cst != startedAt);
     if (cst == startedAt) {
         FatalError << "No other carded player exists" << std::endl;
         abort();
@@ -222,7 +282,8 @@ void ds::Seats::addQueue() {
 void ds::Seats::kick(SeatedPlayer& sp) {
     std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     if (*sp != nullptr) {
-        waitingToLeave_.push_back(sp->id());
+        (*sp)->observeEvent(Player::evLeavingTable);
+        waitingToLeave_.push_back((*sp)->id());
         *sp = nullptr;
         nPlayers_--;
     }
@@ -233,8 +294,9 @@ void ds::Seats::kick(VecSeatedPlayer& vsp) {
     std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     for (auto itVsp = vsp.begin(); itVsp != vsp.end(); ++itVsp) {
         if (**itVsp != nullPtr) {
-            waitingToLeave_.push_back((*itVsp)->id());
-            *(*itVsp) = nullptr;
+            waitingToLeave_.push_back((**itVsp)->id());
+            (**itVsp)->observeEvent(Player::evLeavingTable);
+            **itVsp = nullptr;
             nPlayers_--;
         }
     }
@@ -251,7 +313,8 @@ void ds::Seats::kickAllPlayers() {
 void ds::Seats::ghostKick(SeatedPlayer& sp) {
     std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     if (*sp != nullptr) {
-        waitingToLeave_.push_back(sp->id());
+        waitingToLeave_.push_back((*sp)->id());
+        (*sp)->observeEvent(Player::evLeavingTable);
         ghostPlayers_.push_back(GhostPlayer(*sp));
         *sp = &ghostPlayers_.back();
         ghostPlayerSeats_.push_back(sp);
@@ -282,12 +345,12 @@ void ds::Seats::seatWaitingPlayers(SeatedPlayer dealer) {
         ) {
             nextEmptySeat(emptySeat);
             *emptySeat = &(*itSit);
+            // Despite its name, emptySeat is not emptyAnymore
             (*emptySeat)->setWaitingForButton(true);
+            (*emptySeat)->observeEvent(Player::evJoiningTable);
         }
     }
 }
-
-
 
 
 // ****** END ****** //
