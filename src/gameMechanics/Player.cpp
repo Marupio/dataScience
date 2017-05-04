@@ -496,10 +496,19 @@ ds::Money ds::Player::collect(Money amount) {
 
 void ds::Player::dealPocket(VecDeckInd cardIndices) {
     pkt_ = PktCards(cardIndices);
+    summary_.hasCards = true;
 }
+
 
 void ds::Player::showPocket() {
     summary_.revealedPkt = pkt_;
+}
+
+
+void ds::Player::clearPocket() {
+    pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+    summary_.revealedPkt = pkt_;
+    summary_.hasCards = false;
 }
 
 
@@ -508,15 +517,38 @@ void ds::Player::reward(Money amount) {
 }
 
 
-void returnExcess(Money amount) {
+void ds::Player::takeRewards() {
+    summary_.stack += summary_.rewardedMoney;
+    summary_.rewardedMoney = 0;
+    if (summary_.stack > SMALL) {
+        summary_.allIn = false;
+    }
+}
+
+
+void ds::Player::returnExcess(Money amount) {
     // Excess was already collected into a pot, it goes straight back into
     // the stack
     summary_.stack_ += amount;
 }
             
 
-void clearPushedMoney() {
+void ds::Player::clearPushedMoney() {
     summary_.pushedMoney = 0;
+}
+
+
+void ds::Player::reset() {
+    clearPocket();
+    takeRewards();
+    #ifdef DSDEBUG
+    if (summary_.pushedMoney > SMALL) {
+        FatalError << "Player '" << summary_.name << "', id " << summary_.id
+            << " being reset with non-zero pushedMoney ("
+            << summary_.pushedMoney << ")" << std::endl;
+        abort();
+    }
+    #endif
 }
 
 

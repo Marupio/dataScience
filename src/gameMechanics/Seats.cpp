@@ -282,6 +282,7 @@ void ds::Seats::seatWaitingPlayers(SeatedPlayer dealer) {
         ) {
             nextEmptySeat(emptySeat);
             *emptySeat = &(*itSit);
+            (*emptySeat)->setWaitingForButton(true);
         }
     }
 }

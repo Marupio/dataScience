@@ -10,6 +10,7 @@
 class GameManager;
 class Player;
 class Table;
+class Seats;
 
 typedef Player* PlayerPtr;
 typedef std::vector<PlayerPtr> VecPlayerPtr;
@@ -21,7 +22,7 @@ public:
 
     // Friend classes
     friend class Table;
-
+    friend class Seats;
 
     // Public Data Types
 
@@ -241,7 +242,7 @@ private:
 
     // Private Member Functions
 
-        // Forced actions - friend Table interface
+        // Forced actions - friend Table, Seats interface
         
             //- Set waitingForButton
             void setWaitingForButton(bool newValue);
@@ -257,14 +258,25 @@ private:
             //  Copies pkt_ to revealedPkt_
             void showPocket();
 
-            //- Reward player with a pot
+            //- Return cards to dealer
+            void clearPocket();
+
+            //- Reward player with a pot, putting it into rewardedMoney for show
             void reward(Money amount);
+
+            //- Transfer rewardedMoney into stack, clear allIn if set
+            void takeRewards();
 
             //- Take back an overbet (when other players don't have that much)
             void returnExcess(Money amount);
             
             //- Remove pushed money
             void clearPushedMoney();
+
+            //- Reset for next round:
+            //      * clearPocket
+            //      * takeRewards
+            void reset();
 
 
         // Internal functions

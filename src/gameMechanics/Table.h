@@ -161,6 +161,20 @@ private:
             const SeatedPlayer& player
         );
 
+        //- Tell all players (except for player) about the action taken
+        void shareAction(
+            const SeatedPlayer& player,
+            Player::actionEnum action,
+            Money amount
+        );
+
+        //- Tell all players about the results of the last round
+        void shareResults();
+
+        //- Resets table for the next round
+        void resetTable();
+
+
     // Private Data
     
         //- Reference to the game manager

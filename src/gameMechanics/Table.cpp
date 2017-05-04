@@ -131,8 +131,7 @@ void ds::Table::play() {
             // Do hand compares
             compareHands();
         }
-        moveDealerButton();
-        clearGhostPlayers();
+        resetTable();
     } while (ppAction_.load() == ppContinue);
 
     // check post play action
@@ -489,10 +488,6 @@ void ds::Table::compareHands() {
 
     // Showdown
     // TODO &&& All-in showdowns
-    // TODO &&& All-in adjustments of minRaise
-    // TODO &&& Clear all-in flag somewhere
-    // TODO &&& Clear revealed cards somewhere
-    // TODO &&& Clear rewardedMoney somewhere
     SeatedPlayer showingPlayer = firstToShow_;
     do {
         if (
@@ -543,8 +538,9 @@ void ds::Table::raiseHelper(
         // With an all-in under-raise:
         // * Players that already acted cannot reraise, they can only call.
         // * minRaise increases by one full bigBlind
+        // * no wait, minRaise stays the same.
         // * this is an agressive action, so player is still firstToShow
-        minRaise += blinds_->bigBlind;
+        //minRaise += blinds_->bigBlind;
         firstToShow_ = player;
         callsOnlyPtr = *player;
 
@@ -617,6 +613,29 @@ void ds::Table::shareResults() {
         (*player)->observeResults();
         nextPlayer(player);
     } while (player != dealer_);
+}
+
+
+void ds::Table::resetTable() {
+    clearGhostPlayers();
+    resetPlayers();
+    seatWaitingPlayers(dealer_);
+    moveDealerButton();
+}
+
+
+void ds::Table::resetPlayers() {
+    SeatedPlayer player(dealer_);
+    do {
+        (*player)->reset();
+
+        // Kick broke players
+        if ((*player)->stack() < SMALL) {
+            // Player is broke
+            kick(player);
+        }
+        nextPlayer(player);
+    } while (player != dealer);
 }
 
 
