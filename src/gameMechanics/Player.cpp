@@ -283,31 +283,31 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
         } else // check for raiseOne
         if (raised + SMALL < 2*minRaise) {
             if (summary_.allIn) {
-                expectedAction = acRaiseAllIn;
+                expectedAction = acBetRaiseAllIn;
             } else {
-                expectedAction = acRaise;
+                expectedAction = acBetRaise;
             }
         } else // check for raiseTwo
         if (raised + SMALL < 3*minRaise) {
             if (summary_.allIn) {
-                expectedAction = acRaiseTwoAllIn;
+                expectedAction = acBetRaiseTwoAllIn;
             } else {
-                expectedAction = acRaiseTwo;
+                expectedAction = acBetRaiseTwo;
             }
         }
         } else // check for raiseThree
         if (raised + SMALL < 4*minRaise) {
             if (summary_.allIn) {
-                expectedAction = acRaiseThreeAllIn;
+                expectedAction = acBetRaiseThreeAllIn;
             } else {
-                expectedAction = acRaiseThree;
+                expectedAction = acBetRaiseThree;
             }
         } else {
             // All else is raiseFour
             if (summary_.allIn) {
-                expectedAction = acRaiseFourAllIn;
+                expectedAction = acBetRaiseFourAllIn;
             } else {
-                expectedAction = acRaiseFour;
+                expectedAction = acBetRaiseFour;
             }
         }
 
@@ -375,6 +375,10 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
 
             //- Bet option for player interface
             virtual Money betOption(Money totalBet, Money minRaise);
+
+            //- Give player a call or fold option
+            //  Calls callFoldOption and adds result to pushedMoney
+            Money takeCall(Money totalBet);
 
             //- Option to reveal cards
             //  Copy any or all cards into revealedPkt if the player wants to

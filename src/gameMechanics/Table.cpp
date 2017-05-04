@@ -79,7 +79,7 @@ void ds::Table::play() {
             if (*dealer_ == nullptr) {
                 moveDealerButton();
             }
-            ante(blinds_->ante());
+            ante(blinds_->ante);
             SeatedPlayer player = dealer_;
             if (nPlayers_.load() != 2) {
                 // Small blind is next to dealer unless heads-up, where it is dealer
@@ -194,8 +194,8 @@ void ds::Table::checkReadyForPlay() const {
 
 void ds::Table::moveDealerButton() {
     nextPlayer(dealer);
-    if (dealer->waitingForButton()) {
-        dealer->setWaitingForButton(false);
+    if ((*dealer)->waitingForButton()) {
+        (*dealer)->setWaitingForButton(false);
     }
 }
 
@@ -203,19 +203,19 @@ void ds::Table::moveDealerButton() {
 void ds::Table::ante(Money amount) {
     pushedMoney_.clear();
 
-    auto it = dealer_;
+    SeatedPlayer it = dealer_;
     do {
         nextActivePlayer(it);
-        pushedMoney_.push_back(PushedMoney(it->collect(amount), it));
+        pushedMoney_.push_back(PushedMoney((*it)->collect(amount), it));
     } while (it != dealer_);
     pots_.collect(pushedMoney_);
 }
 
 
 void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
-    Money paid = player->collect(blinds);
+    Money paid = (*player)->collect(blinds);
     pushedMoney_.push_back(PushedMoney(paid, player));
-    if (player->allIn()) {
+    if ((*player)->allIn()) {
         shareAction(player, Player::acBlindsAllIn, paid);
     } else {
         shareAction(player, Player::acBlinds, paid);
@@ -228,7 +228,7 @@ void ds::Table::dealCards() {
     auto it = dealer_;
     do {
         nextActivePlayer(it);
-        it->dealPocket(deck_.draw(2));
+        (*it)->dealPocket(deck_.draw(2));
     } while (it != dealer_);
 }
 
@@ -240,8 +240,8 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
     SeatedPlayer player(sp);
     nextCardedPlayer(player);
     while (player != sp) {
-        if (!player->allIn()) {
-            if (player->fastFoldOption(totalBet)) {
+        if (!(*player)->allIn()) {
+            if ((*player)->fastFoldOption(totalBet)) {
                 ghostKick(player);
             }
         }
@@ -250,28 +250,47 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
 
 
 bool ds::Table::takeBets(SeatedPlayer player) {
-    auto stopPlayer = player;
+    // When to stop the betting rounds - after every player has acted, but any
+    // player who does a full raise resets the action - all other players get
+    // another chance to act
+    SeatedPlayer stopPlayer = player;
+    
+    // However, with an under-raise all in, the players who already acted can
+    // only call or fold at this point.  These variables assist with that:
+    //- Pointer to first player that can call only
+    PlayerPtr callsOnlyPlayerPtr = nullptr;
+    
+    //- Upon reaching callsOnlyPlayerPtr, callsOnly is set to true
+    bool callsOnly = false;
     
     Money totalBet = blinds_->bigBlind;
     Money minRaise = totalBet;
     nextCardedPlayer(player);
     do {
+        if (*player == callOnlyPlayerPtr) {
+            callsOnly = true;
+        }
         auto itPushed = pushedMoney_.find(player);
         if (itPushed != pushedMoney_.end()) {
             Money alreadyPushed = itPushed->first;
             #ifdef DSDEBUG
-            if (alreadyPushed != player->pushedMoney()) {
+            if (alreadyPushed != (*player)->pushedMoney()) {
                 FatalError << "alreadyPushed (" << alreadyPushed << ") and "
-                    << "player->pushedMoney (" << player->pushedMoney()
+                    << "player->pushedMoney (" << (*player)->pushedMoney()
                     << ") do not agree." << std::endl;
                 abort();
             }
             #endif
-            Money newlyPushed =
-                player->takeBet(totalBet, minRaise);
-            if (!it->hasCards()) {
+
+            Money newlyPushed;
+            if (callsOnly) {
+                newlyPushed = (*player)->takeCall(totalBet);
+            } else {
+                newlyPushed = (*player)->takeBet(totalBet, minRaise);
+            }
+            if (!(*it)->hasCards()) {
                 // Folded
-                itPushed->second = nullptr;
+                (*itPushed)->second = nullptr;
                 shareAction(player, Player::acFold, 0);
                 continue;
             }
@@ -280,9 +299,9 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 // Tell everyone about it
                 shareAction(player, Player::acCheck, totalBet);
             } else if (newlyPushed + alreadyPushed > totalBet) {
-                itPushed->first += newlyPushed;
-                totalBet = itPushed->first;
-                Money raisedAmount = itPushed->first - totalBet;
+                (*itPushed)->first += newlyPushed;
+                totalBet = (*itPushed)->first;
+                Money raisedAmount = (*itPushed)->first - totalBet;
 
                 raiseHelper(
                     raisedAmount,
@@ -293,7 +312,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 );
             } else if (newlyPushed + alreadyPushed <= totalBet) {
                 // Tell everyone about it
-                if (player->allIn()) {
+                if ((*player)->allIn()) {
                     shareAction(player, Player::acCallAllIn, totalBet);
                 } else {
                     shareAction(player, Player::acCall, totalBet);
@@ -301,9 +320,14 @@ bool ds::Table::takeBets(SeatedPlayer player) {
             }
         } else {
             // Player has not pushed anything yet
-            Money newlyPushed = player->takeBet(totalBet, minRaise);
+            Money newlyPushed;
+            if (callsOnly) {
+                newlyPushed = (*player)->takeCall(totalBet);
+            } else {
+                newlyPushed = (*player)->takeBet(totalBet, minRaise);
+            }
 
-            if (!it->hasCards()) {
+            if (!(*it)->hasCards()) {
                 // Folded
                 shareAction(player, Player::acFold, 0);
                 continue;
@@ -323,7 +347,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                         player
                     );
                 } else {
-                    if (player->allIn()) {
+                    if ((*player)->allIn()) {
                         shareAction(player, Player::acCallAllIn, totalBet);
                     } else {
                         shareAction(player, Player::acCall, totalBet);
@@ -338,8 +362,8 @@ bool ds::Table::takeBets(SeatedPlayer player) {
     // Detect if only one player remaining in bet
     if (pots_.size() == 1 && pots_.front().second.size() == 1) {
         SeatedPlayer winner = pots_.front().second.front();
-        winner->reward(pots_.front().first);
-        winner->revealWinningCardsOption();
+        (*winner)->reward(pots_.front().first);
+        (*winner)->revealWinningCardsOption();
         shareResults();
         return false;
     }
@@ -358,7 +382,7 @@ void ds::Table::compareHands() {
     if (pots_.size() > 1 && pots_.back().second.size() == 1) {
         Pot overPot(pots_.pop_back());
         SeatedPlayer player(*overPot.second.front());
-        player->returnExcess(overPot.first);
+        (*player)->returnExcess(overPot.first);
     }
 
     //for each pot, compare the players
@@ -383,8 +407,8 @@ void ds::Table::compareHands() {
             ) {
                 short res = HandRanker::compare(
                     bd_,
-                    winners.front()->pocket(),
-                    playerJ->pocket()
+                    (*winners.front())->pocket(),
+                    (*playerJ)->pocket()
                 );
                 switch (res) {
                 case -1:
@@ -406,10 +430,10 @@ void ds::Table::compareHands() {
     if (pots_.size() == 1) {
         // winner(s) gets it and return
         VecSeatedPlayer& winners(winnersInEachPot.front());
-        Money award = pots_.first / winners.size();
+        Money award = pots_.first/winners.size();
         for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
-            itp->reward(award);
-            itp->revealWinningCardsOption();
+            (*itp)->reward(award);
+            (*itp)->revealWinningCardsOption();
         }
         shareResults();
         return;
@@ -437,8 +461,8 @@ void ds::Table::compareHands() {
         SeatedPlayer lowPlayer = itPair.first->front();
         short res = HandRanker::compare(
             bd_,
-            highPlayer->pocket(),
-            lowPlayer->pocket()
+            (*highPlayer)->pocket(),
+            (*lowPlayer)->pocket()
         );
         if (res > 1) {
             // High player wins, stomps lowPlayer
@@ -472,14 +496,14 @@ void ds::Table::compareHands() {
             find(
                 allWinners.begin(),
                 allWinners.end(),
-                showingPlayer->id()
+                (*showingPlayer)->id()
             ) == allWinners.end()
         ) {
             // Not winner
-            showingPlayer->revealLosingCardsOption();
+            (*showingPlayer)->revealLosingCardsOption();
         } else {
             // Winner
-            showingPlayer->showPocket();
+            (*showingPlayer)->showPocket();
         }
         nextCardedPlayer(showingPlayer);
     } while (showingPlayer != firstToShow_);
@@ -491,7 +515,7 @@ void ds::Table::collectPushedMoney() {
     pots_.collect(pushedMoney_);
     SeatedPlayer player = dealer_;
     do {
-        player->clearPushedMoney();
+        (*player)->clearPushedMoney();
         nextActivePlayer(player);
     } while (player != dealer_);
 }
@@ -502,9 +526,29 @@ void ds::Table::raiseHelper(
     Money totalBet,
     Money& minRaise,
     SeatedPlayer& stopPlayer,
+    PlayerPtr& callsOnlyPtr,
     const SeatedPlayer& player
 ) {
-    int raiseFactor = int(raisedAmount/minRaise + 0.5);
+    if (raisedAmount + SMALL < minRaise) {
+        #ifdef DSDEBUG
+        if (!(*player)->allIn()) {
+            FatalError << "Under-raise detected without an associated all-in."
+                << std::endl;
+            abort();
+        }
+
+        // With an all-in under-raise:
+        // * Players that already acted cannot reraise, they can only call.
+        // * minRaise increases by one full bigBlind
+        // * this is an agressive action, so player is still firstToShow
+        minRaise += blinds_->bigBlind;
+        firstToShow_ = player;
+        callsOnlyPtr = *player;
+
+        shareAction(player, Player::acBetRaiseUnderAllIn, totalBet);
+        return;
+    }
+    int raiseFactor = (raisedAmount + SMALL)/minRaise;
     minRaise = std::max(minRaise, raisedAmount);
     stopPlayer = player;
 
@@ -512,26 +556,38 @@ void ds::Table::raiseHelper(
     firstToShow_ = player;
 
     // Tell everyone about it
-    if (player->allIn()) {
-        shareAction(player, Player::acBetRaiseAllIn, totalBet);
-    } else {
-        Player::actionEnum raiseAction = Player::acUnknown;
-        if (raiseFactor == 1) {
-            raiseAction = Player::acBetRaise;
-        } else if (raiseFactor == 2) {
-            raiseAction = Player::acBetRaiseTwo;
-        } else if (raiseFactor == 3) {
-            raiseAction = Player::acBetRaiseThree;
-        } else if (raiseFactor > 3) {
-            raiseAction = Player::acBetRaiseFour;
+    Player::actionEnum raiseAction = Player::acUnknown;
+    if (raiseFactor == 1) {
+        if ((*player)->allIn) {
+            raiseAction = Player::acBetRaiseAllIn;
         } else {
-            FatalError << "Unexpected raise ratio (" << raiseFactor
-                << ") returned from player '" << player->name()
-                << "'." << std::endl;
-            abort();
+            raiseAction = Player::acBetRaise;
         }
-        shareAction(player, raiseAction, totalBet);
+    } else if (raiseFactor == 2) {
+        if ((*player)->allIn) {
+            raiseAction = Player::acBetRaiseTwoAllIn;
+        } else {
+            raiseAction = Player::acBetRaiseTwo;
+        }
+    } else if (raiseFactor == 3) {
+        if ((*player)->allIn) {
+            raiseAction = Player::acBetRaiseThreeAllIn;
+        } else {
+            raiseAction = Player::acBetRaiseThree;
+        }
+    } else if (raiseFactor > 3) {
+        if ((*player)->allIn) {
+            raiseAction = Player::acBetRaiseFourAllIn;
+        } else {
+            raiseAction = Player::acBetRaiseFour;
+        }
+    } else {
+        FatalError << "Unexpected raise ratio (" << raiseFactor
+            << ") returned from player '" << (*player)->name()
+            << "'." << std::endl;
+        abort();
     }
+    shareAction(player, raiseAction, totalBet);
 
     // check for fast folds and new players
     checkForFastFolds(player, totalBet);
@@ -547,7 +603,7 @@ void ds::Table::shareAction(
     SeatedPlayer tellPlayer(player);
     do {
         nextPlayer(tellPlayer);
-        tellPlayer->observeAction(player, action, amount);
+        (*tellPlayer)->observeAction(player, action, amount);
     } while (tellPlayer != player);
 }
 
@@ -555,7 +611,7 @@ void ds::Table::shareAction(
 void ds::Table::shareResults() {
     SeatedPlayer player = dealer_;
     do {
-        player->observeResults();
+        (*player)->observeResults();
         nextPlayer(player);
     } while (player != dealer_);
 }

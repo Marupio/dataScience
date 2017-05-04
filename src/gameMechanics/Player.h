@@ -147,18 +147,35 @@ public:
             //              - acRaiseFour (4*minRaise)
             //              - acRaiseAllIn
             //              - invalid action goes to check/fold
-            //      <action, amount>:
+            //      <expectedAction, amount>:
             //          * action is taken as what the player intends to do
             //          * actual action is determined by amount, similar to
             //              the <acUnknown, amount> case
             //          * if actual action deviates from intended action, a
             //              warning is posted.
-            //      * amount is call / raise amount, i.e. extra pushed money,
-            //          not the total bet
+            //  In all cases, amount is the call / raise amount, i.e. extra
+            //  pushed money, not the total bet
             virtual std::pair<actionEnum, Money> betOption(
                 Money totalBet,
                 Money minRaise
             );
+
+            //- Give player a call or fold option
+            //  Calls callFoldOption and adds result to pushedMoney
+            Money takeCall(Money totalBet);
+
+            //- Player can only call or fold
+            //  Return <action, amount>, which can be:
+            //      <acUnknown, amount>:
+            //          * action is determined based on amount
+            //      <action, negativeAmount>:
+            //          * amount is determined based on action
+            //      <expectedAction, amount>:
+            //          * action is determined based on amount
+            //          * expectedAction is provided by player for verification
+            //  In all cases, amount is the call / raise amount, i.e. extra
+            //  pushed money, not the total bet
+            virtual std::pair<actionEnum, Money> callFoldOption(Money totalBet);
 
             //- Option to reveal cards
             //  Copy any or all cards into revealedPkt if the player wants to
