@@ -363,7 +363,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
     if (pots_.size() == 1 && pots_.front().second.size() == 1) {
         SeatedPlayer winner = pots_.front().second.front();
         (*winner)->reward(pots_.front().first);
-        (*winner)->revealWinningCardsOption();
+        (*winner)->askRevealWinningCards();
         shareResults();
         return false;
     }
@@ -433,7 +433,7 @@ void ds::Table::compareHands() {
         Money award = pots_.first/winners.size();
         for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
             (*itp)->reward(award);
-            (*itp)->revealWinningCardsOption();
+            (*itp)->askRevealWinningCards();
         }
         shareResults();
         return;
@@ -490,6 +490,9 @@ void ds::Table::compareHands() {
     // Showdown
     // TODO &&& All-in showdowns
     // TODO &&& All-in adjustments of minRaise
+    // TODO &&& Clear all-in flag somewhere
+    // TODO &&& Clear revealed cards somewhere
+    // TODO &&& Clear rewardedMoney somewhere
     SeatedPlayer showingPlayer = firstToShow_;
     do {
         if (
@@ -500,7 +503,7 @@ void ds::Table::compareHands() {
             ) == allWinners.end()
         ) {
             // Not winner
-            (*showingPlayer)->revealLosingCardsOption();
+            (*showingPlayer)->askRevealLosingCards();
         } else {
             // Winner
             (*showingPlayer)->showPocket();

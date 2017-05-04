@@ -119,7 +119,7 @@ public:
         
             //- Gives player the option to fastFold
             //  Defaults to false
-            virtual bool fastFoldOption(Money totalBet);
+            virtual bool fastFoldOption(Money totalBet) = 0;
 
             //- Take a bet
             //  Calls betOption and adds result to pushedMoney
@@ -158,36 +158,61 @@ public:
             virtual std::pair<actionEnum, Money> betOption(
                 Money totalBet,
                 Money minRaise
-            );
+            ) = 0;
 
             //- Give player a call or fold option
             //  Calls callFoldOption and adds result to pushedMoney
             Money takeCall(Money totalBet);
 
             //- Player can only call or fold
+            //  Situation arises with an under-raise all-in, and the player has
+            //  acted already.
             //  Return <action, amount>, which can be:
             //      <acUnknown, amount>:
             //          * action is determined based on amount
             //      <action, negativeAmount>:
             //          * amount is determined based on action
+            //          * valid actions are:
+            //              - acCall
+            //              - acFold
             //      <expectedAction, amount>:
             //          * action is determined based on amount
             //          * expectedAction is provided by player for verification
             //  In all cases, amount is the call / raise amount, i.e. extra
             //  pushed money, not the total bet
-            virtual std::pair<actionEnum, Money> callFoldOption(Money totalBet);
+            virtual std::pair<actionEnum, Money> callFoldOption(
+                Money totalBet
+            ) = 0;
+
+            //- Calls revealWinningCardsOption(), and copies cards into
+            //  revealedPkt as requested
+            void askRevealWinningCards();
 
             //- Option to reveal cards
-            //  Copy any or all cards into revealedPkt if the player wants to
-            virtual void revealWinningCardsOption();
+            //  Returns:
+            //     -1 do not reveal any
+            //      0 reveal Pkt.first
+            //      1 reveal Pkt.second
+            //      2 reveal both
+            //  Defaults to -1
+            virtual int revealWinningCardsOption();
+
+            //- Calls revealLosingCardsOption(), and copies cards into
+            //  revealedPkt as requested
+            void askRevealLosingCards();
 
             //- Option to reveal cards
-            //  Copy any or all cards into revealedPkt if the player wants to
+            //  Returns:
+            //     -1 do not reveal any
+            //      0 reveal Pkt.first
+            //      1 reveal Pkt.second
+            //      2 reveal both
+            //  Defaults to -1
             virtual void revealLosingCardsOption();
 
             //- Called at the end of a hand of poker to allow players to take
             //  note of the results
-            virtual void observeResults() void;
+            virtual void observeResults() void = 0;
 
             //- Called at each action to allow players to take note of game
             //  play
@@ -195,7 +220,7 @@ public:
                 const SeatedPlayer& player,
                 actionEnum action,
                 Money amount
-            ) void;
+            ) void = 0;
 
 
 protected:
@@ -203,7 +228,7 @@ protected:
     // Protected Member Functions
     
         //- Look at pocket
-        const PktCards& pocket();
+        const PktCards& pocket() const;
 
 
     // Protected Member Data
@@ -238,9 +263,15 @@ private:
             //- Take back an overbet (when other players don't have that much)
             void returnExcess(Money amount);
             
-
             //- Remove pushed money
             void clearPushedMoney();
+
+
+        // Internal functions
+        
+            //- Interpret result of reveal[Winning|Losing]CardsOption()
+            void parseRevealOption(int answer);
+
         
 
     // Private Member Data

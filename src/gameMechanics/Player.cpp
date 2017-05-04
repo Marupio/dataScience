@@ -373,86 +373,178 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
     return newlyPushed;
 }
 
-            //- Bet option for player interface
-            virtual Money betOption(Money totalBet, Money minRaise);
 
-            //- Give player a call or fold option
-            //  Calls callFoldOption and adds result to pushedMoney
-            Money takeCall(Money totalBet);
+ds::Money ds::Player::takeCall(Money totalBet) {
+    if (summary_.allIn) {
+        return 0;
+    }
 
-            //- Option to reveal cards
-            //  Copy any or all cards into revealedPkt if the player wants to
-            virtual void revealWinningCardsOption();
+    std::pair<actionEnum, Money> actionPush = callFoldOption(totalBet);
+    actionEnum action = actionPush.first;
+    Money newlyPushed = actionPush.second;
 
-            //- Option to reveal cards
-            //  Copy any or all cards into revealedPkt if the player wants to
-            virtual void revealLosingCardsOption();
-
-            //- Called at the end of a hand of poker to allow players to take
-            //  note of the results
-            virtual void observeResults() void;
-
-            //- Called at each action to allow players to take note of game
-            //  play
-            virtual void observeAction(
-                const SeatedPlayer& player,
-                actionEnum action,
-                Money amount
-            ) void;
-
-
-protected:
-
-    // Protected Member Functions
-    
-        //- Look at pocket
-        const PktCards& pocket();
-
-
-    // Protected Member Data
-    
-        //- Reference to the table
-        const Table& table_;
-
-
-private:
-
-    // Private Member Functions
-
-        // Forced actions - friend Table interface
+    if (newlyPushed < 0) {
+        // Player interacts based on actionEnums
+        if (action == acCall) {
+            newlyPushed = totalBet - summary_.pushedMoney;
+            if (newlyPushed - summary_.stack < SMALL) {
+                // Player is all in
+                newlyPushed = summary_.stack;
+                summary_.allIn = true;
+            }
+        } else if (action == acFold) {
+            newlyPushed = 0;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+        } else {
+            Warning << "Player '" << summary_.name << "', id "
+                << summary_.id << " chose '" << actionNames[action] << "', "
+                << "which is not a valid action-based choice. Hand is folded."
+                << std::endl;
+            newlyPushed = 0;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+        }
+    } else {
+        // Player interacts based on amount
         
-            //- Set waitingForButton
-            void setWaitingForButton(bool newValue);
+        actionEnum expectedAction = acUnknown;
+        if (newlyPushed < SMALL) {
+            // Fold
+            expectedAction = acFold;
+            newlyPushed = 0;
+            summary_.hasCards = false;
+            pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
+        } else if (newlyPushed - summary_.stack < SMALL) {
+            // Player is all in
+            expectedAction = acCallAllIn;
+            newlyPushed = summary_.stack;
+            summary_.allIn = true;
+        } else if (
+            std::abs(summary_.pushedMoney + newlyPushed - totalBet) < SMALL
+        ) {
+            // Player calls
+            expectedAction = acCall;
+        }
+        
+        if (action != acUnknown) {
+            // Player wants to double-check action
+            if (action != expectedAction) {
+                if (action != acCall || expectedAction != acCallAllIn) {
+                    Warning << "Player '" << summary_.name << "', id "
+                        << summary_.id << " expected/actual action mismatch:\n"
+                        << "    Expected: " << actionNames[expectedAction]
+                        << "\n      Actual: " << actionNames[action]
+                        << std::endl;
+                }
+            }
+        }
+    }
+    summary_.pushedMoney += newlyPushed;
+    summary_.stack -= newlyPushed;
+    return newlyPushed;
+}
 
-            //- Collect ante or blinds
-            //  Returns actual amount collected
-            Money collect(Money amount);
 
-            //- Deal cards to this player
-            void dealPocket(VecDeckInd cardIndices);
+void ds::Player::askRevealWinningCards() {
+    parseRevealOption(revealWinningCardsOption());
+}
 
-            //- Show cards
-            //  Copies pkt_ to revealedPkt_
-            void showPocket();
 
-            //- Reward player with a pot
-            void reward(Money amount);
+void revealWinningCardsOption() {
+    // Default implementation
+    return -1;
+}
 
-            //- Take back an overbet (when other players don't have that much)
-            void returnExcess(Money amount);
+
+void ds::Player::askRevealLosingCards() {
+    parseRevealOption(revealLosingCardsOption());
+}
+
+
+void revealLosingCardsOption() {
+    // Default implementation
+    return -1;
+}
+
+
+// ****** Protected Member Functions ****** //
+
+const ds::PktCards& ds::Player::pocket() const {
+    return pkt_;
+}
+
+
+// ****** Private Member Functions ****** //
+
+void ds::Player::setWaitingForButton(bool newValue) {
+    summary_.waitingForButton = newValue;
+}
+
+
+ds::Money ds::Player::collect(Money amount) {
+    Money collectedAmount = amount;
+    if (amount > summary_.stack) {
+        summary_.allIn = true;
+        collectedAmount = summary_.stack;
+    }
+    summary_.stack -= collectedAmount;
+    summary_.pushedMoney += collectedAmount;
+    return collectedAmount;
+}
+
+
+void ds::Player::dealPocket(VecDeckInd cardIndices) {
+    pkt_ = PktCards(cardIndices);
+}
+
+void ds::Player::showPocket() {
+    summary_.revealedPkt = pkt_;
+}
+
+
+void ds::Player::reward(Money amount) {
+    summary_.rewardedMoney = amount;
+}
+
+
+void returnExcess(Money amount) {
+    // Excess was already collected into a pot, it goes straight back into
+    // the stack
+    summary_.stack_ += amount;
+}
             
 
-            //- Remove pushed money
-            void clearPushedMoney();
-        
+void clearPushedMoney() {
+    summary_.pushedMoney = 0;
+}
 
-    // Private Member Data
-    
-        //- Player summary
-        Summary summary_;
-    
-        //- Pocket cards
-        PktCards pkt_;
-};
 
-#endif
+void ds::Player::parseRevealOption(int answer) {
+    switch (answer) {
+    case -1: {
+        // Do nothing
+        break;
+    }
+    case 0: {
+        summary_.revealedPkt.first = pkt_.first;
+        break;
+    }
+    case 1: {
+        summary_.revealedPkt.second = pkt_.second;
+        break;
+    }
+    case 2: {
+        summary_.revealedPkt = pkt_;
+        break;
+    }
+    case default: {
+        Warning << "Player '" << summary_.name << "', id " << summary_.id
+            << " answered " << answer << " when acceptable range is -1..2. "
+            << "Not revealing any cards." << std::endl;
+        break;
+    } // end default
+    } // end switch
+}
+
+// ****** END ****** //
