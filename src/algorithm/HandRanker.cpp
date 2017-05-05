@@ -26,5 +26,6 @@ ds::HandRanker::HandRanker(
 #include<HandRankerPredict.cpp>
 #include<HandRankerPredictFlop.cpp>
 #include<HandRankerRank.cpp>
+#include<HandRankerRankKickers.cpp>
 
 // ****** END ****** //

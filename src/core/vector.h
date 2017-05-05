@@ -56,7 +56,9 @@ std::istream& operator>>(std::istream& is, std::vector<T>& v) {
                 << "read elements are:\n" << v << std::endl;
             abort();
         }
-        v.push_back(T(is));
+        T readT;
+        is >> readT;
+        v.push_back(readT);
     }
     return is;
 }

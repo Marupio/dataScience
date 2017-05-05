@@ -1,5 +1,6 @@
 #include<Table.h>
-#include<GameManager.h>
+#include<osRelated.h>
+#include<HandRanker.h>
 
 // ****** Constructors ****** //
 
@@ -41,7 +42,7 @@ const ds::Blinds& ds::Table::blinds() const {
 
 void ds::Table::disband() {
     statusEnum tableStatus = status_.load();
-    if (tableStatus != sePause || tableStatus != seEmpty) {
+    if (tableStatus != sePaused || tableStatus != seEmpty) {
         FatalError << "Cannot disband a table that is still in action. Action "
             "= "<< int(tableStatus) << "." << std::endl;
         abort();
@@ -109,7 +110,7 @@ void ds::Table::play() {
             nextActivePlayer(player);
 
             // check for fast folds and new players
-            checkForFastFolds(bbPlayer);
+            checkForFastFolds(bbPlayer, blinds_->bigBlind);
             seatWaitingPlayers(dealer_);
 
             if (!takeBets(player)) {
@@ -117,21 +118,21 @@ void ds::Table::play() {
             }
             dramaticPause();
 
-            board_.flop(deck_.draw(3));
+            bd_.flop(deck_.draw(3));
             status_.store(seFlop);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
             dramaticPause();
 
-            board_.turn(deck_.draw());
+            bd_.turn(deck_.draw());
             status_.store(seTurn);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
             dramaticPause();
 
-            board_.river(deck_.draw());
+            bd_.river(deck_.draw());
             status_.store(seRiver);
             if (!takeBets(ftaPlayer)) {
                 break;
@@ -177,7 +178,7 @@ void ds::Table::setTableToPause() {
 
 
 void ds::Table::setTableToContinuousPlay() {
-    ppAction_store(ppContinue);
+    ppAction_.store(ppContinue);
 }
 
 
@@ -217,15 +218,16 @@ void ds::Table::ante(Money amount) {
     pushedMoney_.clear();
 
     SeatedPlayer it = firstActivePlayer(dealer_);
+    SeatedPlayer stopIt = it;
     do {
         nextActivePlayer(it);
         pushedMoney_.push_back(PushedMoney((*it)->collect(amount), it));
-    } while (it != dealer_);
+    } while (it != stopIt);
     pots_.collect(pushedMoney_);
 }
 
 
-void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
+void ds::Table::collectBlinds(SeatedPlayer& player, Money blinds) {
     Money paid = (*player)->collect(blinds);
     pushedMoney_.push_back(PushedMoney(paid, player));
     if ((*player)->allIn()) {
@@ -239,14 +241,15 @@ void ds::Table::collectBlinds(PlayerRef& player, Money blinds) {
 void ds::Table::dealCards() {
     deck_.shuffle();
     SeatedPlayer it = firstActivePlayer(dealer_);
+    SeatedPlayer stopIt = it;
     do {
         nextActivePlayer(it);
         (*it)->dealPocket(deck_.draw(2));
-    } while (it != dealer_);
+    } while (it != stopIt);
 }
 
 
-void dramaticPause() {
+void ds::Table::dramaticPause() {
     if (allInShowDown_ && dramaticPause_ > 0) {
         sleep(dramaticPause_ * 1000);
     }
@@ -260,7 +263,10 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
     SeatedPlayer player(sp);
     nextCardedPlayer(player);
     while (player != sp) {
-        if (!(*player)->allIn()) {
+        if (
+            !(*player)->allIn()
+         || std::abs((*player)->pushedMoney() - totalBet < SMALL)
+        ) {
             if ((*player)->fastFoldOption(totalBet)) {
                 ghostKick(player);
             }
@@ -294,7 +300,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
     Money minRaise = totalBet;
     nextCardedPlayer(player);
     do {
-        if (*player == callOnlyPlayerPtr) {
+        if (*player == callsOnlyPlayerPtr) {
             callsOnly = true;
         }
         auto itPushed = pushedMoney_.find(player);
@@ -315,9 +321,9 @@ bool ds::Table::takeBets(SeatedPlayer player) {
             } else {
                 newlyPushed = (*player)->takeBet(totalBet, minRaise);
             }
-            if (!(*it)->hasCards()) {
+            if (!(*player)->hasCards()) {
                 // Folded
-                (*itPushed)->second = nullptr;
+                *(itPushed->second) = nullptr;
                 shareAction(player, Player::acFold, 0);
                 continue;
             }
@@ -327,15 +333,16 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 shareAction(player, Player::acCheck, totalBet);
                 nActiveNotAllIn++;
             } else if (newlyPushed + alreadyPushed > totalBet) {
-                (*itPushed)->first += newlyPushed;
-                totalBet = (*itPushed)->first;
-                Money raisedAmount = (*itPushed)->first - totalBet;
+                itPushed->first += newlyPushed;
+                totalBet = itPushed->first;
+                Money raisedAmount = itPushed->first - totalBet;
 
                 raiseHelper(
                     raisedAmount,
                     totalBet,
                     minRaise,
                     stopPlayer,
+                    callsOnlyPlayerPtr,
                     player,
                     nActiveNotAllIn
                 );
@@ -357,7 +364,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 newlyPushed = (*player)->takeBet(totalBet, minRaise);
             }
 
-            if (!(*it)->hasCards()) {
+            if (!(*player)->hasCards()) {
                 // Folded
                 shareAction(player, Player::acFold, 0);
                 continue;
@@ -374,6 +381,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                         totalBet,
                         minRaise,
                         stopPlayer,
+                        callsOnlyPlayerPtr,
                         player,
                         nActiveNotAllIn
                     );
@@ -418,9 +426,10 @@ void ds::Table::compareHands() {
 
     // First, check if top pot contains one player, and remove it.
     if (pots_.size() > 1 && pots_.back().second.size() == 1) {
-        Pot overPot(pots_.pop_back());
-        SeatedPlayer player(*overPot.second.front());
+        Pot& overPot(pots_.back());
+        SeatedPlayer player(overPot.second.front());
         (*player)->returnExcess(overPot.first);
+        pots_.pop_back();
     }
 
     //for each pot, compare the players
@@ -435,26 +444,26 @@ void ds::Table::compareHands() {
         }
         #endif
         if (players.size() == 1) {
-            winners.push_back(players.begin());
+            winners.push_back(players.front());
         } else {
-            winners.push_back(players.begin());
+            winners.push_back(players.front());
             for (
-                SeatedPlayer playerJ = players.begin() + 1;
-                playerJ != players.end();
-                ++playerJ
+                VecSeatedPlayer::iterator itJ = players.begin() + 1;
+                itJ != players.end();
+                ++itJ
             ) {
                 short res = HandRanker::compare(
                     bd_,
                     (*winners.front())->pocket(),
-                    (*playerJ)->pocket()
+                    (**itJ)->pocket()
                 );
                 switch (res) {
                 case -1:
                     winners.clear();
-                    winners.push_back(playerJ);
+                    winners.push_back(*itJ);
                     break;
                 case 0:
-                    winners.push_back(playerJ);
+                    winners.push_back(*itJ);
                     break;
                 case 1:
                     // do nothing
@@ -468,10 +477,10 @@ void ds::Table::compareHands() {
     if (pots_.size() == 1) {
         // winner(s) gets it and return
         VecSeatedPlayer& winners(winnersInEachPot.front());
-        Money award = pots_.first/winners.size();
+        Money award = pots_.front().first/winners.size();
         for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
-            (*itp)->reward(award);
-            (*itp)->askRevealWinningCards();
+            (**itp)->reward(award);
+            (**itp)->askRevealWinningCards();
         }
         shareResults();
         return;
@@ -482,7 +491,7 @@ void ds::Table::compareHands() {
     std::vector<size_t> allWinners;
     VecSeatedPlayer& winners(winnersInEachPot.back());
     for (auto itp = winners.begin(); itp != winners.end(); ++itp) {
-        allWinners.push_back((*itp)->id());
+        allWinners.push_back((**itp)->id());
     }
 
     // Compare the best player in each pot, in reverse order, and adjust pot
@@ -491,7 +500,7 @@ void ds::Table::compareHands() {
         std::pair<
             std::vector<VecSeatedPlayer>::reverse_iterator,
             VecPot::reverse_iterator
-        > itPair(winnersInEachPot.rbegin()+1, pots_.rbegin+1);
+        > itPair(winnersInEachPot.rbegin()+1, pots_.rbegin()+1);
         itPair.second != pots_.rend();
         ++itPair.first, ++itPair.second
     ) {
@@ -505,7 +514,7 @@ void ds::Table::compareHands() {
         if (res > 1) {
             // High player wins, stomps lowPlayer
             itPair.first->clear();
-            *itPair.first = *(itPair.first-1)
+            *itPair.first = *(itPair.first-1);
         } else if (res == 1) {
             // Split
             itPair.first->insert(
@@ -520,7 +529,7 @@ void ds::Table::compareHands() {
                 itp != lowWinners.end();
                 ++itp
             ) {
-                allWinners.push_back((*itp)->id());
+                allWinners.push_back((**itp)->id());
             }
         }
     }
@@ -550,10 +559,11 @@ void ds::Table::compareHands() {
 void ds::Table::collectPushedMoney() {
     pots_.collect(pushedMoney_);
     SeatedPlayer player = firstActivePlayer(dealer_);
+    SeatedPlayer stopPlayer = player;
     do {
         (*player)->clearPushedMoney();
         nextActivePlayer(player);
-    } while (player != dealer_);
+    } while (player != stopPlayer);
 }
 
 
@@ -573,6 +583,7 @@ void ds::Table::raiseHelper(
                 << std::endl;
             abort();
         }
+        #endif
 
         // With an all-in under-raise:
         // * Players that already acted cannot reraise, they can only call.
@@ -596,28 +607,28 @@ void ds::Table::raiseHelper(
     // Tell everyone about it
     Player::actionEnum raiseAction = Player::acUnknown;
     if (raiseFactor == 1) {
-        if ((*player)->allIn) {
+        if ((*player)->allIn()) {
             raiseAction = Player::acBetRaiseAllIn;
         } else {
             raiseAction = Player::acBetRaise;
             nActiveNotAllIn++;
         }
     } else if (raiseFactor == 2) {
-        if ((*player)->allIn) {
+        if ((*player)->allIn()) {
             raiseAction = Player::acBetRaiseTwoAllIn;
         } else {
             raiseAction = Player::acBetRaiseTwo;
             nActiveNotAllIn++;
         }
     } else if (raiseFactor == 3) {
-        if ((*player)->allIn) {
+        if ((*player)->allIn()) {
             raiseAction = Player::acBetRaiseThreeAllIn;
         } else {
             raiseAction = Player::acBetRaiseThree;
             nActiveNotAllIn++;
         }
     } else if (raiseFactor > 3) {
-        if ((*player)->allIn) {
+        if ((*player)->allIn()) {
             raiseAction = Player::acBetRaiseFourAllIn;
         } else {
             raiseAction = Player::acBetRaiseFour;
@@ -644,17 +655,18 @@ void ds::Table::activateAllInShowDown() {
     do {
         (*player)->showPocket();
         nextCardedPlayer(player);
-    } (while player != startedAt);
+    } while (player != startedAt);
     allInShowDown_ = true;
 }
 
 
 void ds::Table::shareEvent(Player::eventEnum event) {
     SeatedPlayer tellPlayer = firstPlayer(dealer_);
+    SeatedPlayer stopPlayer = tellPlayer;
     do {
         (*tellPlayer)->observeEvent(event);
         nextPlayer(tellPlayer);
-    } while (tellPlayer != dealer_);
+    } while (tellPlayer != stopPlayer);
 }
 
 
@@ -673,10 +685,11 @@ void ds::Table::shareAction(
 
 void ds::Table::shareResults() {
     SeatedPlayer player = firstPlayer(dealer_);
+    SeatedPlayer stopPlayer = player;
     do {
         (*player)->observeResults();
         nextPlayer(player);
-    } while (player != dealer_);
+    } while (player != stopPlayer);
 }
 
 
@@ -690,6 +703,7 @@ void ds::Table::resetTable() {
 
 void ds::Table::resetPlayers() {
     SeatedPlayer player = firstPlayer(dealer_);
+    SeatedPlayer stopAt = player;
     do {
         (*player)->reset();
 
@@ -699,7 +713,7 @@ void ds::Table::resetPlayers() {
             kick(player);
         }
         nextPlayer(player);
-    } while (player != dealer);
+    } while (player != stopAt);
 }
 
 

@@ -1,7 +1,6 @@
 #include<cmath>
 #include<Player.h>
 #include<Table.h>
-#include<GameManager.h>
 
 // ****** Static Data Members ****** //
 
@@ -40,25 +39,36 @@ ds::Player::Summary::Summary(size_t idIn, const std::string& nameIn):
 {}
 
 
-ds::Player::Player(const GameManager& gm, size_t id, const std::string& name):
-    gm_(gm),
+ds::Player::Player(const Table& table, size_t id, const std::string& name):
+    table_(table),
     summary_(id, name)
 {}
-    
+
+
+ds::Player::Player(const Table& table, const Summary& summary):
+    table_(table),
+    summary_(summary)
+{}
+
 
 // ****** Public Member Functions ****** //
 
 const ds::Player::Summary& ds::Player::summary() const {
     return summary_;
 }
-        
+
+
+const ds::Table& ds::Player::table() const {
+    return table_;
+}
+
 
 size_t ds::Player::id() const {
     return summary_.id;
 }
         
 
-const std::string& name() const {
+const std::string& ds::Player::name() const {
     return summary_.name;
 }
 
@@ -74,7 +84,7 @@ ds::Money ds::Player::pushedMoney() const {
 
 
 ds::Money ds::Player::rewardedMoney() const {
-    return summary_.rewardedMoney();
+    return summary_.rewardedMoney;
 }
 
 
@@ -104,16 +114,16 @@ bool ds::Player::disconnected() const {
 
 
 const ds::PktCards& ds::Player::revealedPocket() const {
-    return summary_.revealedPocket;
+    return summary_.revealedPkt;
 }
 
 
-bool fastFoldOption(Money totalBet) {
+bool ds::Player::fastFoldOption(Money totalBet) {
+    // Defaults to false
     return false;
 }
 
 
-            //  Calls betOption and adds result to pushedMoney
 ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
     if (summary_.allIn) {
         return 0;
@@ -126,7 +136,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
     if (newlyPushed < 0) {
         // Player interacts based on actionEnum
         switch (action) {
-        acFold: {
+        case acFold: {
             if (std::abs(summary_.pushedMoney - totalBet) < SMALL) {
                 Warning << "Player '" << summary_.name << "', id "
                     << summary_.id << " chose 'Fold' when pushedMoney ("
@@ -141,7 +151,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
             break;
         }
-        acCheck: {
+        case acCheck: {
             if (std::abs(summary_.pushedMoney - totalBet) > SMALL) {
                 Warning << "Player '" << summary_.name << "', id "
                     << summary_.id << " chose 'Check' when pushedMoney ("
@@ -153,7 +163,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
             break;
         }
-        acCall: {
+        case acCall: {
             newlyPushed = totalBet - summary_.pushedMoney;
             // check for all in
             if (summary_.stack - newlyPushed < SMALL) {
@@ -162,7 +172,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             }
             break;
         }
-        acBetRaise: {
+        case acBetRaise: {
             newlyPushed = totalBet + minRaise - summary_.pushedMoney;
             // check for all in
             if (summary_.stack - newlyPushed < SMALL) {
@@ -171,7 +181,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             }
             break;
         }
-        acBetRaiseTwo: {
+        case acBetRaiseTwo: {
             newlyPushed = totalBet + 2*minRaise - summary_.pushedMoney;
             // check for all in
             if (summary_.stack - newlyPushed < SMALL) {
@@ -180,7 +190,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             }
             break;
         }
-        acBetRaiseThree: {
+        case acBetRaiseThree: {
             newlyPushed = totalBet + 3*minRaise - summary_.pushedMoney;
             // check for all in
             if (summary_.stack - newlyPushed < SMALL) {
@@ -189,7 +199,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             }
             break;
         }
-        acBetRaiseFour: {
+        case acBetRaiseFour: {
             newlyPushed = totalBet + 4*minRaise - summary_.pushedMoney;
             // check for all in
             if (summary_.stack - newlyPushed < SMALL) {
@@ -198,7 +208,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             }
             break;
         }
-        acBetRaiseAllIn: {
+        case acBetRaiseAllIn: {
             newlyPushed = summary_.stack;
             summary_.allIn = true;
             break;
@@ -226,7 +236,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
                 << " attempting to bet " << newlyPushed << " when stack is "
                 << summary_.stack << ". Bet reset to stack size and player is "
                 << "now all-in." << std::endl;
-                newlyPushed_ = summary_.stack;
+                newlyPushed = summary_.stack;
         }
 
         // Check for all-in
@@ -270,7 +280,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
         } else // check for under-raise
         if (raised + SMALL < minRaise) {
             if (summary_.allIn) {
-                expectedAction = acRaiseUnderAllIn;
+                expectedAction = acBetRaiseUnderAllIn;
             } else {
                 Warning << "Player '" << summary_.name << "', id "
                     << summary_.id << " attempting to raise with " << raised
@@ -294,7 +304,6 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
             } else {
                 expectedAction = acBetRaiseTwo;
             }
-        }
         } else // check for raiseThree
         if (raised + SMALL < 4*minRaise) {
             if (summary_.allIn) {
@@ -451,7 +460,7 @@ void ds::Player::askRevealWinningCards() {
 }
 
 
-void revealWinningCardsOption() {
+int ds::Player::revealWinningCardsOption() {
     // Default implementation
     return -1;
 }
@@ -462,7 +471,7 @@ void ds::Player::askRevealLosingCards() {
 }
 
 
-void revealLosingCardsOption() {
+int ds::Player::revealLosingCardsOption() {
     // Default implementation
     return -1;
 }
@@ -529,7 +538,7 @@ void ds::Player::takeRewards() {
 void ds::Player::returnExcess(Money amount) {
     // Excess was already collected into a pot, it goes straight back into
     // the stack
-    summary_.stack_ += amount;
+    summary_.stack += amount;
 }
             
 
@@ -570,7 +579,7 @@ void ds::Player::parseRevealOption(int answer) {
         summary_.revealedPkt = pkt_;
         break;
     }
-    case default: {
+    default: {
         Warning << "Player '" << summary_.name << "', id " << summary_.id
             << " answered " << answer << " when acceptable range is -1..2. "
             << "Not revealing any cards." << std::endl;

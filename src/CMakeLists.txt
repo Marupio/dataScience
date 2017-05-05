@@ -20,12 +20,17 @@ include_directories(
 
 add_library(
     core SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/osRelated_POSIX.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Blinds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Board.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Card.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Deck.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/PktCards.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/PktVals.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Player.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Seats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Suit.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Table.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/ValStats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/VecValStats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/DeckMask.cpp

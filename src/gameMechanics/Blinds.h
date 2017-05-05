@@ -1,7 +1,7 @@
 #ifndef Blinds_h
 #define Blinds_h
 
-#include<types.h>;
+#include<types.h>
 
 namespace ds {
 
@@ -30,8 +30,8 @@ struct Blinds {
 
     
     // Friend functions
-    friend std::ostream& operator<<(std::ostream& out, const Blinds& c);
-    friend std::istream& operator>>(std::istream& in, Blinds& c);
+    friend std::ostream& operator<<(std::ostream& os, const Blinds& c);
+    friend std::istream& operator>>(std::istream& is, Blinds& c);
 };
 
 

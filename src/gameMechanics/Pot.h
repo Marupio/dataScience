@@ -4,7 +4,8 @@
 #ifndef Pot_h
 #define Pot_h
 
-#include<Seats.h>
+#include<Player.h>
+#include<algorithm>
 
 namespace ds {
 
@@ -16,7 +17,11 @@ namespace ds {
 struct PushedMoney:
     public std::pair<Money, SeatedPlayer>
 {
-    bool operator<(const PushMoney& pm) const {
+    PushedMoney(Money amount, SeatedPlayer& sp):
+        std::pair<Money, SeatedPlayer>(amount, sp)
+    {}
+
+    bool operator<(const PushedMoney& pm) const {
         return first < pm.first;
     }
 };
@@ -40,6 +45,10 @@ struct VecPushedMoney:
 struct Pot:
     public std::pair<Money, VecSeatedPlayer>
 {
+    Pot(Money amount, VecSeatedPlayer&& vs):
+        std::pair<Money, VecSeatedPlayer>(amount, vs)
+    {}
+    
     bool operator<(const Pot& pt) const {
         return first < pt.first;
     }
@@ -55,7 +64,7 @@ struct VecPot:
         VecSeatedPlayer playersInPot;
         while (itPm != pm.end()) {
             sum += itPm->first;
-            if (itPm->second == nullptr) {
+            if (*(itPm->second) == nullptr) {
                 ++itPm;
             } else {
                 playersInPot.push_back(itPm->second);
@@ -64,12 +73,15 @@ struct VecPot:
         }
         for (
             auto itPmNxt = itPm + 1;
-            itPmNext != pm.end();
-            ++itPmNext
+            itPmNxt != pm.end();
+            ++itPmNxt
         ) {
-            if (itPm->first == itPmNxt->first || itPmNxt->second == nullptr) {
+            if (
+                itPm->first == itPmNxt->first
+             || *(itPmNxt->second) == nullptr
+            ) {
                 sum += itPmNxt->first;
-                if (itPmNxt->second != nullptr) {
+                if (*(itPmNxt->second) != nullptr) {
                     playersInPot.push_back(itPmNxt->second);
                 }
             } else {
@@ -83,7 +95,7 @@ struct VecPot:
                 }
                 // Then search *this to find playersInPot
                 if (size() && playersInPot.size()) {
-                    VecSeatedPlayer& lastPlayerList(back().second());
+                    VecSeatedPlayer& lastPlayerList(back().second);
                     // If one player is found, replace its player list with
                     // players in pot, and add sum to pot
                     bool found = (
@@ -102,7 +114,7 @@ struct VecPot:
                     }
                 }
                 // If not found, create a new pot
-                push_back(sum, playersInPot);
+                push_back(Pot(sum, std::move(playersInPot)));
                 sum = 0;
                 playersInPot.clear();
             }

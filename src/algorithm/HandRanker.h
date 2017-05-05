@@ -128,6 +128,4 @@ private:
 
 }
 
-#include<HandRankerRankKickers.cpp>
-
 #endif

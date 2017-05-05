@@ -1,14 +1,11 @@
 #ifndef Seats_h
 #define Seats_h
 
-#include<Player.h>
+#include<mutex>
+#include<atomic>
+#include<GhostPlayer.h>
 
-// Forward declarations
-
-typedef VecPlayerPtr::iterator SeatedPlayer;
-typedef std::vector<SeatedPlayer> VecSeatedPlayer;
-typedef VecPlayerPtr::const_iterator ConstSeatedPlayer;
-
+namespace ds {
 
 class Seats {
 
@@ -63,14 +60,14 @@ protected:
         // Access
     
             //- Return raw data
-            const VecPlayer& seated() const;
+            const VecPlayerPtr& seated() const;
 
 
         // Search
         
             //- Returns first seated player, starting from st
-            SeatedPlayer firstPlayer(const SeatedPlayer& st);
-            ConstSeatedPlayer firstPlayer(const ConstSeatedPlayer& st) const;
+            SeatedPlayer firstPlayer(SeatedPlayer& st);
+            ConstSeatedPlayer firstPlayer(ConstSeatedPlayer& st) const;
         
             //- Move to the next seated player
             void nextPlayer(SeatedPlayer& st);
@@ -78,10 +75,8 @@ protected:
             
             //- Returns first seated player who is not 'waitingForButton',
             //  starting from st
-            SeatedPlayer firstActivePlayer(const SeatedPlayer& st);
-            ConstSeatedPlayer firstActivePlayer(
-                const ConstSeatedPlayer& st
-            ) const;
+            SeatedPlayer firstActivePlayer(SeatedPlayer& st);
+            ConstSeatedPlayer firstActivePlayer(ConstSeatedPlayer& st) const;
         
             //- Move to the next seated player who is not 'waitingForButton'
             void nextActivePlayer(SeatedPlayer& st);
@@ -89,10 +84,8 @@ protected:
 
             //- Returns first seated player who still has pocket cards,
             //  starting from st
-            SeatedPlayer firstCardedPlayer(const SeatedPlayer& st);
-            ConstSeatedPlayer firstCardedPlayer(
-                const ConstSeatedPlayer& st
-            ) const;
+            SeatedPlayer firstCardedPlayer(SeatedPlayer& st);
+            ConstSeatedPlayer firstCardedPlayer(ConstSeatedPlayer& st) const;
         
             //- Move to the next seated player who still has pocket cards
             void nextCardedPlayer(SeatedPlayer& st);
@@ -150,11 +143,11 @@ protected:
 
         //- Players waiting to sit down
         VecPlayerPtr waitingToSit_;
-        std::mutex waitingToSitMutex_;
+        mutable std::mutex waitingToSitMutex_;
 
         //- Players leaving the Seats
         std::vector<size_t> waitingToLeave_;
-        std::mutex waitingToLeaveMutex_;
+        mutable std::mutex waitingToLeaveMutex_;
 
 
 private:
@@ -162,10 +155,12 @@ private:
     // Private Data
     
         //- Ghost players left behind from fast-folded players
-        std::vector<Player> ghostPlayers_;
+        std::vector<GhostPlayer> ghostPlayers_;
         
         //- The seats occupied by ghostPlayers
         VecSeatedPlayer ghostPlayerSeats_;
 };
 
+
+} // end namespace
 #endif

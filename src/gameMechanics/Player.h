@@ -4,16 +4,23 @@
 #define Player_h
 
 #include<vector.h>
+#include<types.h>
+#include<PktCards.h>
+
+namespace ds {
+
 
 // Forward declarations
 
-class GameManager;
 class Player;
 class Table;
 class Seats;
 
 typedef Player* PlayerPtr;
 typedef std::vector<PlayerPtr> VecPlayerPtr;
+typedef VecPlayerPtr::iterator SeatedPlayer;
+typedef std::vector<SeatedPlayer> VecSeatedPlayer;
+typedef VecPlayerPtr::const_iterator ConstSeatedPlayer;
 
 
 class Player {
@@ -78,7 +85,10 @@ public:
     // Constructors
     
         //- Construct from components
-        Player(const GameManager& gm, size_t id, const std::string& name);
+        Player(const Table& table, size_t id, const std::string& name);
+
+        //- Construct given the table reference and summary
+        Player(const Table& table, const Summary& summary);
     
     
     // Public Member Functions
@@ -87,6 +97,9 @@ public:
         
             //- Return entire summary structure
             const Summary& summary() const;
+        
+            //- Return Table reference
+            const Table& table() const;
         
             //- Return player ID number
             size_t id() const;
@@ -126,7 +139,7 @@ public:
         
             //- Gives player the option to fastFold
             //  Defaults to false
-            virtual bool fastFoldOption(Money totalBet) = 0;
+            virtual bool fastFoldOption(Money totalBet);
 
             //- Take a bet
             //  Calls betOption and adds result to pushedMoney
@@ -215,7 +228,7 @@ public:
             //      1 reveal Pkt.second
             //      2 reveal both
             //  Defaults to -1
-            virtual void revealLosingCardsOption();
+            virtual int revealLosingCardsOption();
 
             //- Inform player that an event has occurred
             virtual void observeEvent(eventEnum event) = 0;
@@ -297,14 +310,13 @@ private:
 
     // Private Member Data
 
-        //- Reference to GameManager
-        const GameManager& gm_;
-    
         //- Player summary
         Summary summary_;
     
         //- Pocket cards
         PktCards pkt_;
 };
+
+} // end namespace
 
 #endif

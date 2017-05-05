@@ -4,7 +4,12 @@
 #include<atomic>
 #include<Board.h>
 #include<Blinds.h>
+#include<Deck.h>
 #include<Player.h>
+#include<Pot.h>
+#include<Seats.h>
+
+namespace ds {
 
 // Forward declarations
 
@@ -127,7 +132,7 @@ private:
         void ante(Money amount);
 
         //- Collects the given blinds value from the given player
-        void collectBlinds(PlayerRef& player, Money blinds);
+        void collectBlinds(SeatedPlayer& player, Money blinds);
 
         //- Deals cards to the active players
         void dealCards();
@@ -136,12 +141,12 @@ private:
         void dramaticPause();
         
         //- Poll carded players if they wish to fast-fold
-        //  Only does anything if game manager allows fast folds
-        void checkForFastFolds(const SeatedPlayer& sp, Money totalBet)
+        //  Only does anything if allowFastFolds == true
+        void checkForFastFolds(const SeatedPlayer& sp, Money totalBet);
 
         //- Collect bets
         //  Returns false if one player wins
-        bool takeBets(SeatedPlayer player)
+        bool takeBets(SeatedPlayer player);
 
         //- Once all cards are on the board and the final betting is over,
         //  this function compares the remaining hands based on the pot they
@@ -162,6 +167,7 @@ private:
             Money totalBet,
             Money& minRaise,
             SeatedPlayer& stopPlayer,
+            PlayerPtr& callsOnlyPtr,
             const SeatedPlayer& player,
             size_t& nActiveNotAllIn
         );
@@ -186,6 +192,12 @@ private:
         //- Resets table for the next round
         void resetTable();
 
+        //- Resets all players for the next round
+        void resetPlayers();
+        
+        //- Kicks all players
+        void everyoneGoHome();
+
 
     // Private Data
     
@@ -202,7 +214,7 @@ private:
         const Blinds* blinds_;
         
         //- Next blinds
-        atomic<const Blinds*> nextBlinds_;
+        std::atomic<const Blinds*> nextBlinds_;
         
         //- When true, players can 'fast-fold' their hands and move to another
         //  table
@@ -213,10 +225,10 @@ private:
         const int dramaticPause_;
         
         //- Current status
-        atomic<statusEnum> status_;
+        std::atomic<statusEnum> status_;
 
         //- Post play action
-        atomic<postPlayEnum> ppAction_;
+        std::atomic<postPlayEnum> ppAction_;
 
         
         // Data generated during play
@@ -235,4 +247,5 @@ private:
             bool allInShowDown_;
 };
 
+} // end namespace
 #endif

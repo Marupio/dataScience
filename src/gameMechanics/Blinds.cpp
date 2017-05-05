@@ -9,23 +9,25 @@ ds::Blinds::Blinds():
     bigBlind(0),
     startTime(0)
 {}
-        
+
+
 ds::Blinds::Blinds(Money ant, Money sb, Money bb, int st):
     ante(ant),
     smallBlind(sb),
     bigBlind(bb),
-    startTime(startTime)
+    startTime(st)
 {}
 
 
 // ****** Global operators ****** //
 
-std::ostream& ds::operator<<(std::ostream& out, const Blinds& c) {
-    os << "(" << ante << " " << smallBlind << " " << bigBlind << ")";
+std::ostream& ds::operator<<(std::ostream& os, const Blinds& c) {
+    os << "(" << c.ante << " " << c.smallBlind << " " << c.bigBlind << ")";
+    return os;
 }
 
 
-std::istream& ds::operator>>(std::istream& in, Blinds& c) {
+std::istream& ds::operator>>(std::istream& is, Blinds& c) {
     std::vector<float> tmp;
     is >> tmp;
     if (tmp.size() != 3) {
@@ -34,9 +36,10 @@ std::istream& ds::operator>>(std::istream& in, Blinds& c) {
         abort();
     }
     auto it = tmp.cbegin();
-    ante = *(it++);
-    smallBlind = *(it++);
-    bigBlind = *(it++);
+    c.ante = *(it++);
+    c.smallBlind = *(it++);
+    c.bigBlind = *(it++);
+    return is;
 }
 
 // ****** END ****** //
