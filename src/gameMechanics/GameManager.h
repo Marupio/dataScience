@@ -48,7 +48,7 @@ private:
         // Active data
 
             //- Master player list
-            std::vector<Player> players_;
+            std::vector<Player*> players_;
             
             //- Table list
             std::list<Table> tables_;

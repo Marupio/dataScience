@@ -77,10 +77,12 @@ public:
         enum eventEnum {
             evUnknown,
             evBlindsChanged,
+            evDealtCards,
             evLeavingTable,
             evJoiningTable
         };
 
+        typedef std::pair<actionEnum, Money> Decision;
 
     // Constructors
     
@@ -175,7 +177,7 @@ public:
             //              warning is posted.
             //  In all cases, amount is the call / raise amount, i.e. extra
             //  pushed money, not the total bet
-            virtual std::pair<actionEnum, Money> betOption(
+            virtual Decision betOption(
                 Money totalBet,
                 Money minRaise
             ) = 0;
@@ -200,7 +202,7 @@ public:
             //          * expectedAction is provided by player for verification
             //  In all cases, amount is the call / raise amount, i.e. extra
             //  pushed money, not the total bet
-            virtual std::pair<actionEnum, Money> callFoldOption(
+            virtual Decision callFoldOption(
                 Money totalBet
             ) = 0;
 
@@ -231,19 +233,21 @@ public:
             virtual int revealLosingCardsOption();
 
             //- Inform player that an event has occurred
-            virtual void observeEvent(eventEnum event) = 0;
+            //  Default does nothing
+            virtual void observeEvent(eventEnum event);
 
             //- Called at each action to allow players to take note of game
             //  play
+            //  Default does nothing
             virtual void observeAction(
                 const SeatedPlayer& player,
                 actionEnum action,
                 Money amount
-            ) = 0;
+            );
 
             //- Called at the end of a hand of poker to allow players to take
-            //  note of the results
-            virtual void observeResults() = 0;
+            //  note of the results, default does nothing
+            virtual void observeResults();
 
 
 protected:
@@ -259,6 +263,8 @@ protected:
         //- Reference to the table
         const Table& table_;
 
+        //- Copy of pocket cards
+        PktCards copyPkt_;
 
 private:
 
@@ -305,8 +311,7 @@ private:
         
             //- Interpret result of reveal[Winning|Losing]CardsOption()
             void parseRevealOption(int answer);
-
-        
+  
 
     // Private Member Data
 

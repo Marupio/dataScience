@@ -245,6 +245,7 @@ void ds::Table::dealCards() {
     do {
         nextActivePlayer(it);
         (*it)->dealPocket(deck_.draw(2));
+        (*it)->observeEvent(Player::evDealtCards);
     } while (it != stopIt);
 }
 

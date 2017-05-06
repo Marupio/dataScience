@@ -129,7 +129,7 @@ ds::Money ds::Player::takeBet(Money totalBet, Money minRaise) {
         return 0;
     }
 
-    std::pair<actionEnum, Money> actionPush = betOption(totalBet, minRaise);
+    Decision actionPush = betOption(totalBet, minRaise);
     actionEnum action = actionPush.first;
     Money newlyPushed = actionPush.second;
 
@@ -388,7 +388,7 @@ ds::Money ds::Player::takeCall(Money totalBet) {
         return 0;
     }
 
-    std::pair<actionEnum, Money> actionPush = callFoldOption(totalBet);
+    Decision actionPush = callFoldOption(totalBet);
     actionEnum action = actionPush.first;
     Money newlyPushed = actionPush.second;
 
@@ -477,6 +477,24 @@ int ds::Player::revealLosingCardsOption() {
 }
 
 
+void ds::Player::observeEvent(eventEnum event) {
+    // Do nothing
+}
+
+void ds::Player::observeAction(
+    const SeatedPlayer& player,
+    actionEnum action,
+    Money amount
+) {
+    // Do nothing
+}
+
+void ds::Player::observeResults() {
+    // Do nothing
+}
+
+
+
 // ****** Protected Member Functions ****** //
 
 const ds::PktCards& ds::Player::pocket() const {
@@ -506,6 +524,7 @@ ds::Money ds::Player::collect(Money amount) {
 void ds::Player::dealPocket(VecDeckInd cardIndices) {
     pkt_ = PktCards(cardIndices);
     summary_.hasCards = true;
+    copyPkt_ = pkt_;
 }
 
 
@@ -518,6 +537,7 @@ void ds::Player::clearPocket() {
     pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
     summary_.revealedPkt = pkt_;
     summary_.hasCards = false;
+    copyPkt = pkt_;
 }
 
 
