@@ -15,8 +15,8 @@ public:
     // Constructors
     
         //- Construct from components
-        GhostPlayer(const Table& table, const Player::Summary& summary):
-            Player(table, summary)
+        GhostPlayer(const Player::Summary& summary):
+            Player(summary)
         {}
     
     

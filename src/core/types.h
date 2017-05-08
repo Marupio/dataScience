@@ -16,7 +16,7 @@ typedef std::vector<PktDeckInd> VecPktDeckInd;
 typedef short CardVal;
 typedef std::vector<CardVal> VecCardVal;
 
-typedef float Money;
+typedef double Money;
 
 const static Money SMALL = 1e-6;
 

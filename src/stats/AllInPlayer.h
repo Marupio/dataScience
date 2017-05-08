@@ -14,10 +14,22 @@ public:
     // Constructors
     
         //- Construct from components
-        AllInPlayer(const Table& table, size_t id, const std::string& name);
+        AllInPlayer(size_t id, const std::string& name);
 
 
     // Public Member Functions
+
+        // Access
+        
+            //- Access databases
+            const std::vector<unsigned long long>& nWon() const;
+            const std::vector<unsigned long long>& nLost() const;
+            const std::vector<unsigned long long>& winningFlopRankSum() const;
+            const std::vector<unsigned long long>& winningTurnRankSum() const;
+            const std::vector<unsigned long long>& winningRankSum() const;
+            const std::vector<unsigned long long>& losingFlopRankSum() const;
+            const std::vector<unsigned long long>& losingTurnRankSum() const;
+            const std::vector<unsigned long long>& losingRankSum() const;
 
         // Action
         
@@ -44,75 +56,28 @@ public:
             //  note of the results, default does nothing
             virtual void observeResults();
 
-protected:
-
-    // Protected Member Functions
-    
-        //- Look at pocket
-        const PktCards& pocket() const;
-
-
-    // Protected Member Data
-    
-        //- Reference to the table
-        const Table& table_;
-
 
 private:
 
     // Private Member Functions
 
-        // Forced actions - friend Table, Seats interface
-        
-            //- Set waitingForButton
-            void setWaitingForButton(bool newValue);
-
-            //- Collect ante or blinds
-            //  Returns actual amount collected
-            Money collect(Money amount);
-
-            //- Deal cards to this player
-            void dealPocket(VecDeckInd cardIndices);
-
-            //- Show cards
-            //  Copies pkt_ to revealedPkt_
-            void showPocket();
-
-            //- Return cards to dealer
-            void clearPocket();
-
-            //- Reward player with a pot, putting it into rewardedMoney for show
-            void reward(Money amount);
-
-            //- Transfer rewardedMoney into stack, clear allIn if set
-            void takeRewards();
-
-            //- Take back an overbet (when other players don't have that much)
-            void returnExcess(Money amount);
-            
-            //- Remove pushed money
-            void clearPushedMoney();
-
-            //- Reset for next round:
-            //      * clearPocket
-            //      * takeRewards
-            void reset();
-
-
-        // Internal functions
-        
-            //- Interpret result of reveal[Winning|Losing]CardsOption()
-            void parseRevealOption(int answer);
-
-        
 
     // Private Member Data
 
-        //- Player summary
-        Summary summary_;
-    
-        //- Pocket cards
-        PktCards pkt_;
+        //- Transient data
+        short flopRank_;
+        short turnRank_;
+        short riverRank_;
+
+        //- Databases
+        std::vector<unsigned long long> nWon_;
+        std::vector<unsigned long long> nLost_;
+        std::vector<unsigned long long> winningFlopRankSum_;
+        std::vector<unsigned long long> winningTurnRankSum_;
+        std::vector<unsigned long long> winningRankSum_;
+        std::vector<unsigned long long> losingFlopRankSum_;
+        std::vector<unsigned long long> losingTurnRankSum_;
+        std::vector<unsigned long long> losingRankSum_;
 };
 
 } // end namespace

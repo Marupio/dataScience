@@ -25,6 +25,20 @@ const std::array<std::string, 16> ds::Player::actionNames = {
 
 // ****** Constructors ****** //
 
+ds::Player::Summary::Summary():
+    id(0),
+    name(),
+    stack(0),
+    pushedMoney(0),
+    rewardedMoney(0),
+    allIn(false),
+    hasCards(false),
+    waitingForButton(false),
+    sittingOut(false),
+    disconnected(false)
+{}
+
+
 ds::Player::Summary::Summary(size_t idIn, const std::string& nameIn):
     id(idIn),
     name(nameIn),
@@ -39,15 +53,24 @@ ds::Player::Summary::Summary(size_t idIn, const std::string& nameIn):
 {}
 
 
-ds::Player::Player(const Table& table, size_t id, const std::string& name):
-    table_(table),
-    summary_(id, name)
+ds::Player::Player():
+    tablePtr_(nullptr),
+    summary_(),
+    idSet_(false)
 {}
 
 
-ds::Player::Player(const Table& table, const Summary& summary):
-    table_(table),
-    summary_(summary)
+ds::Player::Player(size_t id, const std::string& name):
+    tablePtr_(nullptr),
+    summary_(id, name),
+    idSet_(true)
+{}
+
+
+ds::Player::Player(const Summary& summary):
+    tablePtr_(nullptr),
+    summary_(summary),
+    idSet_(true)
 {}
 
 
@@ -59,12 +82,30 @@ const ds::Player::Summary& ds::Player::summary() const {
 
 
 const ds::Table& ds::Player::table() const {
-    return table_;
+    if (tablePtr_ == nullptr) {
+        FatalError << "Player '" << summary_.name << "', id " << summary_.id
+            << " attempting to access null table." << std::endl;
+        abort();
+    }
+    return *tablePtr_;
 }
 
 
 size_t ds::Player::id() const {
     return summary_.id;
+}
+
+
+void ds::Player::setIdAndName(size_t newId, const std::string& name) {
+    if (idSet_) {
+        FatalError << "Player '" << summary_.name << "', id " << summary_.id
+            << " attempting to name to '" << name << "' and id to " << newID
+            << " when these were already set." << std::endl;
+        abort();
+    }
+    idSet_ = true;
+    summary_.id = newId;
+    summary_.name = name;
 }
         
 
@@ -504,6 +545,16 @@ const ds::PktCards& ds::Player::pocket() const {
 
 // ****** Private Member Functions ****** //
 
+void ds::Player::setTablePointer(const Table& table) {
+    tablePtr_ = &table;
+}
+
+
+void ds::Player::cleanTablePointer() {
+    tablePtr_ = nullptr;
+}
+
+
 void ds::Player::setWaitingForButton(bool newValue) {
     summary_.waitingForButton = newValue;
 }
@@ -578,6 +629,16 @@ void ds::Player::reset() {
         abort();
     }
     #endif
+}
+
+
+void ds::Player::resetOption() {
+    // Default: do nothing
+}
+
+
+void ds::Player::setChips(Money amount) {
+    summary_.stack = amount;
 }
 
 

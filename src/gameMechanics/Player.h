@@ -48,7 +48,12 @@ public:
             PktCards revealedPkt;
             
             // Constructors
-            Summary(size_t idIn, const std::string& nameIn);
+            
+                //- Construct null
+                Summary();
+                
+                //- Construct given identification details
+                Summary(size_t idIn, const std::string& nameIn);
         };
 
         //- Player actions
@@ -78,6 +83,9 @@ public:
             evUnknown,
             evBlindsChanged,
             evDealtCards,
+            evFlop,
+            evTurn,
+            evRiver,
             evLeavingTable,
             evJoiningTable
         };
@@ -86,29 +94,35 @@ public:
 
     // Constructors
     
-        //- Construct from components
-        Player(const Table& table, size_t id, const std::string& name);
+        //- Construct null
+        Player();
 
-        //- Construct given the table reference and summary
-        Player(const Table& table, const Summary& summary);
+        //- Construct from identification
+        Player(size_t id, const std::string& name);
+
+        //- Construct given summary
+        Player(const Summary& summary);
     
     
     // Public Member Functions
 
         // Access
-        
+
             //- Return entire summary structure
             const Summary& summary() const;
         
-            //- Return Table reference
+            //- Return reference to pointer (false if tablePtr is nullptr)
             const Table& table() const;
         
             //- Return player ID number
             size_t id() const;
-        
+
             //- Return player name
             const std::string& name() const;
 
+            //- Set player ID number, error if already set
+            void setIdAndName(size_t newId, const std::string& name);
+        
             //- Return stack size
             Money stack() const;        
             
@@ -260,10 +274,11 @@ protected:
 
     // Protected Member Data
     
-        //- Reference to the table
-        const Table& table_;
+        //- Table pointer
+        const Table* tablePtr_;
 
-        //- Copy of pocket cards
+        //- Copy of pocket cards - this persists after folding, so at 
+        //  observeResults,Player knows what they had
         PktCards copyPkt_;
 
 private:
@@ -272,6 +287,12 @@ private:
 
         // Forced actions - friend Table, Seats interface
         
+            //- Set table pointer
+            void setTablePointer(const Table& table);
+        
+            //- Clear table pointer
+            void clearTablePointer();
+
             //- Set waitingForButton
             void setWaitingForButton(bool newValue);
 
@@ -301,10 +322,18 @@ private:
             //- Remove pushed money
             void clearPushedMoney();
 
-            //- Reset for next round:
+            //- Reset for next round, calls:
+            //      * resetOption
             //      * clearPocket
             //      * takeRewards
             void reset();
+
+            //- Player-type specific reset
+            //  Default does nothing            
+            virtual void resetOption();
+
+            //- Sets the players stack to the given amount
+            void setChips(Money amount);
 
 
         // Internal functions
@@ -314,6 +343,9 @@ private:
   
 
     // Private Member Data
+
+        //- Flag to indicate the ID has already been set
+        bool idSet_;
 
         //- Player summary
         Summary summary_;

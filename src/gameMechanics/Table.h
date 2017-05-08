@@ -70,6 +70,11 @@ public:
             //  ppAction must be ppDisband
             void disband();
 
+            //- Reset chips
+            //  Useful for stats-gathering simulations, this resets all seated
+            //  players stacks to amount provided
+            void setPlayerChips(Money amount);
+
 
         // Thread starters
         
@@ -81,6 +86,9 @@ public:
 
             //- Play one hand then close table
             void playOnceThenDisband();
+
+            //- Play n hands
+            void playNThenPause();
 
             //- Start, play based on ppAction
             void play();
@@ -98,7 +106,15 @@ public:
 
                 //- Set the post-play action
                 void setPostPlayAction(postPlayEnum ppe);
+
+            // Unused by thread, and therefore thread-safe
+
+                //- Get the tableID
+                size_t tableId() const;
                 
+                //- Set the tableID
+                void setTableId(size_t newTableId);
+
 
             // Actions
 
@@ -201,6 +217,12 @@ private:
 
     // Private Data
     
+        //- Table number
+        size_t tableId_;
+    
+        //- True if tableId has already been set
+        bool tableIdSet_;
+    
         //- Deck
         Deck deck_;
     
@@ -230,6 +252,10 @@ private:
         //- Post play action
         std::atomic<postPlayEnum> ppAction_;
 
+        //- nHands left to play
+        //  -1 disables this feature
+        int nHandsRemaining_;
+        
         
         // Data generated during play
         

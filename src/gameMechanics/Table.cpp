@@ -11,13 +11,16 @@ ds::Table::Table(
     int dramaticPause
 ):
     Seats(nSeats),
+    tableId_(0),
+    tableIdSet_(false),
     dealer_(seated_.begin()),
     blinds_(&blinds),
     nextBlinds_(nullptr),
     allowFastFolds_(allowFastFolds),
     dramaticPause_(dramaticPause),
     status_(seEmpty),
-    ppAction_(ppContinue)
+    ppAction_(ppContinue),
+    nHandsRemaining_(-1)
 {
     pushedMoney_.reserve(nSeats);
 }
@@ -73,6 +76,20 @@ void ds::Table::playOnceThenDisband() {
 }
 
 
+void ds::Table::playNThenPause(int n) {
+    nHandsRemaining_ = n;
+    ppAction_.store(ppContinuous);
+    play();
+}
+
+
+void ds::Table::playNThenDisband(int n) {
+    nHandsRemaining_ = n;
+    ppAction_.store(ppDisband);
+    play();
+}
+
+
 void ds::Table::play() {
     checkReadyForPlay();
 
@@ -120,12 +137,14 @@ void ds::Table::play() {
 
             bd_.flop(deck_.draw(3));
             status_.store(seFlop);
+            shareEvent(Player::evFlop);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
             dramaticPause();
 
             bd_.turn(deck_.draw());
+            shareEvent(Player::evTurn);
             status_.store(seTurn);
             if (!takeBets(ftaPlayer)) {
                 break;
@@ -134,6 +153,7 @@ void ds::Table::play() {
 
             bd_.river(deck_.draw());
             status_.store(seRiver);
+            shareEvent(Player::evRiver);
             if (!takeBets(ftaPlayer)) {
                 break;
             }
@@ -146,6 +166,13 @@ void ds::Table::play() {
             blinds_ = nextBlinds_.load();
             nextBlinds_.store(nullptr);
             shareEvent(Player::evBlindsChanged);
+        }
+        if (nHandsRemaining_ >= 0) {
+            if (nHandsRemaining_ == 0) {
+                ppAction_.store(ppPause);
+            } else {
+                nHandsRemaining_--;
+            }
         }
     } while (ppAction_.load() == ppContinue);
 
@@ -172,6 +199,21 @@ void ds::Table::setPostPlayAction(postPlayEnum ppe) {
 }
 
 
+size_t ds::Table::tableId() const {
+    return tableId_;
+}
+
+
+void setTableId(size_t newTableId) {
+    if (tableIdSet_) {
+        FatalError << "Attempting to set tableId to " << newTableId << ", but "
+            << "tableId already set to " << tableId_ << "." << std::endl;
+        abort();
+    }
+    tableId_ = newTableId;
+}
+
+
 void ds::Table::setTableToPause() {
     ppAction_.store(ppPause);
 }
@@ -184,6 +226,16 @@ void ds::Table::setTableToContinuousPlay() {
 
 void ds::Table::setTableToDisband() {
     ppAction_.store(ppDisband);
+}
+
+
+void ds::Table::setPlayerChips(Money amount) {
+    SeatedPlayer player(firstSeatedPlayer(dealer_));
+    SeatedPlayer stopPlayer = player;
+    do {
+        (*player)->setChips(amount);
+        nextPlayer(player);
+    } while (player != stopPlayer);
 }
 
 
