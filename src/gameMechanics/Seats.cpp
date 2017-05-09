@@ -1,13 +1,24 @@
 #include<Seats.h>
+#include<Player.h>
+#include<Table.h>
 
 // ****** Constructors ****** //
+
+ds::Seats::Seats():
+    nSeats_(),
+    nPlayers_(0),
+    seated_(0),
+    waitingToSit_(0),
+    waitingToLeave_(0)
+{}
+
 
 ds::Seats::Seats(size_t nSeats):
     nSeats_(nSeats),
     nPlayers_(0),
     seated_(nSeats, PlayerPtr(nullptr)),
-    waitingToLeave_(0),
-    waitingToSit_(0)
+    waitingToSit_(0),
+    waitingToLeave_(0)
 {}
 
 
@@ -43,7 +54,7 @@ void ds::Seats::addPlayer(PlayerPtr& player) {
     for (auto it = seated_.begin(); it != seated_.end(); ++it) {
         if (*it == nullptr) {
             *it = player;
-            player->setTablePtr(static_cast<const Table>(*this));
+            player->setTablePointer(static_cast<const Table&>(*this));
             break;
         }
     }
@@ -281,7 +292,7 @@ void ds::Seats::kick(SeatedPlayer& sp) {
     std::lock_guard<std::mutex> guard(waitingToLeaveMutex_);
     if (*sp != nullptr) {
         (*sp)->observeEvent(Player::evLeavingTable);
-        (*sp)->clearTablePtr();
+        (*sp)->clearTablePointer();
         waitingToLeave_.push_back((*sp)->id());
         *sp = nullptr;
         nPlayers_--;
@@ -295,7 +306,7 @@ void ds::Seats::kick(VecSeatedPlayer& vsp) {
         if (**itVsp != nullptr) {
             waitingToLeave_.push_back((**itVsp)->id());
             (**itVsp)->observeEvent(Player::evLeavingTable);
-            (**itVsp)->clearTablePtr();
+            (**itVsp)->clearTablePointer();
             **itVsp = nullptr;
             nPlayers_--;
         }
@@ -315,10 +326,10 @@ void ds::Seats::ghostKick(SeatedPlayer& sp) {
     if (*sp != nullptr) {
         waitingToLeave_.push_back((*sp)->id());
         (*sp)->observeEvent(Player::evLeavingTable);
-        (*sp)->clearTablePtr();
+        (*sp)->clearTablePointer();
         ghostPlayers_.push_back(GhostPlayer((*sp)->summary()));
         *sp = &ghostPlayers_.back();
-        (*sp)->setTablePtr(static_cast<const Table>(*this));
+        (*sp)->setTablePointer(static_cast<const Table&>(*this));
         ghostPlayerSeats_.push_back(sp);
     }
 }
@@ -347,8 +358,8 @@ void ds::Seats::seatWaitingPlayers(SeatedPlayer dealer) {
         ) {
             nextEmptySeat(emptySeat);
             *emptySeat = &(**itSit);
-            // Despite its name, emptySeat is not emptyAnymore
-            (*sp)->setTablePtr(static_cast<const Table>(*this));
+            // Despite its name, emptySeat is not empty anymore
+            (*emptySeat)->setTablePointer(static_cast<const Table&>(*this));
             (*emptySeat)->setWaitingForButton(true);
             (*emptySeat)->observeEvent(Player::evJoiningTable);
         }

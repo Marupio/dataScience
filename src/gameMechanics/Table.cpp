@@ -2,7 +2,22 @@
 #include<osRelated.h>
 #include<HandRanker.h>
 
-// ****** Constructors ****** //
+// ****** Constructors and Assignment ****** //
+
+ds::Table::Table():
+    Seats(),
+    tableId_(0),
+    tableIdSet_(false),
+    dealer_(),
+    blinds_(nullptr),
+    nextBlinds_(nullptr),
+    allowFastFolds_(false),
+    dramaticPause_(-1),
+    status_(seEmpty),
+    ppAction_(ppContinue),
+    nHandsRemaining_(-1)
+{}
+
 
 ds::Table::Table(
     size_t nSeats,
@@ -78,14 +93,7 @@ void ds::Table::playOnceThenDisband() {
 
 void ds::Table::playNThenPause(int n) {
     nHandsRemaining_ = n;
-    ppAction_.store(ppContinuous);
-    play();
-}
-
-
-void ds::Table::playNThenDisband(int n) {
-    nHandsRemaining_ = n;
-    ppAction_.store(ppDisband);
+    ppAction_.store(ppContinue);
     play();
 }
 
@@ -204,7 +212,7 @@ size_t ds::Table::tableId() const {
 }
 
 
-void setTableId(size_t newTableId) {
+void ds::Table::setTableId(size_t newTableId) {
     if (tableIdSet_) {
         FatalError << "Attempting to set tableId to " << newTableId << ", but "
             << "tableId already set to " << tableId_ << "." << std::endl;
@@ -230,7 +238,7 @@ void ds::Table::setTableToDisband() {
 
 
 void ds::Table::setPlayerChips(Money amount) {
-    SeatedPlayer player(firstSeatedPlayer(dealer_));
+    SeatedPlayer player(firstPlayer(dealer_));
     SeatedPlayer stopPlayer = player;
     do {
         (*player)->setChips(amount);

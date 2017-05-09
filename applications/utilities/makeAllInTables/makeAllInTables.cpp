@@ -1,18 +1,20 @@
-#include<algorithm>
+#include<iterator>
 #include<fstream>
-#include<numeric>
-#include<sstream>
+#include<functional>
+#include<list>
 #include<string>
+#include<thread>
 #include<types.h>
 #include<dsConfig.h>
-#include<Card.h>
-#include<Deck.h>
-#include<DeckMask.h>
-#include<HandRanker.h>
-#include<PktCards.h>
-#include<error.h>
+#include<Table.h>
+#include<AllCallPlayer.h>
 
 using namespace ds;
+
+void startThread(Table& tbl, int n) {
+    tbl.playNThenPause(n);
+}
+
 
 int main() {
     size_t nTables;
@@ -22,7 +24,7 @@ int main() {
     
     // Read inputSettings
     {
-        ifstream is("inputSettings");
+        std::ifstream is("inputSettings");
         is >> nTables;
         is >> nSeats;
         is >> nTableIters;
@@ -30,46 +32,99 @@ int main() {
     }
     Blinds blinds(0, 0, 1, 0);
 
-    // Create tables
-    std::vector<Table> tables(nTables, Table(nSeats, blinds, false, -1));
-
     // Create players
     size_t nPlayers = nSeats*nTables;
-    std::vector<AllInPlayer> players(nPlayers);
+    std::vector<AllCallPlayer> players(nPlayers);
     for (auto it = players.begin(); it != players.end(); ++it) {
-        const size_t id = std::distance(it - players.begin());
+        const size_t id = std::distance(it, players.begin());
         std::string name("player" + std::to_string(id));
         it->setIdAndName(id, name);
     }
 
-    for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
-        auto itP = players.begin();
+    // Create tables
+    std::list<Table> tables;
+    
+    // Create tables and seat players, set starting chips
+    size_t tableI = 0;
+    auto itP = players.begin();
+    while (itP != players.end()) {
+        tables.emplace_back(nSeats, blinds, false, -1);
+        Table& tbl(tables.back());
+        tbl.setTableId(tableI++);
         size_t emptyChairs = nSeats;
-        while (emptyChairs > 0) {
-            it->addPlayer(&*itP++);
-            emptyChairs--;
+        while (emptyChairs-- && itP != players.end()) {
+            PlayerPtr player = &(*itP);
+            tbl.addPlayer(player);
+            ++itP;
         }
-        itT->setPlayerChips(Money(nTableIters*10));
-        const size_t id = std::distance(itT - tables.begin());
-        itT->setTableId(id);
+        tbl.setPlayerChips(Money(nTableIters*10));
     }
 
-    std::thread tableThread[nTables];
-    for (size_t ti = 0; ti < nTables; ++ti) {
-        tableThread[ti] = std::thread(tables[ti].playNThenPause, 1000000);
-    }
-
+    //- Play games
     while (nResets--) {
+        std::vector<std::thread> tableThread;
+        tableThread.reserve(nTables);
+        for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
+            tableThread.push_back(
+                std::thread(startThread, std::ref(*itT), 1000000)
+            );
+        }
+
         for (size_t ti = 0; ti < nTables; ++ti) {
             tableThread[ti].join();
         }
-        for (size_t ti = 0; ti < nTables; ++ti) {
-            tables[ti].setPlayerChips(Money(nTableIters*10));
-            tableThread[ti] = std::thread(tables[ti].playNThenPause, 1000000);
+    }
+
+    //- Initialise output data
+    std::vector<unsigned long long> nWon(323,0);
+    std::vector<unsigned long long> nLost(323,0);
+    std::vector<unsigned long long> winningFlopRankSum(323,0);
+    std::vector<unsigned long long> winningTurnRankSum(323,0);
+    std::vector<unsigned long long> winningRankSum(323,0);
+    std::vector<unsigned long long> losingFlopRankSum(323,0);
+    std::vector<unsigned long long> losingTurnRankSum(323,0);
+    std::vector<unsigned long long> losingRankSum(323,0);
+
+    for (auto it = players.begin(); it != players.end(); ++it) {
+        const std::vector<unsigned long long>& pnWon(it->nWon());
+        const std::vector<unsigned long long>& pnLost(it->nLost());
+        const std::vector<unsigned long long>&
+            pwinningFlopRankSum(it->winningFlopRankSum());
+        const std::vector<unsigned long long>&
+            pwinningTurnRankSum(it->winningTurnRankSum());
+        const std::vector<unsigned long long>&
+            pwinningRankSum(it->winningRankSum());
+        const std::vector<unsigned long long>&
+            plosingFlopRankSum(it->losingFlopRankSum());
+        const std::vector<unsigned long long>&
+            plosingTurnRankSum(it->losingTurnRankSum());
+        const std::vector<unsigned long long>&
+            plosingRankSum(it->losingRankSum());
+        for (size_t i = 0; i < 323; ++i) {
+            nWon[i] += pnWon[i];
+            nLost[i] += pnLost[i];
+            winningFlopRankSum[i] += pwinningFlopRankSum[i];
+            winningTurnRankSum[i] += pwinningTurnRankSum[i];
+            winningRankSum[i] += pwinningRankSum[i];
+            losingFlopRankSum[i] += plosingFlopRankSum[i];
+            losingTurnRankSum[i] += plosingTurnRankSum[i];
+            losingRankSum[i] += plosingRankSum[i];
         }
     }
-    for (size_t ti = 0; ti < nTables; ++ti) {
-        tableThread[ti].join();
+    
+    // Write out results
+    std::ofstream os("outputTables");
+    os << "nWon nLost winningFlopRankSum winningTurnRankSum winningRankSum "
+        << "losingFlopRankSum losingTurnRankSum losingRankSum\n";
+    for (size_t i = 0; i < 323; ++i) {
+        os << nWon[i] << " " << nLost[i] << " "
+            << winningFlopRankSum[i] << " "
+            << winningTurnRankSum[i] << " "
+            << winningRankSum[i] << " "
+            << losingFlopRankSum[i] << " "
+            << losingTurnRankSum[i] << " "
+            << losingRankSum[i] << std::endl;
     }
+    
     return 0;
 }

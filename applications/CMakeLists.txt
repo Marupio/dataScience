@@ -5,6 +5,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/core
     ${CMAKE_SOURCE_DIR}/src/gameMechanics
     ${CMAKE_SOURCE_DIR}/src/algorithm
+    ${CMAKE_SOURCE_DIR}/src/stats
     ${PROJECT_BINARY_DIR}
 )
 
@@ -138,5 +139,16 @@ target_link_libraries(makePreFlopPredictions core)
 install_targets(
     ${BIN_DIR}
     makePreFlopPredictions
+)
+
+
+add_executable(
+    makeAllInTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllInTables/makeAllInTables.cpp
+)
+target_link_libraries(makeAllInTables core pthread)
+install_targets(
+    ${BIN_DIR}
+    makeAllInTables
 )
 

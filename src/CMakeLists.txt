@@ -16,6 +16,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/core
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm
+    ${CMAKE_CURRENT_SOURCE_DIR}/stats
 )
 
 add_library(
@@ -38,4 +39,5 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/HandType.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/PktMask.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/StraightCompleters.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stats/AllCallPlayer.cpp
 )

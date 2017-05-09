@@ -55,22 +55,22 @@ ds::Player::Summary::Summary(size_t idIn, const std::string& nameIn):
 
 ds::Player::Player():
     tablePtr_(nullptr),
-    summary_(),
-    idSet_(false)
+    idSet_(false),
+    summary_()
 {}
 
 
 ds::Player::Player(size_t id, const std::string& name):
     tablePtr_(nullptr),
-    summary_(id, name),
-    idSet_(true)
+    idSet_(true),
+    summary_(id, name)
 {}
 
 
 ds::Player::Player(const Summary& summary):
     tablePtr_(nullptr),
-    summary_(summary),
-    idSet_(true)
+    idSet_(true),
+    summary_(summary)
 {}
 
 
@@ -99,7 +99,7 @@ size_t ds::Player::id() const {
 void ds::Player::setIdAndName(size_t newId, const std::string& name) {
     if (idSet_) {
         FatalError << "Player '" << summary_.name << "', id " << summary_.id
-            << " attempting to name to '" << name << "' and id to " << newID
+            << " attempting to name to '" << name << "' and id to " << newId
             << " when these were already set." << std::endl;
         abort();
     }
@@ -550,7 +550,7 @@ void ds::Player::setTablePointer(const Table& table) {
 }
 
 
-void ds::Player::cleanTablePointer() {
+void ds::Player::clearTablePointer() {
     tablePtr_ = nullptr;
 }
 
@@ -588,7 +588,7 @@ void ds::Player::clearPocket() {
     pkt_ = PktCards(Card::unknownCard, Card::unknownCard);
     summary_.revealedPkt = pkt_;
     summary_.hasCards = false;
-    copyPkt = pkt_;
+    copyPkt_ = pkt_;
 }
 
 

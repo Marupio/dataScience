@@ -1,20 +1,23 @@
 // Virtual interface for a player at the table
 // Manages stack size
-#ifndef AllInPlayer_h
-#define AllInPlayer_h
+#ifndef AllCallPlayer_h
+#define AllCallPlayer_h
 
 #include<Player.h>
 
 namespace ds {
 
-class AllInPlayer: public Player {
+class AllCallPlayer: public Player {
 
 public:
 
     // Constructors
     
+        //- Construct null
+        AllCallPlayer();
+    
         //- Construct from components
-        AllInPlayer(size_t id, const std::string& name);
+        AllCallPlayer(size_t id, const std::string& name);
 
 
     // Public Member Functions
@@ -38,7 +41,7 @@ public:
                 Money totalBet,
                 Money minRaise
             ) {
-                return Player::Decision(Player::acRaiseAllIn, -1);
+                return Player::Decision(Player::acCall, -1);
             }
 
             //- Player can only call or fold

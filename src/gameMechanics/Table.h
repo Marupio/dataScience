@@ -42,6 +42,9 @@ public:
 
     // Constructors
     
+        //- Construct null
+        Table();
+
         //- Construct from components
         Table(
             size_t nSeats,
@@ -49,7 +52,7 @@ public:
             bool allowFastFolds,
             int dramaticPause
         );
-    
+
     
     // Public Member Functions
 
@@ -88,7 +91,7 @@ public:
             void playOnceThenDisband();
 
             //- Play n hands
-            void playNThenPause();
+            void playNThenPause(int n);
 
             //- Start, play based on ppAction
             void play();

@@ -13,9 +13,12 @@ public:
 
     // Constructors
     
+        //- Construct null
+        Seats();
+    
         //- Construct from components
         Seats(size_t nSeats);
-    
+
     
     // Public Member Functions
 
