@@ -80,7 +80,7 @@ public:
             void setPlayerChips(Money amount);
 
             //- Turn on data logging
-            void enableDataLogging(std::string filename);
+            void enableDataLogging(std::string filename = std::string());
 
 
         // Thread starters

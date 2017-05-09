@@ -343,8 +343,7 @@ void ds::Table::dealCards() {
             std::stringstream ss;
             ss << drawnPkt;
             std::string logNote;
-            ss >> logNote;
-            logNote += " dealt to " + (*it)->name();
+            logNote = ss.str() + " dealt to " + (*it)->name();
             log(std::move(logNote));
         } else {
             (*it)->dealPocket(deck_.draw(2));

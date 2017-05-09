@@ -21,6 +21,7 @@ int main() {
     size_t nSeats;
     int nTableIters;
     int nResets;
+    bool tableLogging;
     
     // Read inputSettings
     {
@@ -29,6 +30,7 @@ int main() {
         is >> nSeats;
         is >> nTableIters;
         is >> nResets;
+        is >> tableLogging;
     }
     Blinds blinds(0, 0, 1, 0);
 
@@ -36,7 +38,7 @@ int main() {
     size_t nPlayers = nSeats*nTables;
     std::vector<AllCallPlayer> players(nPlayers);
     for (auto it = players.begin(); it != players.end(); ++it) {
-        const size_t id = std::distance(it, players.begin());
+        const size_t id = std::distance(players.begin(), it);
         std::string name("player" + std::to_string(id));
         it->setIdAndName(id, name);
     }
@@ -51,6 +53,9 @@ int main() {
         tables.emplace_back(nSeats, blinds, false, -1);
         Table& tbl(tables.back());
         tbl.setTableId(tableI++);
+        if (tableLogging) {
+            tbl.enableDataLogging();
+        }
         size_t emptyChairs = nSeats;
         while (emptyChairs-- && itP != players.end()) {
             PlayerPtr player = &(*itP);
