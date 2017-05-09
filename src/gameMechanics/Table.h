@@ -2,6 +2,7 @@
 #define Table_h
 
 #include<atomic>
+#include<memory>
 #include<Board.h>
 #include<Blinds.h>
 #include<Deck.h>
@@ -77,6 +78,9 @@ public:
             //  Useful for stats-gathering simulations, this resets all seated
             //  players stacks to amount provided
             void setPlayerChips(Money amount);
+
+            //- Turn on data logging
+            void enableDataLogging(std::string filename);
 
 
         // Thread starters
@@ -217,6 +221,9 @@ private:
         //- Kicks all players
         void everyoneGoHome();
 
+        //- Logging
+        void log(std::string&& logNote) const;
+
 
     // Private Data
     
@@ -259,6 +266,11 @@ private:
         //  -1 disables this feature
         int nHandsRemaining_;
         
+        // Data logging
+        
+            //- Log file - allocated when logging is enabled
+            mutable std::unique_ptr<std::ofstream> log_;
+            
         
         // Data generated during play
         

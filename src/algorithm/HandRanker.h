@@ -60,11 +60,6 @@ public:
         //  Suitable only when the board is empty
         void predictFlop(std::vector<short>& pa);
 
-
-private:
-
-    // Private Member Functions
-    
         //- Helper for compare
         //  Finds kickers, if any, given the provided hand type
         //  ** Located in HandRankerGetKickers.cpp
@@ -73,6 +68,11 @@ private:
             const PktCards& pkt,
             const HandType& ht
         );
+
+
+private:
+
+    // Private Member Functions
 
         //- Ranks one kicker for hands where one kicker is possible
         //  ** Located in HandRankerRankKickers

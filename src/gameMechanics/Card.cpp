@@ -34,6 +34,51 @@ const ds::CardVal ds::Card::king(13);
 const ds::CardVal ds::Card::ace(14);
 
 
+const std::array<std::string, 15> ds::Card::CardValNames = {
+    "WildValue",
+    "LowAce",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Jack",
+    "Queen",
+    "King",
+    "Ace"
+};
+
+const std::array<std::string, 15> ds::Card::CardValNamesPlural = {
+    "WildValues",
+    "LowAces",
+    "Twos",
+    "Threes",
+    "Fours",
+    "Fives",
+    "Sixes",
+    "Sevens",
+    "Eights",
+    "Nines",
+    "Tens",
+    "Jacks",
+    "Queens",
+    "Kings",
+    "Aces"
+};
+
+
+const std::array<std::string, 4> ds::Card::CardSuitNames = {
+    "Clubs",
+    "Diamonds",
+    "Hearts",
+    "Spades"
+};
+
+
 // *** Constructors *** //
 
 ds::Card::Card():

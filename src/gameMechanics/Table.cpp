@@ -1,8 +1,10 @@
+#include<fstream>
+#include<sstream>
 #include<Table.h>
 #include<osRelated.h>
 #include<HandRanker.h>
 
-// ****** Constructors and Assignment ****** //
+// ****** Constructors ****** //
 
 ds::Table::Table():
     Seats(),
@@ -247,6 +249,21 @@ void ds::Table::setPlayerChips(Money amount) {
 }
 
 
+void ds::Table::enableDataLogging(std::string filename) {
+    if (bool(log_)) {
+        FatalError << "Attempting to enable logging to '" << filename << "' "
+            << "when logging is already enabled." << std::endl;
+        abort();
+    }
+    if (filename.empty()) {
+        std::stringstream ss;
+        ss << "Table_" << tableId_ << ".log";
+        ss >> filename;
+    }
+    log_.reset(new std::ofstream(filename));
+}
+
+
 void ds::Table::setBlinds(const Blinds& newBlinds) {
     nextBlinds_.store(&newBlinds);
 }
@@ -263,6 +280,7 @@ void ds::Table::checkReadyForPlay() const {
         FatalError << "Not enough players to start play" << std::endl;
         abort();
     }
+    log(std::string("Ready for play"));
 }
 
 
@@ -271,6 +289,7 @@ void ds::Table::moveDealerButton() {
     if ((*dealer_)->waitingForButton()) {
         (*dealer_)->setWaitingForButton(false);
     }
+    log("Moving the dealer button to " + (*dealer_)->name());
 }
 
 
@@ -282,6 +301,10 @@ void ds::Table::ante(Money amount) {
     do {
         nextActivePlayer(it);
         pushedMoney_.push_back(PushedMoney((*it)->collect(amount), it));
+        log(
+            "Ante " + std::to_string(amount) + " requested from "
+          + (*it)->name()
+        );
     } while (it != stopIt);
     pots_.collect(pushedMoney_);
 }
@@ -291,20 +314,41 @@ void ds::Table::collectBlinds(SeatedPlayer& player, Money blinds) {
     Money paid = (*player)->collect(blinds);
     pushedMoney_.push_back(PushedMoney(paid, player));
     if ((*player)->allIn()) {
+        log(
+            "Collecting blinds " + std::to_string(blinds) + " from "
+          + (*player)->name() + " and player is all-in"
+        );
+        
         shareAction(player, Player::acBlindsAllIn, paid);
     } else {
         shareAction(player, Player::acBlinds, paid);
+        log(
+            "Collecting blinds " + std::to_string(blinds) + " from "
+          + (*player)->name()
+        );
     }
 }
 
 
 void ds::Table::dealCards() {
     deck_.shuffle();
+    log("Shuffling cards");
     SeatedPlayer it = firstActivePlayer(dealer_);
     SeatedPlayer stopIt = it;
     do {
         nextActivePlayer(it);
-        (*it)->dealPocket(deck_.draw(2));
+        if (bool(log_)) {
+            VecDeckInd drawn(deck_.draw(2));
+            PktCards drawnPkt(drawn);
+            std::stringstream ss;
+            ss << drawnPkt;
+            std::string logNote;
+            ss >> logNote;
+            logNote += " dealt to " + (*it)->name();
+            log(std::move(logNote));
+        } else {
+            (*it)->dealPocket(deck_.draw(2));
+        }
         (*it)->observeEvent(Player::evDealtCards);
     } while (it != stopIt);
 }
@@ -329,6 +373,7 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
          || std::abs((*player)->pushedMoney() - totalBet < SMALL)
         ) {
             if ((*player)->fastFoldOption(totalBet)) {
+                log((*player)->name() + " fast-folded");
                 ghostKick(player);
             }
         }
@@ -728,6 +773,45 @@ void ds::Table::shareEvent(Player::eventEnum event) {
         (*tellPlayer)->observeEvent(event);
         nextPlayer(tellPlayer);
     } while (tellPlayer != stopPlayer);
+    if (bool(log_)) {
+        switch (event) {
+        case Player::evFlop: {
+            std::stringstream os;
+            os << "Flop : " << bd_;
+            std::string logNote;
+            os >> logNote;
+            log(std::move(logNote));
+            break;
+        }
+        case Player::evTurn: {
+            std::stringstream os;
+            os << "Turn : " << bd_;
+            std::string logNote;
+            os >> logNote;
+            log(std::move(logNote));
+            break;
+        }
+        case Player::evRiver: {
+            std::stringstream os;
+            os << "River : " << bd_;
+            std::string logNote;
+            os >> logNote;
+            log(std::move(logNote));
+            break;
+        }
+        case Player::evBlindsChanged: {
+            log(
+                "Blinds changing to " + std::to_string(blinds_->ante)
+              + " ante, " + std::to_string(blinds_->smallBlind)
+              + " smallBlind, " + std::to_string(blinds_->bigBlind)
+              + " bigBlind"
+            );
+        }
+        default: {
+            // Do nothing
+        } // end default
+        } // end switch
+    }
 }
 
 
@@ -741,6 +825,13 @@ void ds::Table::shareAction(
         nextPlayer(tellPlayer);
         (*tellPlayer)->observeAction(player, action, amount);
     } while (tellPlayer != player);
+    if (bool(log_)) {
+        log(
+            "'" + (*player)->name() + "' took action '"
+          + Player::actionNames[action] + "' with amount "
+          + std::to_string(amount)
+        );
+    }
 }
 
 
@@ -751,6 +842,69 @@ void ds::Table::shareResults() {
         (*player)->observeResults();
         nextPlayer(player);
     } while (player != stopPlayer);
+    if (bool(log_)) {
+        player = firstCardedPlayer(dealer_);
+        stopPlayer = player;
+        do {
+            std::stringstream os;
+            HandType ht(bd_, (*player)->pkt_);
+            PktVals kickers = HandRanker::getKickers(bd_, (*player)->pkt_, ht);
+            os << "Player '" << (*player)->name() << "' ";
+            if ((*player)->rewardedMoney() < SMALL) {
+                os << "lost with ";
+            } else {
+                os << "won " << (*player)->rewardedMoney() << " with ";
+            }
+            switch (ht.ht()) {
+            case HandType::HtHighCard: {
+                os << HandType::HandTypeNames[ht.ht()] << " "
+                    << Card::CardValNames[ht.values().first];
+                break;
+            }
+            case HandType::HtPair: // fall through
+            case HandType::HtSet: {
+                os << HandType::HandTypeNames[ht.ht()] << " of "
+                    << Card::CardValNamesPlural[ht.values().first];
+                break;
+            }
+            case HandType::HtTwoPair: {
+                os << HandType::HandTypeNames[ht.ht()] << ", "
+                    << Card::CardValNamesPlural[ht.values().first] << " and "
+                    << Card::CardValNamesPlural[ht.values().second];
+                break;
+            }
+            case HandType::HtFoak: {
+                os << HandType::HandTypeNames[ht.ht()] << ", "
+                    << Card::CardValNamesPlural[ht.values().first];
+                break;
+            }
+            case HandType::HtStraight: // fall through
+            case HandType::HtFlush: // fall through
+            case HandType::HtStraightFlush: {
+                os << Card::CardValNames[ht.values().first] << " high "
+                    << HandType::HandTypeNames[ht.ht()];
+                break;
+            }
+            case HandType::HtFullHouse: {
+                os << HandType::HandTypeNames[ht.ht()] << ", "
+                    << Card::CardValNamesPlural[ht.values().first]
+                    << " full of "
+                    << Card::CardValNamesPlural[ht.values().second];
+                break;
+            }
+            default: {
+                FatalError << "Unknown hand type: " << ht.ht() << std::endl;
+                abort();
+                break;
+            } // end default
+            } // end switch
+            os << " with kickers " << Card::CardValNames[kickers.first]
+                << " and " << Card::CardValNames[kickers.first] << std::endl;
+            std::string logNote;
+            os >> logNote;
+            log(std::move(logNote));
+        } while (player != stopPlayer);
+    }
 }
 
 
@@ -780,6 +934,11 @@ void ds::Table::resetPlayers() {
 
 void ds::Table::everyoneGoHome() {
     kickAllPlayers();
+}
+
+
+void ds::Table::log(std::string&& logNote) const {
+    (*log_) << logNote << std::endl;
 }
 
 

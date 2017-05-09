@@ -55,6 +55,13 @@ public:
         static const CardVal king;            // 13
         static const CardVal ace;             // 14
 
+        //- Words for each card value
+        static const std::array<std::string, 15> CardValNames;
+        static const std::array<std::string, 15> CardValNamesPlural;
+
+        //- Words for each card suit
+        static const std::array<std::string, 4> CardSuitNames;
+
 
     // Constructors
 
