@@ -29,6 +29,7 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/PktCards.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/PktVals.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Player.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Pot.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Seats.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Suit.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Table.cpp

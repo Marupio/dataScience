@@ -169,7 +169,7 @@ private:
 
         //- Collect bets
         //  Returns false if one player wins
-        bool takeBets(SeatedPlayer player);
+        bool takeBets(SeatedPlayer player, Money initTotalBet = 0);
 
         //- Once all cards are on the board and the final betting is over,
         //  this function compares the remaining hands based on the pot they

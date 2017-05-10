@@ -152,3 +152,13 @@ install_targets(
     makeAllInTables
 )
 
+add_executable(
+    makeAllInTablesNoMultiThreading
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllInTables/makeAllInTablesNoMultiThreading.cpp
+)
+target_link_libraries(makeAllInTablesNoMultiThreading core pthread)
+install_targets(
+    ${BIN_DIR}
+    makeAllInTablesNoMultiThreading
+)
+

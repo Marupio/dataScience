@@ -14,6 +14,11 @@ namespace ds {
 // PushedMoney represents money in front of a player, across the commit line
 // This is then searched for duplicate all-in amounts and reduced to Pot type
 
+// Forward declaration
+
+struct PushedMoney;
+std::ostream& operator<<(std::ostream& os, const PushedMoney& pm);
+
 struct PushedMoney:
     public std::pair<Money, SeatedPlayer>
 {
@@ -24,104 +29,57 @@ struct PushedMoney:
     bool operator<(const PushedMoney& pm) const {
         return first < pm.first;
     }
+    
+    friend std::ostream& operator<<(std::ostream& os, const PushedMoney& pm);
 };
+
 
 struct VecPushedMoney:
     public std::vector<PushedMoney>
 {
-    std::vector<PushedMoney>::iterator find(const SeatedPlayer& player) {
-        for (auto it = begin(); it != end(); ++it) {
-            if (it->second == player) {
-                return it;
-            }
-        }
-        return end();
-    }
+    std::vector<PushedMoney>::iterator find(const SeatedPlayer& player);
 };
+
 
 // Money is the amount in this pot, VecSeatedPlayer are all the players vying
 // for this pot. Duplicates occur when two players are all in with the same
 // amount, and the main pot for players who are not all in
+
+// Forward declarations
+struct Pot;
+std::ostream& operator<<(std::ostream& os, const Pot& pt);
+
+
 struct Pot:
     public std::pair<Money, VecSeatedPlayer>
 {
+    //- True if pot contains an all-in player and cannot be given more Money
+    bool sealed;
+
+    //- Construct null    
+    Pot():
+        std::pair<Money, VecSeatedPlayer>(0, VecSeatedPlayer(0)),
+        sealed(false)
+    {}
+
+    //- Construct from components
     Pot(Money amount, VecSeatedPlayer&& vs):
-        std::pair<Money, VecSeatedPlayer>(amount, vs)
+        std::pair<Money, VecSeatedPlayer>(amount, vs),
+        sealed(false)
     {}
     
     bool operator<(const Pot& pt) const {
         return first < pt.first;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Pot& pt);
 };
+
 
 struct VecPot:
     public std::vector<Pot>
 {
-    void collect(VecPushedMoney& pm) {
-        std::sort(pm.begin(), pm.end());
-        auto itPm = pm.begin();
-        Money sum = 0;
-        VecSeatedPlayer playersInPot;
-        while (itPm != pm.end()) {
-            sum += itPm->first;
-            if (*(itPm->second) == nullptr) {
-                ++itPm;
-            } else {
-                playersInPot.push_back(itPm->second);
-                break;
-            }
-        }
-        for (
-            auto itPmNxt = itPm + 1;
-            itPmNxt != pm.end();
-            ++itPmNxt
-        ) {
-            if (
-                itPm->first == itPmNxt->first
-             || *(itPmNxt->second) == nullptr
-            ) {
-                sum += itPmNxt->first;
-                if (*(itPmNxt->second) != nullptr) {
-                    playersInPot.push_back(itPmNxt->second);
-                }
-            } else {
-                // A(nother) player is all-in
-                
-                // Remove this amount from remaining pushes
-                Money remove = itPm->first;
-                for (auto itR = itPmNxt; itR != pm.end(); ++itR) {
-                    sum += remove;
-                    itR->first -= remove;
-                }
-                // Then search *this to find playersInPot
-                if (size() && playersInPot.size()) {
-                    VecSeatedPlayer& lastPlayerList(back().second);
-                    // If one player is found, replace its player list with
-                    // players in pot, and add sum to pot
-                    bool found = (
-                        std::find(
-                            lastPlayerList.begin(),
-                            lastPlayerList.end(),
-                            playersInPot.back()
-                        ) != lastPlayerList.end()
-                    );
-                    if (found) {
-                        back().first += sum;
-                        back().second = playersInPot;
-                        sum = 0;
-                        playersInPot.clear();
-                        continue;
-                    }
-                }
-                // If not found, create a new pot
-                push_back(Pot(sum, std::move(playersInPot)));
-                sum = 0;
-                playersInPot.clear();
-            }
-        }
-        pm.clear();
-    }
-
+    void collect(VecPushedMoney& pm);
 };
 
 } // end namespace ds

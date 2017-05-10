@@ -110,6 +110,7 @@ void ds::Table::play() {
             if (*dealer_ == nullptr) {
                 moveDealerButton();
             }
+            pushedMoney_.clear();
             ante(blinds_->ante);
             SeatedPlayer player = dealer_;
             if (nPlayers_.load() != 2) {
@@ -140,7 +141,7 @@ void ds::Table::play() {
             checkForFastFolds(bbPlayer, blinds_->bigBlind);
             seatWaitingPlayers(dealer_);
 
-            if (!takeBets(player)) {
+            if (!takeBets(player, blinds_->bigBlind)) {
                 break;
             }
             dramaticPause();
@@ -170,6 +171,7 @@ void ds::Table::play() {
 
             // Do hand compares
             compareHands();
+            break;
         }
         resetTable();
         if (nextBlinds_.load() != nullptr) {
@@ -294,8 +296,9 @@ void ds::Table::moveDealerButton() {
 
 
 void ds::Table::ante(Money amount) {
-    pushedMoney_.clear();
-
+    if (amount < SMALL) {
+        return;
+    }
     SeatedPlayer it = firstActivePlayer(dealer_);
     SeatedPlayer stopIt = it;
     do {
@@ -345,6 +348,7 @@ void ds::Table::dealCards() {
             std::string logNote;
             logNote = ss.str() + " dealt to " + (*it)->name();
             log(std::move(logNote));
+            (*it)->dealPocket(drawn);
         } else {
             (*it)->dealPocket(deck_.draw(2));
         }
@@ -380,7 +384,13 @@ void ds::Table::checkForFastFolds(const SeatedPlayer& sp, Money totalBet) {
 }
 
 
-bool ds::Table::takeBets(SeatedPlayer player) {
+bool ds::Table::takeBets(SeatedPlayer player, Money initTotalBet) {
+    log(
+        "Taking bets starting with "
+      + (*player)->name()
+      + ", initial bet "
+      + std::to_string(initTotalBet)
+    );
     if (allInShowDown_) {
         return true;
     }
@@ -401,9 +411,8 @@ bool ds::Table::takeBets(SeatedPlayer player) {
     // To keep track of allInShowDowns
     size_t nActiveNotAllIn = 0;
 
-    Money totalBet = blinds_->bigBlind;
+    Money totalBet = initTotalBet;
     Money minRaise = totalBet;
-    nextCardedPlayer(player);
     do {
         if (*player == callsOnlyPlayerPtr) {
             callsOnly = true;
@@ -433,7 +442,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 continue;
             }
 
-            if (newlyPushed == 0) {
+            if (newlyPushed < SMALL) {
                 // Tell everyone about it
                 shareAction(player, Player::acCheck, totalBet);
                 nActiveNotAllIn++;
@@ -453,6 +462,7 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                 );
             } else if (newlyPushed + alreadyPushed <= totalBet) {
                 // Tell everyone about it
+                itPushed->first += newlyPushed;
                 if ((*player)->allIn()) {
                     shareAction(player, Player::acCallAllIn, totalBet);
                 } else {
@@ -498,6 +508,8 @@ bool ds::Table::takeBets(SeatedPlayer player) {
                         nActiveNotAllIn++;
                     }
                 }
+            } else {
+                shareAction(player, Player::acCheck, totalBet);
             }
         }
         nextCardedPlayer(player);
@@ -777,25 +789,19 @@ void ds::Table::shareEvent(Player::eventEnum event) {
         case Player::evFlop: {
             std::stringstream os;
             os << "Flop : " << bd_;
-            std::string logNote;
-            os >> logNote;
-            log(std::move(logNote));
+            log(os.str());
             break;
         }
         case Player::evTurn: {
             std::stringstream os;
             os << "Turn : " << bd_;
-            std::string logNote;
-            os >> logNote;
-            log(std::move(logNote));
+            log(os.str());
             break;
         }
         case Player::evRiver: {
             std::stringstream os;
             os << "River : " << bd_;
-            std::string logNote;
-            os >> logNote;
-            log(std::move(logNote));
+            log(os.str());
             break;
         }
         case Player::evBlindsChanged: {
@@ -850,58 +856,71 @@ void ds::Table::shareResults() {
             PktVals kickers = HandRanker::getKickers(bd_, (*player)->pkt_, ht);
             os << "Player '" << (*player)->name() << "' ";
             if ((*player)->rewardedMoney() < SMALL) {
-                os << "lost with ";
+                os << "lost";
             } else {
-                os << "won " << (*player)->rewardedMoney() << " with ";
+                os << "won " << (*player)->rewardedMoney();
             }
-            switch (ht.ht()) {
-            case HandType::HtHighCard: {
-                os << HandType::HandTypeNames[ht.ht()] << " "
-                    << Card::CardValNames[ht.values().first];
-                break;
+            if (bd_.size() > 4) {
+                os << " with ";
+                switch (ht.ht()) {
+                case HandType::HtHighCard: {
+                    os << HandType::HandTypeNames[ht.ht()] << " "
+                        << Card::CardValNames[ht.values().first];
+                    break;
+                }
+                case HandType::HtPair: // fall through
+                case HandType::HtSet: {
+                    os << HandType::HandTypeNames[ht.ht()] << " of "
+                        << Card::CardValNamesPlural[ht.values().first];
+                    break;
+                }
+                case HandType::HtTwoPair: {
+                    os << HandType::HandTypeNames[ht.ht()] << ", "
+                        << Card::CardValNamesPlural[ht.values().first] << " and "
+                        << Card::CardValNamesPlural[ht.values().second];
+                    break;
+                }
+                case HandType::HtFoak: {
+                    os << HandType::HandTypeNames[ht.ht()] << ", "
+                        << Card::CardValNamesPlural[ht.values().first];
+                    break;
+                }
+                case HandType::HtStraight: // fall through
+                case HandType::HtFlush: // fall through
+                case HandType::HtStraightFlush: {
+                    os << Card::CardValNames[ht.values().first] << " high "
+                        << HandType::HandTypeNames[ht.ht()];
+                    break;
+                }
+                case HandType::HtFullHouse: {
+                    os << HandType::HandTypeNames[ht.ht()] << ", "
+                        << Card::CardValNamesPlural[ht.values().first]
+                        << " full of "
+                        << Card::CardValNamesPlural[ht.values().second];
+                    break;
+                }
+                default: {
+                    FatalError << "Unknown hand type: " << ht.ht() << std::endl;
+                    abort();
+                    break;
+                } // end default
+                } // end switch
+                if (kickers.first == Card::unknownValue) {
+                    os << ", with no kickers";
+                } else {
+                    if (kickers.second == Card::unknownValue) {
+                        os << ", with kicker "
+                            << Card::CardValNames[kickers.first];
+                    } else {
+                        os << ", with kickers "
+                            << Card::CardValNames[kickers.first]
+                            << " and "
+                            << Card::CardValNames[kickers.second];
+                    }
+                }
             }
-            case HandType::HtPair: // fall through
-            case HandType::HtSet: {
-                os << HandType::HandTypeNames[ht.ht()] << " of "
-                    << Card::CardValNamesPlural[ht.values().first];
-                break;
-            }
-            case HandType::HtTwoPair: {
-                os << HandType::HandTypeNames[ht.ht()] << ", "
-                    << Card::CardValNamesPlural[ht.values().first] << " and "
-                    << Card::CardValNamesPlural[ht.values().second];
-                break;
-            }
-            case HandType::HtFoak: {
-                os << HandType::HandTypeNames[ht.ht()] << ", "
-                    << Card::CardValNamesPlural[ht.values().first];
-                break;
-            }
-            case HandType::HtStraight: // fall through
-            case HandType::HtFlush: // fall through
-            case HandType::HtStraightFlush: {
-                os << Card::CardValNames[ht.values().first] << " high "
-                    << HandType::HandTypeNames[ht.ht()];
-                break;
-            }
-            case HandType::HtFullHouse: {
-                os << HandType::HandTypeNames[ht.ht()] << ", "
-                    << Card::CardValNamesPlural[ht.values().first]
-                    << " full of "
-                    << Card::CardValNamesPlural[ht.values().second];
-                break;
-            }
-            default: {
-                FatalError << "Unknown hand type: " << ht.ht() << std::endl;
-                abort();
-                break;
-            } // end default
-            } // end switch
-            os << " with kickers " << Card::CardValNames[kickers.first]
-                << " and " << Card::CardValNames[kickers.first] << std::endl;
-            std::string logNote;
-            os >> logNote;
-            log(std::move(logNote));
+            log(std::move(os.str()));
+            nextCardedPlayer(player);
         } while (player != stopPlayer);
     }
 }
@@ -912,6 +931,8 @@ void ds::Table::resetTable() {
     resetPlayers();
     seatWaitingPlayers(dealer_);
     moveDealerButton();
+    bd_.clear();
+    log("Resetting table");
 }
 
 
@@ -937,7 +958,9 @@ void ds::Table::everyoneGoHome() {
 
 
 void ds::Table::log(std::string&& logNote) const {
-    (*log_) << logNote << std::endl;
+    if (bool(log_)) {
+        (*log_) << logNote << std::endl;
+    }
 }
 
 

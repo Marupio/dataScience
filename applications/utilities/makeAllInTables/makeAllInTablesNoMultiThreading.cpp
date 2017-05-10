@@ -67,16 +67,8 @@ int main() {
 
     //- Play games
     while (nResets--) {
-        std::vector<std::thread> tableThread;
-        tableThread.reserve(nTables);
         for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
-            tableThread.push_back(
-                std::thread(startThread, std::ref(*itT), nTableIters)
-            );
-        }
-
-        for (size_t ti = 0; ti < nTables; ++ti) {
-            tableThread[ti].join();
+            itT->playNThenPause(nTableIters);
         }
     }
 
