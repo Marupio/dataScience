@@ -6,27 +6,27 @@
 
 ds::AllCallPlayer::AllCallPlayer():
     Player(),
-    nWon_(323, 0),
-    nLost_(323, 0),
-    winningFlopRankSum_(323, 0),
-    winningTurnRankSum_(323, 0),
-    winningRankSum_(323, 0),
-    losingFlopRankSum_(323, 0),
-    losingTurnRankSum_(323, 0),
-    losingRankSum_(323, 0)
+    nWon_(324, 0),
+    nLost_(324, 0),
+    winningFlopRankSum_(324, 0),
+    winningTurnRankSum_(324, 0),
+    winningRankSum_(324, 0),
+    losingFlopRankSum_(324, 0),
+    losingTurnRankSum_(324, 0),
+    losingRankSum_(324, 0)
 {}
 
 
 ds::AllCallPlayer::AllCallPlayer(size_t id, const std::string& name):
     Player(id, name),
-    nWon_(323, 0),
-    nLost_(323, 0),
-    winningFlopRankSum_(323, 0),
-    winningTurnRankSum_(323, 0),
-    winningRankSum_(323, 0),
-    losingFlopRankSum_(323, 0),
-    losingTurnRankSum_(323, 0),
-    losingRankSum_(323, 0)
+    nWon_(324, 0),
+    nLost_(324, 0),
+    winningFlopRankSum_(324, 0),
+    winningTurnRankSum_(324, 0),
+    winningRankSum_(324, 0),
+    losingFlopRankSum_(324, 0),
+    losingTurnRankSum_(324, 0),
+    losingRankSum_(324, 0)
 {}
 
 

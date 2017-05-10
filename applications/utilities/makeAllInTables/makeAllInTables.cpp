@@ -67,6 +67,7 @@ int main() {
 
     //- Play games
     while (nResets--) {
+        std::cout << nResets << std::endl;
         std::vector<std::thread> tableThread;
         tableThread.reserve(nTables);
         for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
@@ -81,14 +82,14 @@ int main() {
     }
 
     //- Initialise output data
-    std::vector<unsigned long long> nWon(323,0);
-    std::vector<unsigned long long> nLost(323,0);
-    std::vector<unsigned long long> winningFlopRankSum(323,0);
-    std::vector<unsigned long long> winningTurnRankSum(323,0);
-    std::vector<unsigned long long> winningRankSum(323,0);
-    std::vector<unsigned long long> losingFlopRankSum(323,0);
-    std::vector<unsigned long long> losingTurnRankSum(323,0);
-    std::vector<unsigned long long> losingRankSum(323,0);
+    std::vector<unsigned long long> nWon(324,0);
+    std::vector<unsigned long long> nLost(324,0);
+    std::vector<unsigned long long> winningFlopRankSum(324,0);
+    std::vector<unsigned long long> winningTurnRankSum(324,0);
+    std::vector<unsigned long long> winningRankSum(324,0);
+    std::vector<unsigned long long> losingFlopRankSum(324,0);
+    std::vector<unsigned long long> losingTurnRankSum(324,0);
+    std::vector<unsigned long long> losingRankSum(324,0);
 
     for (auto it = players.begin(); it != players.end(); ++it) {
         const std::vector<unsigned long long>& pnWon(it->nWon());
@@ -105,7 +106,7 @@ int main() {
             plosingTurnRankSum(it->losingTurnRankSum());
         const std::vector<unsigned long long>&
             plosingRankSum(it->losingRankSum());
-        for (size_t i = 0; i < 323; ++i) {
+        for (size_t i = 0; i < 324; ++i) {
             nWon[i] += pnWon[i];
             nLost[i] += pnLost[i];
             winningFlopRankSum[i] += pwinningFlopRankSum[i];
@@ -121,7 +122,7 @@ int main() {
     std::ofstream os("outputTables");
     os << "nWon nLost winningFlopRankSum winningTurnRankSum winningRankSum "
         << "losingFlopRankSum losingTurnRankSum losingRankSum\n";
-    for (size_t i = 0; i < 323; ++i) {
+    for (size_t i = 0; i < 324; ++i) {
         os << nWon[i] << " " << nLost[i] << " "
             << winningFlopRankSum[i] << " "
             << winningTurnRankSum[i] << " "
