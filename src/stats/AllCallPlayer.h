@@ -25,14 +25,20 @@ public:
         // Access
         
             //- Access databases
-            const std::vector<unsigned long long>& nWon() const;
-            const std::vector<unsigned long long>& nLost() const;
-            const std::vector<unsigned long long>& winningFlopRankSum() const;
-            const std::vector<unsigned long long>& winningTurnRankSum() const;
-            const std::vector<unsigned long long>& winningRankSum() const;
-            const std::vector<unsigned long long>& losingFlopRankSum() const;
-            const std::vector<unsigned long long>& losingTurnRankSum() const;
-            const std::vector<unsigned long long>& losingRankSum() const;
+            const std::vector<std::vector<short>>& winningFlopRank() const;
+            const std::vector<std::vector<short>>& winningTurnRank() const;
+            const std::vector<std::vector<short>>& winningRiverRank() const;
+            const std::vector<std::vector<short>>& losingFlopRank() const;
+            const std::vector<std::vector<short>>& losingTurnRank() const;
+            const std::vector<std::vector<short>>& losingRiverRank() const;
+            const std::vector<std::vector<std::vector<short>>>&
+                winningFlopPredict() const;
+            const std::vector<std::vector<std::vector<short>>>&
+                winningTurnPredict() const;
+            const std::vector<std::vector<std::vector<short>>>&
+                losingFlopPredict() const;
+            const std::vector<std::vector<std::vector<short>>>&
+                losingTurnPredict() const;
 
         // Action
         
@@ -71,16 +77,21 @@ private:
         short flopRank_;
         short turnRank_;
         short riverRank_;
+        std::vector<short> flopPredict_;
+        std::vector<short> turnPredict_;
 
         //- Databases
-        std::vector<unsigned long long> nWon_;
-        std::vector<unsigned long long> nLost_;
-        std::vector<unsigned long long> winningFlopRankSum_;
-        std::vector<unsigned long long> winningTurnRankSum_;
-        std::vector<unsigned long long> winningRankSum_;
-        std::vector<unsigned long long> losingFlopRankSum_;
-        std::vector<unsigned long long> losingTurnRankSum_;
-        std::vector<unsigned long long> losingRankSum_;
+        std::vector<std::vector<short>> winningFlopRank_;
+        std::vector<std::vector<short>> winningTurnRank_;
+        std::vector<std::vector<short>> winningRiverRank_;
+        std::vector<std::vector<short>> losingFlopRank_;
+        std::vector<std::vector<short>> losingTurnRank_;
+        std::vector<std::vector<short>> losingRiverRank_;
+
+        std::vector<std::vector<std::vector<short>>> winningFlopPredict_;
+        std::vector<std::vector<std::vector<short>>> winningTurnPredict_;
+        std::vector<std::vector<std::vector<short>>> losingFlopPredict_;
+        std::vector<std::vector<std::vector<short>>> losingTurnPredict_;
 };
 
 } // end namespace

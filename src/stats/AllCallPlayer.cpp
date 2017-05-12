@@ -6,75 +6,84 @@
 
 ds::AllCallPlayer::AllCallPlayer():
     Player(),
-    nWon_(324, 0),
-    nLost_(324, 0),
-    winningFlopRankSum_(324, 0),
-    winningTurnRankSum_(324, 0),
-    winningRankSum_(324, 0),
-    losingFlopRankSum_(324, 0),
-    losingTurnRankSum_(324, 0),
-    losingRankSum_(324, 0)
+    winningFlopRank_(324, std::vector<short>(0)),
+    winningTurnRank_(324, std::vector<short>(0)),
+    winningRiverRank_(324, std::vector<short>(0)),
+    losingFlopRank_(324, std::vector<short>(0)),
+    losingTurnRank_(324, std::vector<short>(0)),
+    losingRiverRank_(324, std::vector<short>(0)),
+    winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
+    winningTurnPredict_(324, std::vector<std::vector<short>>(0))
 {}
 
 
 ds::AllCallPlayer::AllCallPlayer(size_t id, const std::string& name):
     Player(id, name),
-    nWon_(324, 0),
-    nLost_(324, 0),
-    winningFlopRankSum_(324, 0),
-    winningTurnRankSum_(324, 0),
-    winningRankSum_(324, 0),
-    losingFlopRankSum_(324, 0),
-    losingTurnRankSum_(324, 0),
-    losingRankSum_(324, 0)
+    winningFlopRank_(324, std::vector<short>(0)),
+    winningTurnRank_(324, std::vector<short>(0)),
+    winningRiverRank_(324, std::vector<short>(0)),
+    losingFlopRank_(324, std::vector<short>(0)),
+    losingTurnRank_(324, std::vector<short>(0)),
+    losingRiverRank_(324, std::vector<short>(0)),
+    winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
+    winningTurnPredict_(324, std::vector<std::vector<short>>(0))
 {}
 
 
 // ****** Public Member Functions ****** //
 
-const std::vector<unsigned long long>& ds::AllCallPlayer::nWon() const {
-    return nWon_;
+const std::vector<std::vector<short>>&
+ds::AllCallPlayer::winningFlopRank() const {
+    return winningFlopRank_;
 }
 
 
-const std::vector<unsigned long long>& ds::AllCallPlayer::nLost() const {
-    return nLost_;
+const std::vector<std::vector<short>>& ds::AllCallPlayer::winningTurnRank() const {
+    return winningTurnRank_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::winningFlopRankSum() const {
-    return winningFlopRankSum_;
+const std::vector<std::vector<short>>& ds::AllCallPlayer::winningRiverRank() const {
+    return winningRiverRank_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::winningTurnRankSum() const {
-    return winningTurnRankSum_;
+const std::vector<std::vector<short>>& ds::AllCallPlayer::losingFlopRank() const {
+    return losingFlopRank_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::winningRankSum() const {
-    return winningRankSum_;
+const std::vector<std::vector<short>>& ds::AllCallPlayer::losingTurnRank() const {
+    return losingTurnRank_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::losingFlopRankSum() const {
-    return losingFlopRankSum_;
+const std::vector<std::vector<short>>& ds::AllCallPlayer::losingRiverRank() const {
+    return losingRiverRank_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::losingTurnRankSum() const {
-    return losingTurnRankSum_;
+const std::vector<std::vector<std::vector<short>>>&
+ds::AllCallPlayer::winningFlopPredict() const {
+    return winningFlopPredict_;
 }
 
 
-const std::vector<unsigned long long>&
-ds::AllCallPlayer::losingRankSum() const {
-    return losingRankSum_;
+const std::vector<std::vector<std::vector<short>>>&
+ds::AllCallPlayer::winningTurnPredict() const {
+    return winningTurnPredict_;
+}
+
+
+const std::vector<std::vector<std::vector<short>>>&
+ds::AllCallPlayer::losingFlopPredict() const {
+    return losingFlopPredict_;
+}
+
+
+const std::vector<std::vector<std::vector<short>>>&
+ds::AllCallPlayer::losingTurnPredict() const {
+    return losingTurnPredict_;
 }
 
 
@@ -83,11 +92,13 @@ void ds::AllCallPlayer::observeEvent(eventEnum event) {
     case Player::evFlop: {
         HandRanker hr(table().board(), copyPkt_);
         flopRank_ = hr.rank();
+        hr.predict(flopPredict_);
         break;
     }
     case Player::evTurn: {
         HandRanker hr(table().board(), copyPkt_);
         turnRank_ = hr.rank();
+        hr.predict(turnPredict_);
         break;
     }
     case Player::evRiver: {
@@ -102,6 +113,7 @@ void ds::AllCallPlayer::observeEvent(eventEnum event) {
     } // end switch
 }
 
+
 void ds::AllCallPlayer::observeResults() {
     copyPkt_.sort();
     const short suitedOffset = copyPkt_.suited() ? 168 : 0;
@@ -111,16 +123,18 @@ void ds::AllCallPlayer::observeResults() {
       + suitedOffset;
     if (summary().rewardedMoney > SMALL) {
         // I won
-        nWon_[hashIndex]++;
-        winningFlopRankSum_[hashIndex] += flopRank_;
-        winningTurnRankSum_[hashIndex] += turnRank_;
-        winningRankSum_[hashIndex] += riverRank_;
+        winningFlopRank_[hashIndex].push_back(flopRank_);
+        winningTurnRank_[hashIndex].push_back(turnRank_);
+        winningRiverRank_[hashIndex].push_back(riverRank_);
+        winningFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
+        winningTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
     } else {
         // I lost
-        nLost_[hashIndex]++;
-        losingFlopRankSum_[hashIndex] += flopRank_;
-        losingTurnRankSum_[hashIndex] += turnRank_;
-        losingRankSum_[hashIndex] += riverRank_;
+        losingFlopRank_[hashIndex].push_back(flopRank_);
+        losingTurnRank_[hashIndex].push_back(turnRank_);
+        losingRiverRank_[hashIndex].push_back(riverRank_);
+        losingFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
+        losingTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
     }
 }
 
