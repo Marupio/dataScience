@@ -60,5 +60,20 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 message (STATUS "LIB_DIR is ${LIB_DIR}")
 message (STATUS "BIN_DIR is ${LIB_DIR}")
 
+find_package(PostgreSQL REQUIRED)
+set (pqxx_DIR ${CMAKE_MODULE_PATH})
+find_package(pqxx REQUIRED)
+
+message (STATUS "PostgreSQL_LIBRARIES is ${PostgreSQL_LIBRARIES}")
+message (STATUS "PostgreSQL_INCLUDE_DIRS is ${PostgreSQL_INCLUDE_DIRS}")
+message (STATUS "PostgreSQL_LIBRARY_DIRS is ${PostgreSQL_LIBRARY_DIRS}")
+message (STATUS "PostgreSQL_VERSION_STRING is ${PostgreSQL_VERSION_STRING}")
+include_directories (${PostgreSQL_INCLUDE_DIRS})
+set (PQLIBS ${PostgreSQL_LIBRARIES} ${PQXX_LIBRARIES} ${PQ_LIBRARIES})
+message (STATUS "PQLIBS = ${PQLIBS}")
+
+#include_directories ("/usr/include/pqxx")
+
+
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(${CMAKE_SOURCE_DIR}/applications)

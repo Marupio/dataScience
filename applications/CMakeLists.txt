@@ -143,22 +143,22 @@ install_targets(
 
 
 add_executable(
-    makeAllInTables
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllInTables/makeAllInTables.cpp
+    makeAllCallTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllCallTables/makeAllCallTables.cpp
 )
-target_link_libraries(makeAllInTables core pthread)
+target_link_libraries(makeAllCallTables core pthread ${PQLIBS})
 install_targets(
     ${BIN_DIR}
-    makeAllInTables
+    makeAllCallTables
 )
 
 add_executable(
-    makeAllInTablesNoMultiThreading
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllInTables/makeAllInTablesNoMultiThreading.cpp
+    makeAllCallTablesNoMultiThreading
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllCallTables/makeAllCallTablesNoMultiThreading.cpp
 )
-target_link_libraries(makeAllInTablesNoMultiThreading core pthread)
+target_link_libraries(makeAllCallTablesNoMultiThreading core pthread ${PQLIBS})
 install_targets(
     ${BIN_DIR}
-    makeAllInTablesNoMultiThreading
+    makeAllCallTablesNoMultiThreading
 )
 

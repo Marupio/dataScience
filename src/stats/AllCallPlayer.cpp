@@ -13,7 +13,9 @@ ds::AllCallPlayer::AllCallPlayer():
     losingTurnRank_(324, std::vector<short>(0)),
     losingRiverRank_(324, std::vector<short>(0)),
     winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    winningTurnPredict_(324, std::vector<std::vector<short>>(0))
+    winningTurnPredict_(324, std::vector<std::vector<short>>(0)),
+    losingFlopPredict_(324, std::vector<std::vector<short>>(0)),
+    losingTurnPredict_(324, std::vector<std::vector<short>>(0))
 {}
 
 
@@ -26,7 +28,9 @@ ds::AllCallPlayer::AllCallPlayer(size_t id, const std::string& name):
     losingTurnRank_(324, std::vector<short>(0)),
     losingRiverRank_(324, std::vector<short>(0)),
     winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    winningTurnPredict_(324, std::vector<std::vector<short>>(0))
+    winningTurnPredict_(324, std::vector<std::vector<short>>(0)),
+    losingFlopPredict_(324, std::vector<std::vector<short>>(0)),
+    losingTurnPredict_(324, std::vector<std::vector<short>>(0))
 {}
 
 
@@ -128,6 +132,8 @@ void ds::AllCallPlayer::observeResults() {
         winningRiverRank_[hashIndex].push_back(riverRank_);
         winningFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
         winningTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
+        flopPredict_.clear();
+        turnPredict_.clear();
     } else {
         // I lost
         losingFlopRank_[hashIndex].push_back(flopRank_);
@@ -135,6 +141,8 @@ void ds::AllCallPlayer::observeResults() {
         losingRiverRank_[hashIndex].push_back(riverRank_);
         losingFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
         losingTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
+        flopPredict_.clear();
+        turnPredict_.clear();
     }
 }
 
