@@ -1,9 +1,9 @@
-#include<fstream>
-#include<string>
-#include<Board.h>
-#include<Deck.h>
-#include<dsConfig.h>
-#include<types.h>
+#include <fstream>
+#include <string>
+#include <Board.h>
+#include <Deck.h>
+#include <dsConfig.h>
+#include <types.h>
 
 using namespace ds;
 
@@ -81,7 +81,8 @@ int main()
     int nIters = 1000;
     for (int i = 0; i < nIters; ++i) {
         Board bd;
-        Deck dk;
+        EntropyInterface ent;
+        Deck dk(ent, "testBoard");
         dk.shuffle();
         
         std::cout << i << ":\n    Empty: " << bd << "\n";

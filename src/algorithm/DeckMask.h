@@ -8,9 +8,9 @@
 #ifndef DeckMask_h
 #define DeckMask_h
 
-#include<types.h>
-#include<Board.h>
-#include<PktCards.h>
+#include <types.h>
+#include <Board.h>
+#include <PktCards.h>
 
 namespace ds {
 

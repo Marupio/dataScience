@@ -1,16 +1,16 @@
-#include<algorithm>
-#include<fstream>
-#include<numeric>
-#include<sstream>
-#include<string>
-#include<types.h>
-#include<dsConfig.h>
-#include<Card.h>
-#include<Deck.h>
-#include<DeckMask.h>
-#include<HandRanker.h>
-#include<PktCards.h>
-#include<error.h>
+#include <algorithm>
+#include <fstream>
+#include <numeric>
+#include <sstream>
+#include <string>
+#include <types.h>
+#include <dsConfig.h>
+#include <Card.h>
+#include <Deck.h>
+#include <DeckMask.h>
+#include <HandRanker.h>
+#include <PktCards.h>
+#include <error.h>
 
 using namespace ds;
 

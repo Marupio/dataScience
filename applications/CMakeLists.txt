@@ -6,6 +6,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/gameMechanics
     ${CMAKE_SOURCE_DIR}/src/algorithm
     ${CMAKE_SOURCE_DIR}/src/stats
+    ${CMAKE_SOURCE_DIR}/src/importedCode
+    ${CMAKE_SOURCE_DIR}/src/importedCode/mbedtlsInterface
     ${PROJECT_BINARY_DIR}
 )
 
@@ -29,6 +31,28 @@ target_link_libraries(testCard core)
 install_targets(
     ${BIN_DIR}
     testCard
+)
+
+
+add_executable(
+    testCsprng
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testCsprng/testCsprng.cpp
+)
+target_link_libraries(testCsprng core)
+install_targets(
+    ${BIN_DIR}
+    testCsprng
+)
+
+
+add_executable(
+    testDeck
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testDeck/testDeck.cpp
+)
+target_link_libraries(testDeck core)
+install_targets(
+    ${BIN_DIR}
+    testDeck
 )
 
 
@@ -151,6 +175,7 @@ install_targets(
     ${BIN_DIR}
     makeAllCallTables
 )
+
 
 add_executable(
     makeAllCallTablesNoMultiThreading

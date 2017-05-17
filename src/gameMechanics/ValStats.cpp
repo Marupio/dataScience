@@ -1,5 +1,5 @@
-#include<algorithm>
-#include<ValStats.h>
+#include <algorithm>
+#include <ValStats.h>
 
 // ****** Constructors ****** //
 

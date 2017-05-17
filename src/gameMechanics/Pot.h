@@ -4,8 +4,8 @@
 #ifndef Pot_h
 #define Pot_h
 
-#include<Player.h>
-#include<algorithm>
+#include <Player.h>
+#include <algorithm>
 
 namespace ds {
 

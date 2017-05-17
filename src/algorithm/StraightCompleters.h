@@ -1,9 +1,9 @@
 #ifndef StraightCompleters_h
 #define StraightCompleters_h
 
-#include<types.h>
-#include<vector.h>
-#include<VecValStats.h>
+#include <types.h>
+#include <vector.h>
+#include <VecValStats.h>
 
 namespace ds {
 

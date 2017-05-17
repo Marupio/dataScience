@@ -1,7 +1,7 @@
 #ifndef error_h
 #define error_h
 
-#include<iostream>
+#include <iostream>
 
 // Error handling macros
 #ifdef __GNUC__

@@ -1,25 +1,29 @@
-#include<cstdlib>
-#include<numeric>
-#include<algorithm>
-#include<ctime>
-#include<Deck.h>
+/*
+    An interface for the cryptographically secure random generator included in mbedtls
+*/
+
+#include <cstdlib>
+#include <numeric>
+#include <algorithm>
+#include <ctime>
+
+#include <Deck.h>
 
 
 // ****** Constructors ****** //
 
-ds::Deck::Deck(bool randomise) {
+ds::Deck::Deck(EntropyInterface& entropy, std::string randomiser):
+    rnd_(entropy, randomiser)
+{
     std::iota(cards_.begin(), cards_.end(), 0);
     drawIt_ = cards_.begin();
-    if (randomise) {
-        std::srand(std::time(0));
-    }
 }
 
 
 // ****** Public member functions ****** //
 
 void ds::Deck::shuffle() {
-    std::random_shuffle(cards_.begin(), cards_.end());
+    std::random_shuffle(cards_.begin(), cards_.end(), rnd_);
     drawIt_ = cards_.begin();
 }
 

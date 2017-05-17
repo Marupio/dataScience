@@ -17,6 +17,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm
     ${CMAKE_CURRENT_SOURCE_DIR}/stats
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtlsInterface
 )
 
 add_library(
@@ -41,4 +43,15 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/PktMask.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/StraightCompleters.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stats/AllCallPlayer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/aes.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/aesni.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/ctr_drbg.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/entropy.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/entropy_poll.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/timing.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/threading.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha512.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha256.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha512.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtlsInterface/Csprng.cpp
 )

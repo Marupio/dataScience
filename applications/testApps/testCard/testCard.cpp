@@ -1,8 +1,8 @@
-#include<fstream>
-#include<string>
-#include<Card.h>
-#include<dsConfig.h>
-#include<types.h>
+#include <fstream>
+#include <string>
+#include <Card.h>
+#include <dsConfig.h>
+#include <types.h>
 
 using namespace ds;
 int main()

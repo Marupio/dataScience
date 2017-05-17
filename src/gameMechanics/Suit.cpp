@@ -1,5 +1,5 @@
-#include<Suit.h>
-#include<Card.h>
+#include <Suit.h>
+#include <Card.h>
 
 // ****** Global Functions ****** //
 

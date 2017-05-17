@@ -1,14 +1,15 @@
 #ifndef Table_h
 #define Table_h
 
-#include<atomic>
-#include<memory>
-#include<Board.h>
-#include<Blinds.h>
-#include<Deck.h>
-#include<Player.h>
-#include<Pot.h>
-#include<Seats.h>
+#include <atomic>
+#include <memory>
+#include <EntropyInterface.h>
+#include <Board.h>
+#include <Blinds.h>
+#include <Deck.h>
+#include <Player.h>
+#include <Pot.h>
+#include <Seats.h>
 
 namespace ds {
 
@@ -44,10 +45,11 @@ public:
     // Constructors
     
         //- Construct null
-        Table();
+//        Table();
 
         //- Construct from components
         Table(
+            EntropyInterface& entropy,
             size_t nSeats,
             const Blinds& blinds,
             bool allowFastFolds,

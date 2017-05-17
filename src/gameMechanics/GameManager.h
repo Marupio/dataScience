@@ -1,10 +1,10 @@
 #ifndef GameManager_h
 #define GameManager_h
 
-#include<list>
-#include<Table.h>
-#include<vector.h>
-#include<Player.h>
+#include <list>
+#include <Table.h>
+#include <vector.h>
+#include <Player.h>
 
 // Forward declarations
 

@@ -1,6 +1,6 @@
-#include<algorithm>
-#include<numeric>
-#include<DeckMask.h>
+#include <algorithm>
+#include <numeric>
+#include <DeckMask.h>
 
 // ****** Constructors ****** //
 

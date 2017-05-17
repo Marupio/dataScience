@@ -1,5 +1,5 @@
-#include<algorithm>
-#include<Board.h>
+#include <algorithm>
+#include <Board.h>
 
 
 // ****** Static data ****** //

@@ -1,8 +1,8 @@
 #ifndef PktCards_h
 #define PktCards_h
 
-#include<Card.h>
-#include<PktVals.h>
+#include <Card.h>
+#include <PktVals.h>
 
 namespace ds {
 

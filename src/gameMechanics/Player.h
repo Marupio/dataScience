@@ -3,9 +3,9 @@
 #ifndef Player_h
 #define Player_h
 
-#include<vector.h>
-#include<types.h>
-#include<PktCards.h>
+#include <vector.h>
+#include <types.h>
+#include <PktCards.h>
 
 namespace ds {
 

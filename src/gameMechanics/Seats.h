@@ -1,9 +1,9 @@
 #ifndef Seats_h
 #define Seats_h
 
-#include<mutex>
-#include<atomic>
-#include<GhostPlayer.h>
+#include <mutex>
+#include <atomic>
+#include <GhostPlayer.h>
 
 namespace ds {
 

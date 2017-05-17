@@ -1,8 +1,8 @@
 #ifndef ValStats_h
 #define ValStats_h
 
-#include<tuple>
-#include<Card.h>
+#include <tuple>
+#include <Card.h>
 
 // Contains meta data about a single card value within a set of cards
 // Includes the number of cards represented and the suits represented

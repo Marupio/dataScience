@@ -1,17 +1,19 @@
-#include<iterator>
-#include<fstream>
-#include<functional>
-#include<list>
-#include<sstream>
-#include<string>
-#include<thread>
+#include <iterator>
+#include <fstream>
+#include <functional>
+#include <list>
+#include <sstream>
+#include <string>
+#include <thread>
 
-#include<pqxx/pqxx>
+#include <pqxx/pqxx>
 
-#include<types.h>
-#include<dsConfig.h>
-#include<Table.h>
-#include<AllCallPlayer.h>
+#include <EntropyInterface.h>
+
+#include <types.h>
+#include <dsConfig.h>
+#include <Table.h>
+#include <AllCallPlayer.h>
 
 using namespace ds;
 
@@ -54,6 +56,7 @@ int main() {
         is >> tableLogging;
         is >> overwrite;
     }
+    EntropyInterface entropy;
 
     std::cout << "Beginning simulation:"
         << "        nTables = " << nTables
@@ -84,7 +87,7 @@ int main() {
     size_t tableI = 0;
     auto itP = players.begin();
     while (itP != players.end()) {
-        tables.emplace_back(nSeats, blinds, false, -1);
+        tables.emplace_back(entropy, nSeats, blinds, false, -1);
         Table& tbl(tables.back());
         tbl.setTableId(tableI++);
         if (tableLogging) {
@@ -99,14 +102,23 @@ int main() {
         tbl.setPlayerChips(Money(nTableIters*10));
     }
 
-    //- Play games
-    while (nResets--) {
-        std::cout << nResets << std::endl;
-        Table& tbl(tables.front());
-        tbl.playNThenPause(nTableIters);
-    }
+     //- Play games
+     while (nResets--) {
+         std::cout << nResets << std::endl;
+         std::vector<std::thread> tableThread;
+         tableThread.reserve(nTables);
+         for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
+             tableThread.push_back(
+                 std::thread(startThread, std::ref(*itT), nTableIters)
+             );
+         }
+ 
+         for (size_t ti = 0; ti < nTables; ++ti) {
+             tableThread[ti].join();
+         }
+     }
 
-//    try {
+    try {
         pqxx::connection C("dbname = dsdata user = dsuser password = 123 \
         hostaddr = 127.0.0.1 port = 5432");
         if (C.is_open()) {
@@ -286,10 +298,10 @@ int main() {
         } // players
         
         C.disconnect ();
-//    } catch (const std::exception &e) {
-//        std::cerr << e.what() << std::endl;
-//        return 1;
-//    }
+    } catch (const std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
 
     std::cout << "\nDone.\n" << std::endl;
     

@@ -1,8 +1,8 @@
 #ifndef VecValStats_h
 #define VecValStats_h
 
-#include<ValStats.h>
-#include<PktCards.h>
+#include <ValStats.h>
+#include <PktCards.h>
 
 // Contains meta data about a set of cards, organized by card value.
 // Does not contain references to set of cards, and therefore cannot update

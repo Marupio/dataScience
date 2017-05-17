@@ -1,12 +1,12 @@
 #ifndef HandRanker_h
 #define HandRanker_h
 
-#include<types.h>
-#include<Board.h>
-#include<PktCards.h>
-#include<StraightCompleters.h>
-#include<HandType.h>
-#include<PktMask.h>
+#include <types.h>
+#include <Board.h>
+#include <PktCards.h>
+#include <StraightCompleters.h>
+#include <HandType.h>
+#include <PktMask.h>
 
 namespace ds {
 

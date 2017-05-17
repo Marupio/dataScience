@@ -3,7 +3,7 @@
 #ifndef GhostPlayer_h
 #define GhostPlayer_h
 
-#include<Player.h>
+#include <Player.h>
 
 namespace ds {
 

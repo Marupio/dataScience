@@ -1,9 +1,13 @@
 #ifndef Deck_h
 #define Deck_h
 
-#include<array>
-#include<iterator>
-#include<types.h>
+#include <array>
+#include <iterator>
+
+#include <EntropyInterface.h>
+#include <Csprng.h>
+
+#include <types.h>
 
 namespace ds {
 
@@ -24,10 +28,11 @@ public:
 
     // Constructors
 
-        //- Construct null
+
+        //- Construct with entropy reference
         //  Randomise - when true, resets the standard randomisation seed
         //  to the clock time
-        Deck(bool randomise = false);
+        Deck(EntropyInterface& entropy, std::string randomiser = std::string());
 
 //        //- Construct from istream
 //        Deck(std::istream& is);
@@ -52,7 +57,8 @@ public:
         size_type nRemaining() const noexcept;
 
 
-//    // Operators
+    // Member Operators
+
 //    
 //    // Friend functions
 //    friend std::ostream& operator<<(std::ostream& out, const Deck& c);
@@ -68,6 +74,9 @@ private:
         
         //- Current position in deck
         std::array<DeckInd, 52>::const_iterator drawIt_;
+
+        //- CSPRNG CTR_DRBG
+        Csprng rnd_;
 
 
     // Private member functions

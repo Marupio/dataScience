@@ -3,9 +3,9 @@
 #ifndef Card_h
 #define Card_h
 
-#include<string>
-#include<types.h>
-#include<Suit.h>
+#include <string>
+#include <types.h>
+#include <Suit.h>
 
 namespace ds {
 

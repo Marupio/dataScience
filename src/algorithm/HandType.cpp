@@ -1,6 +1,6 @@
-#include<iterator>
-#include<HandType.h>
-#include<error.h>
+#include <iterator>
+#include <HandType.h>
+#include <error.h>
 
 // ****** Static Data Members ****** //
 

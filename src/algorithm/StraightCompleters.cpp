@@ -1,4 +1,4 @@
-#include<StraightCompleters.h>
+#include <StraightCompleters.h>
 
 // ****** Constructors ****** //
 

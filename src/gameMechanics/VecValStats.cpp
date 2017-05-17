@@ -1,6 +1,6 @@
-#include<algorithm>
-#include<VecValStats.h>
-#include<Board.h>
+#include <algorithm>
+#include <VecValStats.h>
+#include <Board.h>
 
 // ****** Constructors ****** //
 

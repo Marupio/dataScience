@@ -1,8 +1,8 @@
 #ifndef Suit_h
 #define Suit_h
 
-#include<vector.h>
-#include<array>
+#include <vector.h>
+#include <array>
 
 namespace ds {
 

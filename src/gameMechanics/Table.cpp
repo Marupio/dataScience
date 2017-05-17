@@ -1,27 +1,28 @@
-#include<fstream>
-#include<sstream>
-#include<Table.h>
-#include<osRelated.h>
-#include<HandRanker.h>
+#include <fstream>
+#include <sstream>
+#include <Table.h>
+#include <osRelated.h>
+#include <HandRanker.h>
 
 // ****** Constructors ****** //
 
-ds::Table::Table():
-    Seats(),
-    tableId_(0),
-    tableIdSet_(false),
-    dealer_(),
-    blinds_(nullptr),
-    nextBlinds_(nullptr),
-    allowFastFolds_(false),
-    dramaticPause_(-1),
-    status_(seEmpty),
-    ppAction_(ppContinue),
-    nHandsRemaining_(-1)
-{}
+// ds::Table::Table():
+//     Seats(),
+//     tableId_(0),
+//     tableIdSet_(false),
+//     dealer_(),
+//     blinds_(nullptr),
+//     nextBlinds_(nullptr),
+//     allowFastFolds_(false),
+//     dramaticPause_(-1),
+//     status_(seEmpty),
+//     ppAction_(ppContinue),
+//     nHandsRemaining_(-1)
+// {}
 
 
 ds::Table::Table(
+    EntropyInterface& entropy,
     size_t nSeats,
     const Blinds& blinds,
     bool allowFastFolds,
@@ -30,6 +31,7 @@ ds::Table::Table(
     Seats(nSeats),
     tableId_(0),
     tableIdSet_(false),
+    deck_(entropy),
     dealer_(seated_.begin()),
     blinds_(&blinds),
     nextBlinds_(nullptr),

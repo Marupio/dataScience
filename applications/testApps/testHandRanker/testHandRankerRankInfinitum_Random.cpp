@@ -1,12 +1,12 @@
-#include<algorithm>
-#include<fstream>
-#include<types.h>
-#include<dsConfig.h>
-#include<HandRanker.h>
-#include<Deck.h>
-#include<DeckMask.h>
-#include<PktCards.h>
-#include<error.h>
+#include <algorithm>
+#include <fstream>
+#include <types.h>
+#include <dsConfig.h>
+#include <HandRanker.h>
+#include <Deck.h>
+#include <DeckMask.h>
+#include <PktCards.h>
+#include <error.h>
 
 using namespace ds;
 
@@ -68,7 +68,8 @@ int main() {
                 << " " << maxRankRiver << std::endl;
         }
         Board bd;
-        Deck dk;
+        EntropyInterface ent;
+        Deck dk(ent, "testHandRankerRankInfinitum_Random");
         dk.shuffle();
         bd.flop(dk.draw(3));
         maxRankFlop = std::max(maxRankFlop, checkAllCombinations(i, bd, os));

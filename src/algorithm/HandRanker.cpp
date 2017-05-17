@@ -1,6 +1,6 @@
-#include<iterator>
-#include<HandRanker.h>
-#include<error.h>
+#include <iterator>
+#include <HandRanker.h>
+#include <error.h>
 
 // ****** Constructors ****** //
 
@@ -21,11 +21,11 @@ ds::HandRanker::HandRanker(
 {}
 
 
-#include<HandRankerGetKickers.cpp>
-#include<HandRankerCompare.cpp>
-#include<HandRankerPredict.cpp>
-#include<HandRankerPredictFlop.cpp>
-#include<HandRankerRank.cpp>
-#include<HandRankerRankKickers.cpp>
+#include <HandRankerGetKickers.cpp>
+#include <HandRankerCompare.cpp>
+#include <HandRankerPredict.cpp>
+#include <HandRankerPredictFlop.cpp>
+#include <HandRankerRank.cpp>
+#include <HandRankerRankKickers.cpp>
 
 // ****** END ****** //

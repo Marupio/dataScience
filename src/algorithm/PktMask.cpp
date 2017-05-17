@@ -1,15 +1,15 @@
-#include<cctype>
-#include<PktMask.h>
+#include <cctype>
+#include <PktMask.h>
 
 // Static data
 
-#include<PktMaskDeckIndices.h>
-#include<PktMaskDeckIndicesToPocketMask.h>
-#include<PktMaskOneCardTables.h>
-#include<PktMaskOneSuitTables.h>
-#include<PktMaskOneValTables.h>
-#include<PktMaskTwoSuitTables.h>
-#include<PktMaskTwoValTables.h>
+#include <PktMaskDeckIndices.h>
+#include <PktMaskDeckIndicesToPocketMask.h>
+#include <PktMaskOneCardTables.h>
+#include <PktMaskOneSuitTables.h>
+#include <PktMaskOneValTables.h>
+#include <PktMaskTwoSuitTables.h>
+#include <PktMaskTwoValTables.h>
 
 // *** Constructors *** //
 

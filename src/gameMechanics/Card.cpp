@@ -1,5 +1,5 @@
-#include<cctype>
-#include<Card.h>
+#include <cctype>
+#include <Card.h>
 
 
 // ****** Static data ****** //

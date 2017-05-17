@@ -1,5 +1,5 @@
-#include<Pot.h>
-#include<algorithm>
+#include <Pot.h>
+#include <algorithm>
 
 std::ostream& ds::operator<<(std::ostream& os, const PushedMoney& pm) {
     os << "<" << pm.first << " ";

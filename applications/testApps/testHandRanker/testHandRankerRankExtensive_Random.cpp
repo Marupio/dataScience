@@ -1,11 +1,11 @@
-#include<algorithm>
-#include<types.h>
-#include<dsConfig.h>
-#include<HandRanker.h>
-#include<Deck.h>
-#include<DeckMask.h>
-#include<PktCards.h>
-#include<error.h>
+#include <algorithm>
+#include <types.h>
+#include <dsConfig.h>
+#include <HandRanker.h>
+#include <Deck.h>
+#include <DeckMask.h>
+#include <PktCards.h>
+#include <error.h>
 
 using namespace ds;
 int main() {
@@ -13,7 +13,8 @@ int main() {
     VecDeckInd::size_type arraySizes(1081);
     for (int i = 0; i < nIters; ++i) {
         Board bd;
-        Deck dk;
+        EntropyInterface ent;
+        Deck dk(ent, "testHandRankerRankExtensive_Random");
         dk.shuffle();
         bd.flop(dk.draw(3));
         bd.turn(dk.draw());

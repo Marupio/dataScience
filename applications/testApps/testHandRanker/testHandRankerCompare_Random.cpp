@@ -1,17 +1,18 @@
-#include<algorithm>
-#include<types.h>
-#include<dsConfig.h>
-#include<HandRanker.h>
-#include<Deck.h>
-#include<PktCards.h>
-#include<error.h>
+#include <algorithm>
+#include <types.h>
+#include <dsConfig.h>
+#include <HandRanker.h>
+#include <Deck.h>
+#include <PktCards.h>
+#include <error.h>
 
 using namespace ds;
 int main() {
     int nIters = 10000;
     for (int i = 0; i < nIters; ++i) {
         Board bd;
-        Deck dk;
+        EntropyInterface ent;
+        Deck dk(ent, "testHandRankerCompare_Random");
         dk.shuffle();
         PktCards pktA(dk.draw(2));
         PktCards pktB(dk.draw(2));

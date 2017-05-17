@@ -1,6 +1,6 @@
-#include<cmath>
-#include<Player.h>
-#include<Table.h>
+#include <cmath>
+#include <Player.h>
+#include <Table.h>
 
 // ****** Static Data Members ****** //
 

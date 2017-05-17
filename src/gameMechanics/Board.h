@@ -1,8 +1,8 @@
 #ifndef Board_h
 #define Board_h
 
-#include<Card.h>
-#include<VecValStats.h>
+#include <Card.h>
+#include <VecValStats.h>
 
 namespace ds {
 

@@ -1,6 +1,6 @@
-#include<Seats.h>
-#include<Player.h>
-#include<Table.h>
+#include <Seats.h>
+#include <Player.h>
+#include <Table.h>
 
 // ****** Constructors ****** //
 

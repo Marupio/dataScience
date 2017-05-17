@@ -1,17 +1,19 @@
-#include<iterator>
-#include<fstream>
-#include<functional>
-#include<list>
-#include<sstream>
-#include<string>
-#include<thread>
+#include <iterator>
+#include <fstream>
+#include <functional>
+#include <list>
+#include <sstream>
+#include <string>
+#include <thread>
 
-#include<pqxx/pqxx>
+#include <pqxx/pqxx>
 
-#include<types.h>
-#include<dsConfig.h>
-#include<Table.h>
-#include<AllCallPlayer.h>
+#include <EntropyInterface.h>
+
+#include <types.h>
+#include <dsConfig.h>
+#include <Table.h>
+#include <AllCallPlayer.h>
 
 using namespace ds;
 
@@ -42,7 +44,7 @@ int main() {
     int nTableIters;
     int nResets;
     bool tableLogging;
-    
+    bool overwrite;
     // Read inputSettings
     {
         std::ifstream is("inputSettings");
@@ -51,8 +53,22 @@ int main() {
         is >> nTableIters;
         is >> nResets;
         is >> tableLogging;
+        is >> overwrite;
     }
+    EntropyInterface entropy;
+
+    std::cout << "Beginning simulation:"
+        << "        nTables = " << nTables
+        << "\n         nSeats = " << nSeats
+        << "\n    nTableIters = " << nTableIters
+        << "\n         nResets = " << nResets
+        << "\n    tableLogging = " << tableLogging
+        << "\n       overwrite = " << overwrite << "\n" << std::endl;
+
     Blinds blinds(0, 0.5, 1, 0);
+    std::string schemaName("pushfold");
+    std::string tableName("allcall_" + std::to_string(nSeats));
+
 
     // Create players
     size_t nPlayers = nSeats*nTables;
@@ -70,7 +86,7 @@ int main() {
     size_t tableI = 0;
     auto itP = players.begin();
     while (itP != players.end()) {
-        tables.emplace_back(nSeats, blinds, false, -1);
+        tables.emplace_back(entropy, nSeats, blinds, false, -1);
         Table& tbl(tables.back());
         tbl.setTableId(tableI++);
         if (tableLogging) {
@@ -88,20 +104,10 @@ int main() {
     //- Play games
     while (nResets--) {
         std::cout << nResets << std::endl;
-        std::vector<std::thread> tableThread;
-        tableThread.reserve(nTables);
-        for (auto itT = tables.begin(); itT != tables.end(); ++itT) {
-            tableThread.push_back(
-                std::thread(startThread, std::ref(*itT), nTableIters)
-            );
-        }
-
-        for (size_t ti = 0; ti < nTables; ++ti) {
-            tableThread[ti].join();
-        }
+        Table& tbl(tables.front());
+        tbl.playNThenPause(nTableIters);
     }
 
-    //- Create table
     try {
         pqxx::connection C("dbname = dsdata user = dsuser password = 123 \
         hostaddr = 127.0.0.1 port = 5432");
@@ -112,41 +118,61 @@ int main() {
             std::cout << "Can't open database" << std::endl;
             return 1;
         }
-        
+
+        //- Check if schema exists
+        bool schemaExists = false;
         {
             std::stringstream sql;
-            sql << "CREATE TABLE dummytable ("
-                << "id serial primary key, test bool not null"
-                << ")";
-                
-            /* Create a transactional object. */
-            pqxx::work W(C);
+            sql << "SELECT schema_name FROM information_schema.schemata "
+                << "WHERE schema_name = '" << schemaName << "';";
+            pqxx::nontransaction N(C);
+            pqxx::result R(N.exec(sql));
+            if (R.size()) {
+                schemaExists = true;
+            }
+        }
 
-            /* Execute SQL query */
+        // Create schema if it doesn't exist
+        if (!schemaExists) {
+            std::stringstream sql;
+            sql << "CREATE SCHEMA " << schemaName << ";";
+            pqxx::work W(C);
             W.exec(sql.str().c_str());
             W.commit();
-            std::cout << "Table created successfully" << std::endl;
+        }
+
+        //- Check if table exists
+        bool tableExists = false;
+        {
+            std::stringstream sql;
+            sql << "SELECT c.oid, "
+                << "  n.nspname, "
+                << "  c.relname "
+                << "FROM pg_catalog.pg_class c "
+                << "     LEFT JOIN pg_catalog.pg_namespace n "
+                << "        ON n.oid = c.relnamespace "
+                << "WHERE c.relname ~ '^(" << tableName << ")$' "
+                << "  AND n.nspname ~ '^(" << schemaName << ")$';";
+
+            pqxx::nontransaction N(C);
+            pqxx::result R(N.exec(sql));
+            if (R.size()) {
+                tableExists = true;
+            }
+        }
+
+        // Drop table if it exists and overwriting is allowed
+        if (tableExists && overwrite) {
+            std::stringstream sql;
+            sql << "DROP TABLE " << schemaName << "." << tableName << ";";
+            pqxx::work W(C);
+            W.exec(sql.str().c_str());
+            W.commit();
         }
 
         {
             std::stringstream sql;
-            sql << "INSERT INTO dummytable ("
-                << "'t'"
-                << ")";
-                
-            /* Create a transactional object. */
-            pqxx::work W(C);
-
-            /* Execute SQL query */
-            W.exec(sql.str().c_str());
-            W.commit();
-            std::cout << "Row inserted successfully" << std::endl;
-        }
-
-        std::string tableName("allcall_" + std::to_string(nSeats));
-        {
-            std::stringstream sql;
-            sql << "CREATE TABLE " << tableName << " ("
+            sql << "CREATE TABLE " << schemaName << "." << tableName << " ("
                 << "id              bigserial primary key, "
                 << "hand            varchar(3) not null, "
                 << "won             bool not null, "
@@ -154,15 +180,11 @@ int main() {
                 << "turn_rank       smallint not null, "
                 << "river_rank      smallint not null, "
                 << "flop_predict    smallint[] not null, "
-                << "turn_predict    smallint[] not null, "
+                << "turn_predict    smallint[] not null "
                 << ")";
-            /* Create a transactional object. */
             pqxx::work W(C);
-
-            /* Execute SQL query */
             W.exec(sql.str().c_str());
             W.commit();
-            std::cout << "Table created successfully" << std::endl;
         }
 
         for (auto it = players.begin(); it != players.end(); ++it) {
@@ -189,32 +211,18 @@ int main() {
                             continue;
                         }
                         size_t hashIndex = (cvB - 2)*13 + cvA - 2 + suited;
-                        std::stringstream ss;
-                        ss << Card::valueToWriteChar(cvA)
+                        std::stringstream hand;
+                        hand << Card::valueToWriteChar(cvA)
                             << Card::valueToWriteChar(cvB);
                         if (cvA != cvB) {
                             if (suited) {
-                                ss << "s";
+                                hand << "s";
                             } else {
-                                ss << "u";
+                                hand << "u";
                             }
                         }
-                        for (size_t i = 0; i < wfr.size(); ++i) {
+                        for (size_t i = 0; i < wfr[hashIndex].size(); ++i) {
                             // Set references for individual game instance
-                            const std::vector<short>& iwfr(wfr[i]);
-                            const std::vector<short>& iwtr(wtr[i]);
-                            const std::vector<short>& iwrr(wrr[i]);
-                            const std::vector<short>& ilfr(lfr[i]);
-                            const std::vector<short>& iltr(ltr[i]);
-                            const std::vector<short>& ilrr(lrr[i]);
-                            const std::vector<std::vector<short>>&
-                                iwfp(wfp[i]);
-                            const std::vector<std::vector<short>>&
-                                iwtp(wtp[i]);
-                            const std::vector<std::vector<short>>&
-                                ilfp(lfp[i]);
-                            const std::vector<std::vector<short>>&
-                                iltp(ltp[i]);
                             char won;
                             short fr;
                             short tr;
@@ -223,70 +231,56 @@ int main() {
                             const std::vector<short>* tp;
                             if (wfp[hashIndex].size()) {
                                 // Won
-                                #ifdef DSDEBUG
-                                if (
-                                    iwfp[hashIndex].size() != 47
-                                 || iwtp[hashIndex].size() != 46
-                                ) {
-                                    FatalError << "flop_predict or "
-                                        << "turn_preduct incorrect size."
-                                        << std::endl;
-                                    abort();
-                                }
-                                #endif
                                 won = 't';
-                                fr = iwfr[hashIndex];
-                                tr = iwtr[hashIndex];
-                                rr = iwrr[hashIndex];
-                                fp = &iwfp[hashIndex];
-                                tp = &iwtp[hashIndex];
+                                fr = wfr[hashIndex][i];
+                                tr = wtr[hashIndex][i];
+                                rr = wrr[hashIndex][i];
+                                fp = &wfp[hashIndex][i];
+                                tp = &wtp[hashIndex][i];
                             } else {
                                 // Lost
-                                #ifdef DSDEBUG
-                                if (
-                                    ilfp[hashIndex].size() != 47
-                                 || iltp[hashIndex].size() != 46
-                                ) {
-                                    FatalError << "flop_predict or "
-                                        << "turn_preduct incorrect size."
-                                        << std::endl;
-                                    abort();
-                                }
-                                #endif
                                 won = 'f';
-                                fr = ilfr[hashIndex];
-                                tr = iltr[hashIndex];
-                                rr = ilrr[hashIndex];
-                                fp = &ilfp[hashIndex];
-                                tp = &iltp[hashIndex];
+                                fr = lfr[hashIndex][i];
+                                tr = ltr[hashIndex][i];
+                                rr = lrr[hashIndex][i];
+                                fp = &lfp[hashIndex][i];
+                                tp = &ltp[hashIndex][i];
                             }
+                            #ifdef DSDEBUG
+                            if (
+                                fp->size() != 47
+                             || tp->size() != 46
+                            ) {
+                                FatalError << "flop_predict or "
+                                    << "turn_preduct incorrect size."
+                                    << std::endl;
+                                abort();
+                            }
+                            #endif
 
                             std::stringstream sql;
-                            sql << "INSERT INTO " << tableName
-                                << "(hand won flop_rank "
-                                << "turn_rank river_rank flop_predict "
-                                << "turn_predict) VALUES ("
-                                << won << "," << fr << "," << tr << ","
-                                << rr << ",{";
+                            sql << "INSERT INTO " << schemaName << "."
+                                << tableName
+                                << "(hand,won,flop_rank,"
+                                << "turn_rank,river_rank,flop_predict,"
+                                << "turn_predict) VALUES ('"
+                                << hand.str() << "','" << won << "'," << fr
+                                << "," << tr << "," << rr << ",'{";
                             auto itf = fp->cbegin();
                             sql << *itf;
                             for (++itf; itf != fp->cend(); ++itf) {
                                 sql << "," << *itf;
                             }
-                            sql << "},{";
+                            sql << "}','{";
                             auto itt = tp->cbegin();
                             sql << *itt;
                             for (++itt; itt != tp->cend(); ++itt) {
                                 sql << "," << *itt;
                             }
-                            sql << "});";
-                            /* Create a transactional object. */
+                            sql << "}');";
                             pqxx::work W(C);
-
-                            /* Execute SQL query */
                             W.exec(sql.str().c_str());
                             W.commit();
-                            std::cout << "Row inserted successfully" << std::endl;
                         } // instance
                     } // suited
                 } // cvB

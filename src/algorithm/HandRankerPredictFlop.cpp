@@ -1,5 +1,5 @@
-#include<algorithm>
-#include<DeckMask.h>
+#include <algorithm>
+#include <DeckMask.h>
 
 // ****** Public Member Functions ****** //
 
