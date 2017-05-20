@@ -8,9 +8,9 @@ FIND_LIBRARY(PQ_LIBRARIES pq )
 MARK_AS_ADVANCED(PQ_LIBRARIES)
 
 if(PQXX_LIBRARIES AND PQ_LIBRARIES AND PQXX_INCLUDE_DIRS)
-	set( PQXX_FOUND 1 )
-	message( STATUS "Found pqxx: ${PQXX_LIBRARIES}, ${PQ_LIBRARIES}, ${PQXX_INCLUDE_DIRS}")
+    set( PQXX_FOUND 1 )
+    message( STATUS "Found pqxx: ${PQXX_LIBRARIES}, ${PQ_LIBRARIES}, ${PQXX_INCLUDE_DIRS}")
 else()
-	message(STATUS "Could NOT find pqxx and pq library")
+    message(STATUS "Could NOT find pqxx and pq library")
 endif()
 

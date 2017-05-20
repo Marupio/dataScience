@@ -1,6 +1,6 @@
 template<class T>
 T ds::Csprng::operator()(T maxValue) const {
-	size_t output_len = sizeof(T);
+    size_t output_len = sizeof(T);
     unsigned char* str = new unsigned char[output_len];
     int ret = mbedtls_ctr_drbg_random(
             (void *) &ctr_drbg_,
@@ -18,12 +18,12 @@ T ds::Csprng::operator()(T maxValue) const {
         FatalError << "Unknown return: " << ret << std::endl;
         abort();
     case 0:
-    	break;
+        break;
     }
 
     T retValue = 0;
     for (size_t i = 0; i < output_len; ++i) {
-    	retValue |= str[i] << (output_len - i - 1)*CHAR_BIT;
+        retValue |= str[i] << (output_len - i - 1)*CHAR_BIT;
     }
     if (retValue < 0) {
         retValue = (-retValue)%maxValue;

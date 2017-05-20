@@ -12,33 +12,33 @@ class EntropyInterface
 {
 public:
 
-	//- Constructor null
-	EntropyInterface() {
-		mbedtls_entropy_init(&entropy_);
-	}
+    //- Constructor null
+    EntropyInterface() {
+        mbedtls_entropy_init(&entropy_);
+    }
 
-	//- Destructor
-	~EntropyInterface() {}
+    //- Destructor
+    ~EntropyInterface() {}
 
 
-	// Public Member Functions
+    // Public Member Functions
 
-		//- Access entropyMutex
-		std::mutex& entropyMutex() const {
-			return entropyMutex_;
-		}
+        //- Access entropyMutex
+        std::mutex& entropyMutex() const {
+            return entropyMutex_;
+        }
 
-		//- Access entropy itself
-		mbedtls_entropy_context& entropy() {
-			return entropy_;
-		}
+        //- Access entropy itself
+        mbedtls_entropy_context& entropy() {
+            return entropy_;
+        }
 
-	// Private Member Data
+    // Private Member Data
 
-		//- Entropy collector
+        //- Entropy collector
         mbedtls_entropy_context entropy_;
 
-    	//- Entropy collector mutex
+        //- Entropy collector mutex
         mutable std::mutex entropyMutex_;
 };
 
