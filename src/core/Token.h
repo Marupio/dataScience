@@ -11,14 +11,28 @@ public:
     // Public Data Types
 
     enum typeEnum {
-        unknownType,
-        notGood,
-        eof,
-        punctuation,
-        word,
-        string,
-        integer,
-        floatNumber
+        // Title case to avoid name collisions with actual types
+        UnknownType,    // Not yet set, or internal error if read() already called, i.e. should not
+                        // occur
+        Fail,           // Problem reading from stream
+        Eof,            // EOF encountered before next token
+        Punctuation,    // Punctuation contained in punctuationEnum
+        Word,           // Single word consisting of alpha-numeric chars or '_', no whitespaces
+        String,         // Any characters enclosed by quotes ""
+        Float,          // Any number, allows exponentiation
+                        //  regex = [+-]?([0-9]*)?\.?([eE][+-]?)?[0-9]*
+                        //  i.e. 12, -12.34, +12.34e7, -12.34E-300, 12e34
+        Int,            // Any string of numbers, allows preceding sign, no exponentiation allowed
+                        //  regex = [+-]?[0-9]*
+                        //  i.e. 12, -34, +4600
+        UInt,           // Any string of numbers, allows preceding '+', no exponentiation allowed
+        Float_Int,      // Could be Float or Int, but not UInt
+                        // This happens for negative numbers
+        Float_UInt,     // Could be Float or UInt, but not Int
+                        // This happens if the UInt is larger than Int max
+        Int_UInt,       // Could be Int or UInt, but not Float
+                        // This happens when Int precision exceeds that of Float
+        Float_Int_UInt  // Could be any number type
     };
 
     enum punctuationEnum
@@ -96,16 +110,19 @@ public:
             bool isString() const;
             std::string getString() const;
 
-            //- True if is a number with no fractional component (exponents are okay)
-            bool isInteger() const;
-            unsigned short getUShort() const;
+            //- True if is an integer number
+            bool isInt() const;
             short getShort() const;
-            unsigned int getUInt() const;
             int getInt() const;
-            unsigned long getULong() const;
             long getLong() const;
-            unsigned long long getULongLong() const;
             long long getLongLong() const;
+
+            //- True if is a positive integer number
+            bool isUInt() const;
+            unsigned short getUShort() const;
+            unsigned int getUInt() const;
+            unsigned long getULong() const;
+            unsigned long long getULongLong() const;
 
             //- True if is a number
             bool isFloat() const;
@@ -117,7 +134,7 @@ public:
 
         //- Equality
         bool operator==(typeEnum& te);
-        bool operator==(puncuationEnum& pe);
+        bool operator==(punctuationEnum& pe);
         bool operator==(std::string& str);
         bool operator==(unsigned short num);
         bool operator==(short num);
@@ -142,7 +159,7 @@ private:
         bool read(std::istream& is);
 
         // Read through istream until end-of line is encountered, if EOF, does not get it
-        void movePastEndOfLine(std::istream& is);
+        bool movePastEndOfLine(std::istream& is);
 
         //- Read through istream until */ encountered, error if not found
         void moveToEndOfBlockComment(std::istream& is);
@@ -150,9 +167,12 @@ private:
 
     // Private Member Data
 
+        //- Token type
         typeEnum type_;
+
+        //- If is punctuation, contains punctuationType
         punctuationEnum punctuation_;
-        size_t size_;
+
         std::string str_;
         long long integer_;
         unsigned long long uinteger_;

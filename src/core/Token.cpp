@@ -2,76 +2,333 @@
 
 
 Token(std::istream& is):
-    type_(unknownType),
+    type_(UnknownType),
     punctuation_(unknownPunctuation),
-    size_(0),
     integer_(0),
     uinteger_(0),
     double_(0)
 {
     read(is);
+    // if (!read(is)) {
+    //     FatalError << "Token read failure. Got '" << str_ "'" << std::endl;
+    //     abort();
+    // }
+}
+
+// ****** Public Member Functions ****** //
+ds::Token::void ds::Token::putBack(std::istream& is) {
+    size_t count = str_.size();
+    while (count--) {
+        is.putBack();
+        if (is.fail()) {
+            FatalError << "Failed to putBack '" << str_ << "' after character "
+                << (str_.size() - count) << " from the right." << std::endl;
+            abort();
+        }
+    }
 }
 
 
-    // Public Member Functions
-
-        // Tests and value access
-
-            //- Rewinds is to the position just before this token
-            void putBack(std::istream& is);
-
-            //- True if there was a problem reading from istream
-            bool isNotGood() const;
-
-            //- True if EOF was encountered before any token
-            bool isEof() const;
-
-            //- True if is punctuation
-            bool isPunctuation() const;
-            punctuationEnum getPunctuation() const;
-
-            //- True if is a stand-alone set of alpha-numeric characters with no whitespace
-            bool isWord() const;
-            std::string getWord() const;
-
-            //- True if is enclosed in string punctuation
-            bool isString() const;
-            std::string getString() const;
-
-            //- True if is a number with no fractional component (exponents are okay)
-            bool isInteger() const;
-            unsigned short getUShort() const;
-            short getShort() const;
-            unsigned int getUInt() const;
-            int getInt() const;
-            unsigned long getULong() const;
-            long getLong() const;
-            unsigned long long getULongLong() const;
-            long long getLongLong() const;
-
-            //- True if is a number
-            bool isFloat() const;
-            float getFloat() const;
-            double getDouble() const;
+bool ds::Token::isNotGood() const {
+    return type_ == Fail;
+}
 
 
-    // Public Member Operators
+bool ds::Token::isEof() const {
+    return type_ == Eof;
+}
 
-        //- Equality
-        bool operator==(typeEnum& te);
-        bool operator==(puncuationEnum& pe);
-        bool operator==(std::string& str);
-        bool operator==(unsigned short num);
-        bool operator==(short num);
-        bool operator==(unsigned int num);
-        bool operator==(int num);
-        bool operator==(unsigned long num);
-        bool operator==(long num);
-        bool operator==(unsigned long long num);
-        bool operator==(long long num);
-        bool operator==(float num);
-        bool operator==(double num);
 
+bool ds::Token::isPunctuation() const {
+    return type_ == Punctuation;
+}
+
+
+ds::Token::punctuationEnum ds::Token::getPunctuation() const {
+    return punctuation_;
+}
+
+
+bool ds::Token::isWord() const {
+    return type_ == Word;
+}
+
+
+std::string ds::Token::getWord() const {
+    #ifdef DSDEBUG
+    if (!isWord()) {
+        FatalError << "Token is not a word." << std::endl;
+        abort();
+    }
+    #endif
+    return str_;
+}
+
+
+bool ds::Token::isString() const {
+    return type_ == String;
+}
+
+
+std::string ds::Token::getString() const {
+    #ifdef DSDEBUG
+    if (!isString()) {
+        FatalError << "Token is not a word." << std::endl;
+        abort();
+    }
+    #endif
+    return str_;
+}
+
+
+bool ds::Token::isInt() const {
+    return
+        type_ == Int
+     || type_ == UInt
+     || type_ == Float_Int
+     || type_ == Float_UInt
+     || type_ == Int_UInt
+     || type_ == Float_Int_UInt;
+}
+
+
+short ds::Token::getShort() const {
+    #ifdef DSDEBUG
+    if (!isInt()) {
+         FatalError << "Token is not an Int" << std::endl;
+         abort();
+    }
+    #endif
+    short ret = (short)integer_;
+    if (ret != integer_) {
+        Warning << "Overflow from input value '" << integer_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+int ds::Token::getInt() const {
+    #ifdef DSDEBUG
+    if (!isInt()) {
+         FatalError << "Token is not an Int" << std::endl;
+         abort();
+    }
+    #endif
+    int ret = (int)integer_;
+    if (ret != integer_) {
+        Warning << "Overflow from input value '" << integer_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+long ds::Token::getLong() const {
+    #ifdef DSDEBUG
+    if (!isInt()) {
+         FatalError << "Token is not an Int" << std::endl;
+         abort();
+    }
+    #endif
+    long ret = (long)integer_;
+    if (ret != integer_) {
+        Warning << "Overflow from input value '" << integer_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+long long ds::Token::getLongLong() const {
+    #ifdef DSDEBUG
+    if (!isInt()) {
+         FatalError << "Token is not an Int" << std::endl;
+         abort();
+    }
+    #endif
+    return integer_;
+}
+
+
+bool ds::Token::isUInt() const {
+    return
+        type_ == UInt
+     || type_ == Float_UInt
+     || type_ == Int_UInt
+     || type_ == Float_Int_UInt;
+}
+
+
+unsigned short ds::Token::getUShort() const {
+    #ifdef DSDEBUG
+    if (!isUInt()) {
+         FatalError << "Token is not a UInt" << std::endl;
+         abort();
+    }
+    #endif
+    unsigned short ret = (unsigned short)uinteger_;
+    if (ret != uinteger_) {
+        Warning << "Overflow from input value '" << uinteger_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+unsigned int ds::Token::getUInt() const {
+    #ifdef DSDEBUG
+    if (!isUInt()) {
+         FatalError << "Token is not a UInt" << std::endl;
+         abort();
+    }
+    #endif
+    unsigned int ret = (unsigned int)uinteger_;
+    if (ret != uinteger_) {
+        Warning << "Overflow from input value '" << uinteger_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+unsigned long ds::Token::getULong() const {
+    #ifdef DSDEBUG
+    if (!isUInt()) {
+         FatalError << "Token is not a UInt" << std::endl;
+         abort();
+    }
+    #endif
+    unsigned long ret = (unsigned long)uinteger_;
+    if (ret != uinteger_) {
+        Warning << "Overflow from input value '" << uinteger_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+    return ret;
+}
+
+
+unsigned long long ds::Token::getULongLong() const {
+    #ifdef DSDEBUG
+    if (!isUInt()) {
+         FatalError << "Token is not a UInt" << std::endl;
+         abort();
+    }
+    #endif
+    return uinteger_;
+}
+
+
+bool ds::Token::isFloat() const {
+    return
+        type_ == Float
+     || type_ == Float_Int
+     || type_ == Float_UInt
+     || type_ == Float_Int_UInt;
+}
+
+
+float ds::Token::getFloat() const {
+    #ifdef DSDEBUG
+    if (!isFloat()) {
+         FatalError << "Token is not a Float" << std::endl;
+         abort();
+    }
+    #endif
+    float ret = (float)double_;
+    if (ret != double_) {
+        Warning << "Overflow from input value '" << double_ << "' casting to '" << ret << "'"
+            << std::endl;
+        abort();
+    }
+}
+
+
+double ds::Token::getDouble() const {
+    #ifdef DSDEBUG
+    if (!isFloat()) {
+         FatalError << "Token is not a Float" << std::endl;
+         abort();
+    }
+    #endif
+    return double_;
+}
+
+
+// ****** Public Member Operators ****** //
+bool ds::Token::operator==(typeEnum& te) {
+    return type_ == te;
+}
+
+
+bool ds::Token::operator==(puncuationEnum& pe) {
+    return type_ == Punctuation && punctuation_ == pe;
+}
+
+
+bool ds::Token::operator==(std::string& str) {
+    // return (type_ == Word || type_ == String) && str_.compare(str) == 0;
+    return str_.compare(str) == 0;
+}
+
+
+bool ds::Token::operator==(unsigned short num) {
+    return isUInt() && num == uinteger_;
+}
+
+
+bool ds::Token::operator==(short num) {
+    return isInt() && num == integer_;
+}
+
+
+bool ds::Token::operator==(unsigned int num) {
+    return isUInt() && num == uinteger_;
+}
+
+
+bool ds::Token::operator==(int num) {
+    return isInt() && num == integer_;
+}
+
+
+bool ds::Token::operator==(unsigned long num) {
+    return isUInt() && num == uinteger_;
+}
+
+
+bool ds::Token::operator==(long num) {
+    return isInt() && num == integer_;
+}
+
+
+bool ds::Token::operator==(unsigned long long num) {
+    return isUInt() && num == uinteger_;
+}
+
+
+bool ds::Token::operator==(long long num) {
+    return isInt() && num == integer_;
+}
+
+
+bool ds::Token::operator==(float num) {
+    return isFloat() && num == double_;
+}
+
+
+bool ds::Token::operator==(double num) {
+    return isFloat() && num == double_;
+}
+
+
+// ****** Private Member Functions ****** //
 
 ds::Token::punctuationEnum ds::Token::charToPunctuationEnum(const char& c) {
     switch (c): {
@@ -144,6 +401,7 @@ char ds::Token::punctuationEnumToChar(punctuationEnum pe) {
 
 bool ds::Token::read(std::istream& is) {
     if (!is.good()) {
+        type_ = Fail;
         return false;
     }
     // Look for start of next token, avoid commented out sections
@@ -151,19 +409,23 @@ bool ds::Token::read(std::istream& is) {
     while (true) {
         int nxt(is.peek());
         char charNext(nxt);
-        if (type_ == punctuation) {
+        if (type_ == Punctuation) {
             if (charNext == punctuationEnumToChar(divide)) {
                 is.get();
-                type_ = unknownType;
+                type_ = UnknownType;
                 punctuation_ = unknownPunctuation;
-                movePastEndOfLine(is);
+                if (!movePastEndOfLine(is)) {
+                    type_ = Fail;
+                    return false;
+                }
             } else if (charNext == punctuationEnumToChar(multiply)) {
                 is.get();
-                type_ = unknownType;
+                type_ = UnknownType;
                 punctuation_ = unknownPunctuation;
                 moveToEndOfBlockComment(is);
             } else {
                 // It is a divide punctuation
+                str_ = punctuationEnumToChar(divide);
                 return true;
             }
         }
@@ -172,11 +434,16 @@ bool ds::Token::read(std::istream& is) {
             continue;
         }
         if (nxt == EOF) {
-            type_ = eof;
-            return true;
+            if (is.fail()) {
+                type_ = Fail;
+                return false;
+            } else {
+                type_ = Eof;
+                return true;
+            }
         }
         if (charNext == punctuationEnumToChar(divide)) {
-            type_ = punctuation;
+            type_ = Punctuation;
             punctuation_ = divide;
             is.get();
             continue;
@@ -186,11 +453,12 @@ bool ds::Token::read(std::istream& is) {
     // We are at the start of the next token
     char firstChar;
     is.get(firstChar);
+    str_ += firstChar;
     punctuation_ = charToPunctuationEnum(firstChar);
     switch(punctuation_) {
         case openString: {
             getFullString(is);
-            type_ = string;
+            type_ = String;
             punctuation_ = unknownPunctuation;
             return true;
         }
@@ -200,13 +468,13 @@ bool ds::Token::read(std::istream& is) {
         case add: // could be explicitly positive number: fall through
             break;
         default: {
-            type_ = punctuation;
+            type_ = Punctuation;
             return true;
         }
     }
 
     bool numEncountered = false;
-    bool periodEncountered = puncuation_ == period;
+    bool periodEncountered = punctuation_ == period;
     bool exponentStarted = false;
     bool exponentSigned = false;
     bool exponentCompleted = false;
@@ -217,19 +485,76 @@ bool ds::Token::read(std::istream& is) {
         // * 'e' or 'E' could be exponentiation
         // * '.' could be decimal, or a separator
         int nxt = is.peek();
+        if (is.fail()) {
+            type_ = Fail;
+            return false;
+        }
         if (nxt == EOF || std::isspace(nxt)) {
             // End of token
-            if (type_ == word) {
+            if (exponentSigned || (exponentStarted && periodEncountered)) {
+                // Error - incomplete exponent, or word with punctuation
+            }
+            if (exponentStarted) {
+                // Just a number-started word ending with e
+                type_ = Word;
+                return true;
+            }
+            if (type_ == Word) {
                 return true;
             }
             if (numEncountered) {
-                if (punctuation_ != subtract) {
-                    uinteger_ = std::stoull(str_);
+                if (exponentCompleted) {
+                    // double only
+                    double_ = std::strtod(str_);
+                    type_ = Float;
+                    return true;
                 }
-                integer_ = std::stoll(str_);
-                double_ = std::strtod(str_);
-                // Detect if fractional part exists
+                if (punctuation_ != subtract) {
+                    // uinteger_ is the basis of comparison
+                    uinteger_ = std::stoull(str_);
+                    integer_ = std::stoll(str_);
+                    double_ = std::strtod(str_);
+                    if (uinteger_ == integer_) {
+                        if (uinteger_ == double_) {
+                            type_ = Float_Int_UInt;
+                            return true;
+                        } else {
+                            double_ = 0.;
+                            type_ = Int_UInt;
+                            return true;
+                        }
+                    } else {
+                        if (uinteger_ == double_) {
+                            type_ = Float_UInt;
+                            return true;
+                        } else {
+                            integer_ = 0.;
+                            type_ = UInt;
+                            return true;
+                        }
+                    }
+                } else {
+                    // integer_ is the basis of comparison
+                    integer_ = std::stoll(str_);
+                    double_ = std::strtod(str_);
+                    if (integer_ == double_) {
+                        type_ = Float_Int;
+                        return true;
+                    }
+                    else {
+                        integer_ = 0;
+                        type_ = Float;
+                        return true;
+                    }
+                }
             }
+            if (punctuation_ != unknownPunctuation) {
+                type_ = Punctuation;
+                return true;
+            }
+            // Should have captured all types of tokens by now, internal error if reached here
+            type_ = UnknownType;
+            return false;
         }
         char nextChar;
         is.get(nextChar);
@@ -301,11 +626,14 @@ bool ds::Token::read(std::istream& is) {
 }
 
 
-void ds::Token::movePastEndOfLine(std::istream& is) {
+bool ds::Token::movePastEndOfLine(std::istream& is) {
     while (true) {
         int nxt = is.peek();
         if (nxt == EOF) {
-            return;
+            if (is.fail()) {
+                return false;
+            }
+            return true;
         }
         if (char(nxt) == '\n') {
             is.get();
@@ -350,6 +678,7 @@ void ds::Token::getFullString(std::istream& is) {
             abort();
         }
         if (nextChar == punctuationEnumToChar(closeString)) {
+            str_ += nextChar;
             is.get();
             return;
         }

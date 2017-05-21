@@ -1,0 +1,67 @@
+************************
+* Data Science Project *
+************************
+
+LICENSE
+
+All code is currently Copyright (C) 2017 David L. F. Gaden.  This may be subject to change with
+additional contributors.
+
+Includes a portion of MBED tls code under Apache 2.0 License.
+
+
+DESCRIPTION
+
+This is a No-Limit Texas Hold-em Poker analysis tool & game engine based in C++11.
+
+
+DEPENDENCIES
+
+Requires postgres to be installed on user's machine
+* currently hard-coded to user: dsuser, password 123, database dsdata
+Designed to be platform independent
+* platform-dependent functions are kept in osRelated files in core
+* currently only POSIX has been implemented
+* there is only one platform-dependent function currently in use
+
+
+COMPONENTS - COMPLETED
+
+* Multi-threading game engine
+* Hand-ranking algorithm
+    * Provides an exact rank given a set of hole cards and board
+* Cryptographically secure pseudo random number generator (CSPRNG) and interface
+* postgres interface for handling statistics and other generated data
+
+
+COMPONENTS - IN-PROGRESS
+
+* Dictionary, Entry, Token, Itstream classes for easy file input / output and settings management.
+
+
+COMPONENTS - TODO
+
+* Create detailed hand-rank tables
+    * Input variables:
+        * Number of players
+        * Position
+        * Players that have acted (fold, call, raise)
+        * Player actions simulated using input variables:
+            * Raise and call thresholds based on hole card strength (Chen), current bet level, and
+                    position (with statistical variability applied to each player)
+            * Bluff (or mistake) percentage
+    * Output variables:
+        * Win / lose
+        * Hand rank at flop, turn and river
+        * Hand rank predection and flop and turn
+    * Create meta data of output variables (average, stddev, histogram)
+    * Perform gradient descent on meta variables to find best win predictors
+    This task will help make more sense of hand rank & prediction, and preflop hole cards
+
+* Create player database framework
+
+* Create interface with online game
+
+
+
+
