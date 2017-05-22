@@ -1,8 +1,16 @@
 #ifndef Token_h
 #define Token_h
 
+#include <vector.h>
+
 namespace ds
 {
+
+// Forward declarations
+
+class Token;
+std::ostream& operator<<(std::ostream& os, const Token& c);
+
 
 class Token
 {
@@ -147,9 +155,16 @@ public:
         bool operator==(float num);
         bool operator==(double num);
 
+
+    // Friend functions
+    friend std::ostream& operator<<(std::ostream& out, const Token& c);
+
+
 private:
 
     // Private Member Functions
+
+        static std::string typeEnumToString(const typeEnum& te);
 
         static punctuationEnum charToPunctuationEnum(const char& c);
 
@@ -178,6 +193,7 @@ private:
         unsigned long long uinteger_;
         double double_;
 };
+
 
 } // end namespace
 

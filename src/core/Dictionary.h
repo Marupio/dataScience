@@ -2,6 +2,7 @@
 #define Dictionary_h
 
 #include <unordered_map>
+#include <VecToken.h>
 
 // Forward declarations
 
@@ -44,8 +45,26 @@ public:
         //- Add entry to dictionary
         void add(Entry&&);
 
-        //- Lookup keyword
-        Itstream& lookup(std::string keyword);
+        //- True if keyword exists
+        bool found(const std::string& keyword) const;
+
+        //- Returns entry type, including unknown if not found
+        Entry::typeEnum foundType(const std::string& keyword) const;
+
+        //- Return associated entry
+        const Entry& lookup(const std::string& keyword) const;
+
+        //- True if entry is a token stream
+        bool isTokens(const std::string& keyword) const;
+
+        //- Lookup token stream
+        VecToken& lookupTokens(const std::string& keyword) const;
+
+        //- True if entry is a sub-dictionary
+        bool isDict(const std::string& keyword) const; 
+
+        //- Lookup sub-dictionary
+        Dictionary& lookupDict(const std::string& keyword) const;
 
 
     // Friend functions

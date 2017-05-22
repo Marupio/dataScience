@@ -2,6 +2,7 @@
 #define Entry_h
 
 #include <memory>
+#include <Token.h>
 
 namespace ds
 {
@@ -30,8 +31,8 @@ public:
 
             //- Access token stream
             //  Not valid if in dictionary mode
-            Itstream& stream();
-            const Itstream& stream() const;
+            VecToken& tokens();
+            const VecToken& tokens() const;
 
 
         // Query
@@ -39,8 +40,8 @@ public:
             //- True if type is a dictionary entry
             bool isDict() const;
 
-            //- True if type is a steam entry
-            bool isStream() const;
+            //- True if type is a token entry
+            bool isTokenData() const;
 
             //- True if neither dictionary nor stream are allocated
             bool isNull() const;
@@ -65,8 +66,8 @@ private:
         //- Dictionary data (dictionary mode)
         std::unique_ptr<Dictionary> dictPtr_;
 
-        //- Stream data (stream mode)
-        std::unique_ptr<Istream> streamPtr_;
+        //- Token data (token mode)
+        std::unique_ptr<VecToken> tokensPtr_;
 
         //- Parent dictionary
         const Dictionary& parent_;

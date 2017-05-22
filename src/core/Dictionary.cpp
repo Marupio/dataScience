@@ -46,8 +46,17 @@ void ds::Dictionary::add(Entry&& e) {
     hashedEntries_.insert({e.keyword(), &back()});
 }
 
-        //- Lookup keyword
-        Itstream& lookup(std::string keyword);
+
+ds::VecToken& ds::Dictionary::lookup(std::string keyword) {
+    // ???
+}
+
+
+ds::Dictionary& ds::Dictionary::subDict(std::string keyword) {
+    // ???
+}
+
+
 
 
     // Friend functions

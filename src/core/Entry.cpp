@@ -16,8 +16,13 @@ ds::Entry::Entry(Dictionary& parent, std::istream& is):
     } else if (nextToken == Token::openScope) {
         dictPtr_.reset(new Dictionary(keyword, parent, is));
     } else {
-        streamPtr_.reset(new Itstream(parent.name()));
-        readStreamEntry(is);
+        tokensPtr_.reset(new VecToken(is));
+        VecToken& vt(*tokensPtr_);
+        if (!vt.good()) {
+        	FatalError << "Error reading token stream for keyword '" << keyword_ << "' in "
+        		<< "Dictionary '" << parent_.name() << "'. Read:\n" << vt << std::endl;
+    		abort();
+        }
     }
 }
 
