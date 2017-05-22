@@ -330,8 +330,30 @@ bool ds::Token::operator==(double num) {
 
 // ****** Private Member Functions ****** //
 
+std::string ds::Token::typeEnumToString(const typeEnum& te) {
+    switch (te) {
+        case UnknownType: return "UnknownType";
+        case Fail: return "Fail";
+        case Eof: return "Eof";
+        case Punctuation: return "Punctuation";
+        case Word: return "Word";
+        case String: return "String";
+        case Float: return "Float";
+        case Int: return "Int";
+        case UInt: return "UInt";
+        case Float_Int: return "Float_Int";
+        case Float_UInt: return "Float_UInt";
+        case Int_UInt: return "Int_UInt";
+        case Float_Int_UInt: return "Float_Int_UInt";
+        default:
+            FatalError << "Unknown typeEnum " << te << std::endl;
+            abort();
+    } // end switch
+}
+
+
 ds::Token::punctuationEnum ds::Token::charToPunctuationEnum(const char& c) {
-    switch (c): {
+    switch (c) {
         case 40: return openParenthesis;
         case 41: return closeParenthesis;
         case 123: return openScope;
@@ -366,6 +388,7 @@ char ds::Token::punctuationEnumToChar(punctuationEnum pe) {
     if (pe == unknownPunctuation) {
     }
     switch(pe) {
+        case unknownPunctuation: return '?';
         case openParenthesis: return '(';
         case closeParenthesis: return ')';
         case openScope: return '{';
@@ -392,7 +415,7 @@ char ds::Token::punctuationEnumToChar(punctuationEnum pe) {
         case pound: return '#';
         case percent: return '%';
         default: {
-            FatalError << "Attempting to get character of unknownPunctuation" << std::endl;
+            FatalError << "Unknown punctuation type" << std::endl;
             abort();
         }
     }
@@ -686,6 +709,16 @@ void ds::Token::getFullString(std::istream& is) {
         str_ += nextChar;
         is.get();
     }
+}
+
+
+// ****** Global operators ****** //
+
+std::ostream& ds::operator<<(std::ostream& os, const Token& c) {
+    os << "str='" << c.str_ << "', type='" << typeEnumToString(c.type_) << "', pType='"
+        << punctuationEnumToChar(c.punctuation_) << ", int=" << c.integer_ << ", uint="
+        << c.uinteger_ << ", dbl='" << c.double_ << "'  ";
+    return os;
 }
 
 
