@@ -712,12 +712,17 @@ void ds::Token::getFullString(std::istream& is) {
 }
 
 
+void debugWrite(std::ostream& os) const {
+    os << "str='" << str_ << "', type='" << typeEnumToString(type_) << "', pType='"
+        << punctuationEnumToChar(punctuation_) << ", int=" << integer_ << ", uint="
+        << uinteger_ << ", dbl='" << double_ << "'  ";
+}
+
+
 // ****** Global operators ****** //
 
-std::ostream& ds::operator<<(std::ostream& os, const Token& c) {
-    os << "str='" << c.str_ << "', type='" << typeEnumToString(c.type_) << "', pType='"
-        << punctuationEnumToChar(c.punctuation_) << ", int=" << c.integer_ << ", uint="
-        << c.uinteger_ << ", dbl='" << c.double_ << "'  ";
+std::ostream& ds::operator<<(std::ostream& os, const Token& t) {
+    os << t.str_;
     return os;
 }
 

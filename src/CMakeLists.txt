@@ -23,6 +23,10 @@ include_directories(
 
 add_library(
     core SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/Dictionary.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/Entry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/Token.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/VecToken.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/core/osRelated_POSIX.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Blinds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gameMechanics/Board.cpp

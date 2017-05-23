@@ -6,6 +6,12 @@
 namespace ds
 {
 
+// Forward declarations
+
+class VecToken;
+std::ostream& operator<<(std::ostream& os, const VecToken& c);
+
+
 class VecToken: public std::vector<Token> {
 public:
 
@@ -16,6 +22,12 @@ public:
             rbFailIfNotEmpty,
             rbOverwrite,
             rbAppend
+        };
+
+        //- EOF fail behaviour
+        enum eofBehaviourEnum {
+            ebFailOnEof,
+            ebAllowEof
         };
 
     // Constructors
@@ -35,7 +47,18 @@ public:
         bool readFail() const;
 
         //- Read from istream
-        void read(std::istream& is, readBehaviourEnum rb=rbFailIfNotEmpty);
+        void read(
+            std::istream& is,
+            eofBehaviourEnum eb=ebFailOnEof,
+            readBehaviourEnum rb=rbFailIfNotEmpty
+        );
+
+        //- Debug write
+        void debugWrite(std::ostream& os) const;
+
+
+    // Friend functions
+    friend std::ostream& operator<<(std::ostream& out, const VecToken& vt);
 
 
 private:

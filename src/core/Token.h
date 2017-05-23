@@ -138,6 +138,12 @@ public:
             double getDouble() const;
 
 
+        // Debug
+
+            //- Debug write
+            void debugWrite(std::ostream& os) const;
+
+
     // Public Member Operators
 
         //- Equality
@@ -157,7 +163,7 @@ public:
 
 
     // Friend functions
-    friend std::ostream& operator<<(std::ostream& out, const Token& c);
+    friend std::ostream& operator<<(std::ostream& out, const Token& t);
 
 
 private:

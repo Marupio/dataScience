@@ -2,18 +2,36 @@
 #define Entry_h
 
 #include <memory>
-#include <Token.h>
+#include <VecToken.h>
 
 namespace ds
 {
 
+// Forward declarations
+
+class Dictionary;
+
+class Entry;
+std::ostream& operator<<(std::ostream& os, const Entry& c);
+
 class Entry {
 public:
+
+    // Public Data Types
+
+        //- Type of Entry
+        enum typeEnum
+        {
+            teUnknown,
+            teEof,
+            teDict,
+            teTokens
+        };
 
     // Constructors
 
         //- Construct from istream and parent dictionary
-        Entry(Dictionary& parent, std::istream& is);
+        Entry(Dictionary& parent, std::istream& is, bool requireSemiColonEnd=true);
 
 
     // Public Member Functions
@@ -24,6 +42,9 @@ public:
             std::string& keyword();
             const std::string& keyword() const;
 
+            //- Access type
+            typeEnum type() const;
+
             //- Access dictionary
             //  Not allocated if in stream entry mode
             Dictionary& dict();
@@ -31,20 +52,36 @@ public:
 
             //- Access token stream
             //  Not valid if in dictionary mode
-            VecToken& tokens();
             const VecToken& tokens() const;
 
 
         // Query
 
+            //- Type to sting
+            static std::string typeEnumToString(typeEnum te);
+
             //- True if type is a dictionary entry
             bool isDict() const;
 
             //- True if type is a token entry
-            bool isTokenData() const;
+            bool isTokens() const;
 
-            //- True if neither dictionary nor stream are allocated
+            //- True if EOF was encountered, i.e. no further entries in istream
+            bool isEof() const;
+
+            //- True if neither dictionary nor tokens are allocated
             bool isNull() const;
+
+
+        // Debug
+
+            //- Debug write out to ostream
+            void debugWrite(std::ostream& os) const;
+
+
+    // Friend functions
+    friend std::ostream& operator<<(std::ostream& out, const Entry& c);
+
 
 private:
 
@@ -54,20 +91,20 @@ private:
         //  Returns false if not valid, or not found
         bool getKeyword(std::istream& is);
 
-        //- Read istream into Itstream
-        void readStreamEntry(std::istream& is);
-
 
     // Private Member Data
 
         //- Associated keyword
         std::string keyword_;
 
+        //- Type of entry
+        typeEnum type_;
+
         //- Dictionary data (dictionary mode)
         std::unique_ptr<Dictionary> dictPtr_;
 
         //- Token data (token mode)
-        std::unique_ptr<VecToken> tokensPtr_;
+        VecToken tokens_;
 
         //- Parent dictionary
         const Dictionary& parent_;

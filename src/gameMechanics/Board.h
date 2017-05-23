@@ -15,16 +15,15 @@ class Board
 {
 public:
 
-    // Public type data
+    // Public Data Types
     
         typedef VecCard::const_iterator const_iterator;
-        typedef VecCard::const_reverse_iterator
-            const_reverse_iterator;
+        typedef VecCard::const_reverse_iterator const_reverse_iterator;
         typedef VecCard::size_type size_type;
         typedef VecCard::difference_type difference_type;
 
 
-    // Static data
+    // Static Data
 
     static const short maxCardsOnBoard_;
     static const short flopSize_;

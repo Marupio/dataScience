@@ -32,7 +32,11 @@ bool ds::VecToken::readFail() const {
 }
 
 
-void read(std::istream& is, readBehaviourEnum rb=rbFailIfNotEmpty) {
+void read(
+    std::istream& is,
+    bool setEofFail=true,
+    readBehaviourEnum rb=rbFailIfNotEmpty
+) {
     if (size()) {
         switch (rb) {
         case rbOverwrite:
@@ -62,7 +66,9 @@ void read(std::istream& is, readBehaviourEnum rb=rbFailIfNotEmpty) {
             return ret;
         }
         if (nxtTkn == Token::Eof) {
-            eofFail_ = true;
+            if (setEofFail) {
+                eofFail_ = true;
+            }
             return ret;       
         }
         if (nxtTkn == Token::semiColon) {
@@ -72,5 +78,27 @@ void read(std::istream& is, readBehaviourEnum rb=rbFailIfNotEmpty) {
     }
 }
 
+
+void ds::VecToken::debugWrite(std::ostream& os) const {
+    for (auto it = cbegin(); it != cend(); ++it) {
+        os << " ";
+        it->debugWrite(os);
+    }
+}
+
+
+// ****** Global operators ****** //
+
+std::ostream& ds::operator<<(std::ostream& os, const VecToken& vt) {
+    it = vt.cbegin();
+    if (it != vt.cend()) {
+        os << *it;
+        ++it;
+    }
+    for (; it != vt.cend(); ++it) {
+        os << " " << *it;
+    }
+    return os;
+}
 
 // ****** END ****** //
