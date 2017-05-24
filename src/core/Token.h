@@ -1,7 +1,7 @@
 #ifndef Token_h
 #define Token_h
 
-#include <vector.h>
+#include <error.h>
 
 namespace ds
 {
@@ -48,12 +48,14 @@ public:
         unknownPunctuation,
 
         // enclosures
-        openParenthesis,        // '('
-        closeParenthesis,       // ')'
+        openBracket,            // '('
+        closeBracket,           // ')'
         openScope,              // '{'
         closeScope,             // '}'
         openBlock,              // '['
         closeBlock,             // ']'
+        openAngle,              // '<'
+        closeAngle,             // '>'
         openString,             // '"'
         closeString = openString,
 
@@ -69,8 +71,6 @@ public:
         add,                    // '+'
         subtract,               // '-'
         equals,                 // '='
-        greaterThan,            // '>'
-        lessThan,               // '<'
 
         // logic
         bar,                    // '|'
@@ -84,13 +84,38 @@ public:
     };
 
 
+    // Static Data
+
+        static const Token eofToken;
+
+
     // Constructors
+
+        //- Construct null
+        Token();
 
         //- Construct from istream
         Token(std::istream& is);
 
 
     // Public Member Functions
+
+        // Access
+
+        typeEnum type() const;
+        punctuationEnum punctuation() const;
+        std::string str() const;
+
+
+        // Enum conversions
+
+        static std::string typeEnumToString(const typeEnum& te);
+
+        static punctuationEnum charToPunctuationEnum(const char& c);
+
+        static char punctuationEnumToChar(punctuationEnum pe);
+
+
 
         // Tests and value access
 
@@ -144,24 +169,6 @@ public:
             void debugWrite(std::ostream& os) const;
 
 
-    // Public Member Operators
-
-        //- Equality
-        bool operator==(typeEnum& te);
-        bool operator==(punctuationEnum& pe);
-        bool operator==(std::string& str);
-        bool operator==(unsigned short num);
-        bool operator==(short num);
-        bool operator==(unsigned int num);
-        bool operator==(int num);
-        bool operator==(unsigned long num);
-        bool operator==(long num);
-        bool operator==(unsigned long long num);
-        bool operator==(long long num);
-        bool operator==(float num);
-        bool operator==(double num);
-
-
     // Friend functions
     friend std::ostream& operator<<(std::ostream& out, const Token& t);
 
@@ -169,12 +176,6 @@ public:
 private:
 
     // Private Member Functions
-
-        static std::string typeEnumToString(const typeEnum& te);
-
-        static punctuationEnum charToPunctuationEnum(const char& c);
-
-        static char punctuationEnumToChar(punctuationEnum pe);
 
         // Read next token from istream
         bool read(std::istream& is);
@@ -184,6 +185,9 @@ private:
 
         //- Read through istream until */ encountered, error if not found
         void moveToEndOfBlockComment(std::istream& is);
+
+        //- Read istream into str_ until closeString character encountered
+        void getFullString(std::istream& is);
 
 
     // Private Member Data
@@ -199,6 +203,37 @@ private:
         unsigned long long uinteger_;
         double double_;
 };
+
+// Global operators
+
+std::ostream& operator<<(std::ostream& os, const Token::punctuationEnum& tpe);
+
+bool operator==(const Token& t, Token::typeEnum te);
+bool operator==(Token::typeEnum te, const Token& t);
+bool operator==(const Token& t, Token::punctuationEnum pe);
+bool operator==(Token::punctuationEnum pe, const Token& t);
+bool operator==(const Token& t, const std::string& str);
+bool operator==(const std::string& str, const Token& t);
+bool operator==(const Token& t, unsigned short num);
+bool operator==(unsigned short num, const Token& t);
+bool operator==(const Token& t, short num);
+bool operator==(short num, const Token& t);
+bool operator==(const Token& t, unsigned int num);
+bool operator==(unsigned int num, const Token& t);
+bool operator==(const Token& t, int num);
+bool operator==(int num, const Token& t);
+bool operator==(const Token& t, unsigned long num);
+bool operator==(unsigned long num, const Token& t);
+bool operator==(const Token& t, long num);
+bool operator==(long num, const Token& t);
+bool operator==(const Token& t, unsigned long long num);
+bool operator==(unsigned long long num, const Token& t);
+bool operator==(const Token& t, long long num);
+bool operator==(long long num, const Token& t);
+bool operator==(const Token& t, float num);
+bool operator==(float num, const Token& t);
+bool operator==(const Token& t, double num);
+bool operator==(double num, const Token& t);
 
 
 } // end namespace

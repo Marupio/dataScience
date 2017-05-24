@@ -9,15 +9,13 @@ namespace ds {
 template<class T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
     os << "(";
-    if (v.size()) {
-        os << v.front();
-        for (
-            typename std::vector<T>::const_iterator it = v.begin() + 1;
-            it != v.end();
-            ++it
-        ) {
-            os << " " << *it;
-        }
+    typename std::vector<T>::const_iterator it = v.cbegin();
+    if (it != v.cend()) {
+        os << *it;
+        ++it;
+    }
+    for (; it != v.cend(); ++it) {
+        os << " " << *it;
     }
     os << ")";
     return os;

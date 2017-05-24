@@ -373,25 +373,6 @@ bool ds::Card::operator!=(const Card& c1) const {
 }
 
 
-// ****** Global operators ****** //
-
-std::ostream& ds::operator<<(std::ostream& os, const Card& c) {
-    os << Card::valueToWriteChar(c.value_);
-    os << Card::suitToWriteChar(c.suit_);
-    return os;
-}
-
-std::istream& ds::operator>>(std::istream& in, Card& c) {
-    char vc;
-    in >> vc;
-    c.value_ = Card::readCharToValue(vc);
-    char sc;
-    in >> sc;
-    c.suit_ = Card::readCharToSuit(sc);
-    return in;
-}
-
-
 // ****** Global Functions ****** //
 
 bool ds::noWildEquals(const Card& cA, const Card& cB) {
@@ -408,3 +389,25 @@ bool ds::noWildEquals(const Card& cA, const Card& cB) {
     );
 }
 
+
+// ****** Global operators ****** //
+
+std::ostream& ds::operator<<(std::ostream& os, const Card& c) {
+    os << Card::valueToWriteChar(c.value_);
+    os << Card::suitToWriteChar(c.suit_);
+    return os;
+}
+
+
+std::istream& ds::operator>>(std::istream& in, Card& c) {
+    char vc;
+    in >> vc;
+    c.value_ = Card::readCharToValue(vc);
+    char sc;
+    in >> sc;
+    c.suit_ = Card::readCharToSuit(sc);
+    return in;
+}
+
+
+// ****** END ****** //

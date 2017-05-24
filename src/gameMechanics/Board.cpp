@@ -443,6 +443,7 @@ std::ostream& ds::operator<<(std::ostream& os, const Board& b) {
     return os;
 }
 
+
 std::istream& ds::operator>>(std::istream& is, Board& b) {
     if (b.cards_.size()) {
         FatalError << "Reading into non-empty board. Board cards are:\n"
@@ -454,3 +455,5 @@ std::istream& ds::operator>>(std::istream& is, Board& b) {
     b.updateDerivedData();
     return is;
 }
+
+// ****** END ****** //

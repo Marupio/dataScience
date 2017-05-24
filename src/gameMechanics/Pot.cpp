@@ -1,5 +1,6 @@
-#include <Pot.h>
 #include <algorithm>
+#include <Pot.h>
+#include <Token.h>
 
 std::ostream& ds::operator<<(std::ostream& os, const PushedMoney& pm) {
     os << "<" << pm.first << " ";
@@ -25,7 +26,7 @@ std::vector<ds::PushedMoney>::iterator ds::VecPushedMoney::find(
 
 
 std::ostream& ds::operator<<(std::ostream& os, const Pot& pt) {
-    os << "<" << pt.first << " (";
+    os << Token::openAngle << pt.first << " " << Token::openBracket;
     const VecSeatedPlayer& vsp(pt.second);
     auto itp = vsp.begin();
     if (itp != vsp.end()) {
@@ -44,7 +45,7 @@ std::ostream& ds::operator<<(std::ostream& os, const Pot& pt) {
         }
         ++itp;
     }
-    os << ")>";
+    os << Token::closeAngle << Token::closeBracket;
     return os;
 }
 

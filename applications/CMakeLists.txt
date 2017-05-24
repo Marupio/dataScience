@@ -57,6 +57,17 @@ install_targets(
 
 
 add_executable(
+    testDictionary
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testDictionary/testDictionary.cpp
+)
+target_link_libraries(testDictionary core)
+install_targets(
+    ${BIN_DIR}
+    testDictionary
+)
+
+
+add_executable(
     testHandRankerCompare_Input
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerCompare_Input.cpp
 )

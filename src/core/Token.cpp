@@ -1,7 +1,17 @@
 #include <Token.h>
 
+const ds::Token ds::Token::eofToken;
 
-Token(std::istream& is):
+ds::Token::Token():
+    type_(Eof),
+    punctuation_(unknownPunctuation),
+    integer_(0),
+    uinteger_(0),
+    double_(0)
+{}
+
+
+ds::Token::Token(std::istream& is):
     type_(UnknownType),
     punctuation_(unknownPunctuation),
     integer_(0),
@@ -15,11 +25,129 @@ Token(std::istream& is):
     // }
 }
 
+
 // ****** Public Member Functions ****** //
-ds::Token::void ds::Token::putBack(std::istream& is) {
+
+ds::Token::typeEnum ds::Token::type() const {
+    return type_;
+}
+
+
+ds::Token::punctuationEnum ds::Token::punctuation() const {
+    return punctuation_;
+}
+
+
+std::string ds::Token::str() const {
+    return str_;
+}
+
+
+std::string ds::Token::typeEnumToString(const typeEnum& te) {
+    switch (te) {
+        case UnknownType: return "UnknownType";
+        case Fail: return "Fail";
+        case Eof: return "Eof";
+        case Punctuation: return "Punctuation";
+        case Word: return "Word";
+        case String: return "String";
+        case Float: return "Float";
+        case Int: return "Int";
+        case UInt: return "UInt";
+        case Float_Int: return "Float_Int";
+        case Float_UInt: return "Float_UInt";
+        case Int_UInt: return "Int_UInt";
+        case Float_Int_UInt: return "Float_Int_UInt";
+        default:
+            FatalError << "Unknown typeEnum " << te << std::endl;
+            abort();
+    } // end switch
+}
+
+
+ds::Token::punctuationEnum ds::Token::charToPunctuationEnum(const char& c) {
+    switch (c) {
+        case 40: return openBracket;
+        case 41: return closeBracket;
+        case 123: return openScope;
+        case 125: return closeScope;
+        case 91: return openBlock;
+        case 93: return closeBlock;
+        case 60: return openAngle;
+        case 62: return closeAngle;
+        case 34: return openString;
+        //case 34: return closeString;
+        case 59: return semiColon;
+        case 58: return colon;
+        case 44: return comma;
+        case 46: return period;
+        case 47: return divide;
+        case 42: return multiply;
+        case 43: return add;
+        case 45: return subtract;
+        case 61: return equals;
+        // case 62: return greaterThan;
+        // case 60: return lessThan;
+        case 124: return bar;
+        case 38: return ampersand;
+        case 33: return exclamation;
+        case 64: return at;
+        case 35: return pound;
+        case 37: return percent;
+        default: return unknownPunctuation;
+    }
+}
+
+
+char ds::Token::punctuationEnumToChar(punctuationEnum pe) {
+    if (pe == unknownPunctuation) {
+    }
+    switch(pe) {
+        case unknownPunctuation: return '?';
+        case openBracket: return '(';
+        case closeBracket: return ')';
+        case openScope: return '{';
+        case closeScope: return '}';
+        case openBlock: return '[';
+        case closeBlock: return ']';
+        case closeAngle: return '>';
+        case openAngle: return '<';
+        case openString: return '"';
+        //case closeString: return '"';
+        case semiColon: return ';';
+        case colon: return ':';
+        case comma: return ',';
+        case period: return '.';
+        case divide: return '/';
+        case multiply: return '*';
+        case add: return '+';
+        case subtract: return '-';
+        case equals: return '=';
+        // case greaterThan: return '>';
+        // case lessThan: return '<';
+        case bar: return '|';
+        case ampersand: return '&';
+        case exclamation: return '!';
+        case at: return '@';
+        case pound: return '#';
+        case percent: return '%';
+        default: {
+            FatalError << "Unknown punctuation type" << std::endl;
+            abort();
+        }
+    }
+}
+
+
+size_t ds::Token::size() const {
+    return str_.size();
+}
+
+
+void ds::Token::putBack(std::istream& is) {
     size_t count = str_.size();
     while (count--) {
-        is.putBack();
+        is.unget();
         if (is.fail()) {
             FatalError << "Failed to putBack '" << str_ << "' after character "
                 << (str_.size() - count) << " from the right." << std::endl;
@@ -247,6 +375,7 @@ float ds::Token::getFloat() const {
             << std::endl;
         abort();
     }
+    return ret;
 }
 
 
@@ -261,166 +390,7 @@ double ds::Token::getDouble() const {
 }
 
 
-// ****** Public Member Operators ****** //
-bool ds::Token::operator==(typeEnum& te) {
-    return type_ == te;
-}
-
-
-bool ds::Token::operator==(puncuationEnum& pe) {
-    return type_ == Punctuation && punctuation_ == pe;
-}
-
-
-bool ds::Token::operator==(std::string& str) {
-    // return (type_ == Word || type_ == String) && str_.compare(str) == 0;
-    return str_.compare(str) == 0;
-}
-
-
-bool ds::Token::operator==(unsigned short num) {
-    return isUInt() && num == uinteger_;
-}
-
-
-bool ds::Token::operator==(short num) {
-    return isInt() && num == integer_;
-}
-
-
-bool ds::Token::operator==(unsigned int num) {
-    return isUInt() && num == uinteger_;
-}
-
-
-bool ds::Token::operator==(int num) {
-    return isInt() && num == integer_;
-}
-
-
-bool ds::Token::operator==(unsigned long num) {
-    return isUInt() && num == uinteger_;
-}
-
-
-bool ds::Token::operator==(long num) {
-    return isInt() && num == integer_;
-}
-
-
-bool ds::Token::operator==(unsigned long long num) {
-    return isUInt() && num == uinteger_;
-}
-
-
-bool ds::Token::operator==(long long num) {
-    return isInt() && num == integer_;
-}
-
-
-bool ds::Token::operator==(float num) {
-    return isFloat() && num == double_;
-}
-
-
-bool ds::Token::operator==(double num) {
-    return isFloat() && num == double_;
-}
-
-
 // ****** Private Member Functions ****** //
-
-std::string ds::Token::typeEnumToString(const typeEnum& te) {
-    switch (te) {
-        case UnknownType: return "UnknownType";
-        case Fail: return "Fail";
-        case Eof: return "Eof";
-        case Punctuation: return "Punctuation";
-        case Word: return "Word";
-        case String: return "String";
-        case Float: return "Float";
-        case Int: return "Int";
-        case UInt: return "UInt";
-        case Float_Int: return "Float_Int";
-        case Float_UInt: return "Float_UInt";
-        case Int_UInt: return "Int_UInt";
-        case Float_Int_UInt: return "Float_Int_UInt";
-        default:
-            FatalError << "Unknown typeEnum " << te << std::endl;
-            abort();
-    } // end switch
-}
-
-
-ds::Token::punctuationEnum ds::Token::charToPunctuationEnum(const char& c) {
-    switch (c) {
-        case 40: return openParenthesis;
-        case 41: return closeParenthesis;
-        case 123: return openScope;
-        case 125: return closeScope;
-        case 91: return openBlock;
-        case 93: return closeBlock;
-        case 34: return openString;
-        case 34: return closeString;
-        case 59: return semiColon;
-        case 58: return colon;
-        case 44: return comma;
-        case 46: return period;
-        case 47: return divide;
-        case 42: return multiply;
-        case 43: return add;
-        case 45: return subtract;
-        case 61: return equals;
-        case 62: return greaterThan;
-        case 60: return lessThan;
-        case 124: return bar;
-        case 38: return ampersand;
-        case 33: return exclamation;
-        case 64: return at;
-        case 35: return pound;
-        case 37: return percent;
-        default: return unknownPunctuation;
-    }
-}
-
-
-char ds::Token::punctuationEnumToChar(punctuationEnum pe) {
-    if (pe == unknownPunctuation) {
-    }
-    switch(pe) {
-        case unknownPunctuation: return '?';
-        case openParenthesis: return '(';
-        case closeParenthesis: return ')';
-        case openScope: return '{';
-        case closeScope: return '}';
-        case openBlock: return '[';
-        case closeBlock: return ']';
-        case openString: return '"';
-        case closeString: return '"';
-        case semiColon: return ';';
-        case colon: return ':';
-        case comma: return ',';
-        case period: return '.';
-        case divide: return '/';
-        case multiply: return '*';
-        case add: return '+';
-        case subtract: return '-';
-        case equals: return '=';
-        case greaterThan: return '>';
-        case lessThan: return '<';
-        case bar: return '|';
-        case ampersand: return '&';
-        case exclamation: return '!';
-        case at: return '@';
-        case pound: return '#';
-        case percent: return '%';
-        default: {
-            FatalError << "Unknown punctuation type" << std::endl;
-            abort();
-        }
-    }
-}
-
 
 bool ds::Token::read(std::istream& is) {
     if (!is.good()) {
@@ -432,6 +402,82 @@ bool ds::Token::read(std::istream& is) {
     while (true) {
         int nxt(is.peek());
         char charNext(nxt);
+        punctuation_ = charToPunctuationEnum(charNext);
+        bool tryAgain = false;
+        switch (punctuation_) {
+            case divide: {
+                // Check for comment
+                is.get();
+                int nxtnxt(is.peek());
+                char charNextNext(nxtnxt);
+                punctuationEnum pe = charToPunctuationEnum(charNextNext);
+                if (pe == divide) {
+                    // Line comment
+                    is.get();
+                    type_ = UnknownType;
+                    punctuation_ = unknownPunctuation;
+                    if (!movePastEndOfLine(is)) {
+                        type_ = Fail;
+                        return false;
+                    }
+                    tryAgain = true;
+                } else if (pe == multiply) {
+                    // Block comment
+                    is.get();
+                    type_ = UnknownType;
+                    punctuation_ = unknownPunctuation;
+                    moveToEndOfBlockComment(is);
+                    tryAgain = true;
+                } else {
+                    // Really is a divide punctuation
+                    type_ = Punctuation;
+                    str_ = punctuationEnumToChar(divide);
+                    return true;
+                }
+            } // end case divide
+            case subtract: // fall through
+            case add: // fall through
+            case period: {
+                // Could be the start of a number, store this fact as type_ = Punctuation
+                type_ = Punctuation;
+                str_ = punctuationEnumToChar(divide);
+                break;
+            }
+            case unknownPunctuation: {
+                // Not a punctuation
+                break;
+            }
+            default: {
+                // Punctuation token
+                type_ = Punctuation;
+                str_ = punctuationEnumToChar(divide);
+                return true;
+            }
+        }
+        if (tryAgain) {
+            continue;
+        }
+        // Check for whitespace
+        if (std::isspace(nxt)) {
+            is.get();
+            continue;
+        }
+        // Check for EOF
+        if (nxt == EOF) {
+            if (is.fail()) {
+                type_ = Fail;
+                return false;
+            } else {
+                type_ = Eof;
+                return true;
+            }
+        }
+        // Comments are cleared
+        break;
+    }
+
+
+
         if (type_ == Punctuation) {
             if (charNext == punctuationEnumToChar(divide)) {
                 is.get();
@@ -446,6 +492,7 @@ bool ds::Token::read(std::istream& is) {
                 type_ = UnknownType;
                 punctuation_ = unknownPunctuation;
                 moveToEndOfBlockComment(is);
+                continue;
             } else {
                 // It is a divide punctuation
                 str_ = punctuationEnumToChar(divide);
@@ -471,9 +518,11 @@ bool ds::Token::read(std::istream& is) {
             is.get();
             continue;
         }
+        break;
     }
 
     // We are at the start of the next token
+    // We may be holding a punctuation +-. in case it's a number
     char firstChar;
     is.get(firstChar);
     str_ += firstChar;
@@ -512,6 +561,16 @@ bool ds::Token::read(std::istream& is) {
             type_ = Fail;
             return false;
         }
+
+        // Ending a token:
+        // nxt == EOF, or isspace
+        // Type changes:
+        //  * Word to any punctuation
+        //  * any punctuation to alpha (handled)
+        //  * any punctuation except +-. to number
+        //  * number to any punctuation
+
+
         if (nxt == EOF || std::isspace(nxt)) {
             // End of token
             if (exponentSigned || (exponentStarted && periodEncountered)) {
@@ -528,7 +587,7 @@ bool ds::Token::read(std::istream& is) {
             if (numEncountered) {
                 if (exponentCompleted) {
                     // double only
-                    double_ = std::strtod(str_);
+                    double_ = std::stod(str_);
                     type_ = Float;
                     return true;
                 }
@@ -536,7 +595,7 @@ bool ds::Token::read(std::istream& is) {
                     // uinteger_ is the basis of comparison
                     uinteger_ = std::stoull(str_);
                     integer_ = std::stoll(str_);
-                    double_ = std::strtod(str_);
+                    double_ = std::stod(str_);
                     if (uinteger_ == integer_) {
                         if (uinteger_ == double_) {
                             type_ = Float_Int_UInt;
@@ -559,7 +618,7 @@ bool ds::Token::read(std::istream& is) {
                 } else {
                     // integer_ is the basis of comparison
                     integer_ = std::stoll(str_);
-                    double_ = std::strtod(str_);
+                    double_ = std::stod(str_);
                     if (integer_ == double_) {
                         type_ = Float_Int;
                         return true;
@@ -598,8 +657,9 @@ bool ds::Token::read(std::istream& is) {
                     FatalError << "Unexpected exponent pattern: '" << str_ << "'" << std::endl;
                     abort();
                 } else {
-                exponentSigned = true;
-                continue;
+                    exponentSigned = true;
+                    continue;
+                }
             }
         }
 
@@ -608,7 +668,7 @@ bool ds::Token::read(std::istream& is) {
             continue;
         }
         if (nextChar == 'e' || nextChar == 'E') {
-            if (type_ == word || !numEncountered) {
+            if (type_ == Word || !numEncountered) {
                 continue;
             }
             exponentStarted = true;
@@ -619,14 +679,14 @@ bool ds::Token::read(std::istream& is) {
             if (periodEncountered) {
                 FatalError << "Unexpected number pattern: '" << str_ << "'" << std::endl;
                 abort();
-            } else if (type_ == word) {
+            } else if (type_ == Word) {
                 FatalError << "Puntuation not expected here: '" << str_ << "'" << std::endl;
                 abort();
             } else {
                 periodEncountered = true;
             }
         }
-        if (std::isalpha(nextChar) || nextChar == "_") {
+        if (std::isalpha(nextChar) || nextChar == '_') {
             if (
                 periodEncountered
              || punctuation_ == subtract
@@ -636,9 +696,10 @@ bool ds::Token::read(std::istream& is) {
                 FatalError << "Unexpected word pattern '" << str_ << "'" << std::endl;
                 abort();
             }
-            type_ = word;
+            type_ = Word;
             continue;
-        } if (charToPunctuationEnum(nextChar) != unknownPunctuation) {
+        }
+        if (charToPunctuationEnum(nextChar) != unknownPunctuation) {
             FatalError << "Punctuation not expected here: '" << str_ << "'" << std::endl;
             abort();
         } else {
@@ -660,7 +721,7 @@ bool ds::Token::movePastEndOfLine(std::istream& is) {
         }
         if (char(nxt) == '\n') {
             is.get();
-            return;
+            return true;
         }
         is.get();
     }
@@ -712,7 +773,7 @@ void ds::Token::getFullString(std::istream& is) {
 }
 
 
-void debugWrite(std::ostream& os) const {
+void ds::Token::debugWrite(std::ostream& os) const {
     os << "str='" << str_ << "', type='" << typeEnumToString(type_) << "', pType='"
         << punctuationEnumToChar(punctuation_) << ", int=" << integer_ << ", uint="
         << uinteger_ << ", dbl='" << double_ << "'  ";
@@ -724,6 +785,142 @@ void debugWrite(std::ostream& os) const {
 std::ostream& ds::operator<<(std::ostream& os, const Token& t) {
     os << t.str_;
     return os;
+}
+
+
+std::ostream& ds::operator<<(std::ostream& os, const Token::punctuationEnum& tpe) {
+    os << Token::punctuationEnumToChar(tpe);
+    return os;
+}
+
+
+bool ds::operator==(const Token& t, Token::typeEnum te) {
+    return t.type() == te;
+}
+
+
+bool ds::operator==(Token::typeEnum te, const Token& t) {
+    return t.type() == te;
+}
+
+
+bool ds::operator==(const Token& t, Token::punctuationEnum pe) {
+    return t.punctuation() == pe;
+}
+
+
+bool ds::operator==(Token::punctuationEnum pe, const Token& t) {
+    return t.punctuation() == pe;
+}
+
+
+bool ds::operator==(const Token& t, const std::string& str) {
+    return str.compare(t.str()) == 0;
+}
+
+
+bool ds::operator==(const std::string& str, const Token& t) {
+    return str.compare(t.str()) == 0;;
+}
+
+
+bool ds::operator==(const Token& t, unsigned short num) {
+    return t.getUShort() == num;
+}
+
+
+bool ds::operator==(unsigned short num, const Token& t) {
+    return t.getUShort() == num;
+}
+
+
+bool ds::operator==(const Token& t, short num) {
+    return t.getShort() == num;
+}
+
+
+bool ds::operator==(short num, const Token& t) {
+    return t.getShort() == num;
+}
+
+
+bool ds::operator==(const Token& t, unsigned int num) {
+    return t.getUInt() == num;
+}
+
+
+bool ds::operator==(unsigned int num, const Token& t) {
+    return t.getUInt() == num;
+}
+
+
+bool ds::operator==(const Token& t, int num) {
+    return t.getInt() == num;
+}
+
+
+bool ds::operator==(int num, const Token& t) {
+    return t.getInt() == num;
+}
+
+
+bool ds::operator==(const Token& t, unsigned long num) {
+    return t.getULong() == num;
+}
+
+
+bool ds::operator==(unsigned long num, const Token& t) {
+    return t.getULong() == num;
+}
+
+
+bool ds::operator==(const Token& t, long num) {
+    return t.getLong() == num;
+}
+
+
+bool ds::operator==(long num, const Token& t) {
+    return t.getLong() == num;
+}
+
+
+bool ds::operator==(const Token& t, unsigned long long num) {
+    return t.getULongLong() == num;
+}
+
+
+bool ds::operator==(unsigned long long num, const Token& t) {
+    return t.getULongLong() == num;
+}
+
+
+bool ds::operator==(const Token& t, long long num) {
+    return t.getLongLong() == num;
+}
+
+
+bool ds::operator==(long long num, const Token& t) {
+    return t.getLongLong() == num;
+}
+
+
+bool ds::operator==(const Token& t, float num) {
+    return t.getFloat() == num;
+}
+
+
+bool ds::operator==(float num, const Token& t) {
+    return t.getFloat() == num;
+}
+
+
+bool ds::operator==(const Token& t, double num) {
+    return t.getDouble() == num;
+}
+
+
+bool ds::operator==(double num, const Token& t) {
+    return t.getDouble() == num;
 }
 
 

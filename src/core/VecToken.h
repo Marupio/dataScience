@@ -2,6 +2,7 @@
 #define VecToken_h
 
 #include <Token.h>
+#include <vector.h>
 
 namespace ds
 {
@@ -46,6 +47,22 @@ public:
         bool eofFail() const;
         bool readFail() const;
 
+        //- Returns readPos iterator
+        std::vector<Token>::const_iterator readPos() const;
+
+        //- Returns next token, but does not increment
+        const Token& peek() const;
+
+        //- Get next token, increment read position
+        //  Returns Eof token when at end
+        const Token& get() const;
+
+        //- Attempts to decrement read position by one, fails if already at start
+        void unget() const;
+
+        //- Moves read position to beginning
+        void rewind() const;
+
         //- Read from istream
         void read(
             std::istream& is,
@@ -70,6 +87,9 @@ private:
 
         //- Read failure in istream
         bool readFail_;
+
+        //- Current read position in VecToken, stored as an index to avoid iterator invalidation
+        mutable size_t readPos_;
 };
 
 

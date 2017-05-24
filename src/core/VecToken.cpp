@@ -4,12 +4,14 @@
 
 ds::VecToken::VecToken():
     eofFail_(false),
-    readFail_(false)
+    readFail_(false),
+    readPos_(0)
 {}
 
-VecToken::VecToken(std::istream& is):
+ds::VecToken::VecToken(std::istream& is):
     eofFail_(false),
-    readFail_(false)
+    readFail_(false),
+    readPos_(0)
 {
     read(is);
 }
@@ -23,7 +25,7 @@ bool ds::VecToken::good() const {
 
 
 bool ds::VecToken::eofFail() const {
-    return eofFail_
+    return eofFail_;
 }
 
 
@@ -32,10 +34,63 @@ bool ds::VecToken::readFail() const {
 }
 
 
-void read(
+std::vector<ds::Token>::const_iterator ds::VecToken::readPos() const {
+    size_t readPosCopy(readPos_);
+    std::vector<Token>::const_iterator ret = cbegin();
+    if (ret == cend() && readPos_) {
+        FatalError << "Read position set to " << readPos_ << " in VecToken of size " << size()
+            << std::endl;
+        abort();
+    }
+    while (readPosCopy--) {
+        ++ret;
+        if (ret == cend() && readPosCopy) {
+            FatalError << "Read position set to " << readPos_ << " in VecToken of size " << size()
+                << std::endl;
+            abort();
+        }
+    }
+    return ret;
+}
+
+
+const ds::Token& ds::VecToken::peek() const {
+    auto it = readPos();
+    if (it == cend()) {
+        return Token::eofToken;
+    }
+    return *it;
+}
+
+
+const ds::Token& ds::VecToken::get() const {
+    auto it = readPos();
+    if (it == cend()) {
+        return Token::eofToken;
+    }
+    readPos_++;
+    return *it;
+}
+
+
+void ds::VecToken::unget() const {
+    if (!readPos_) {
+        FatalError << "Attempting to unget at beginning of VecToken" << std::endl;
+        abort();
+    }
+    readPos_--;
+}
+
+
+void ds::VecToken::rewind() const {
+    readPos_ = 0;
+}
+
+
+void ds::VecToken::read(
     std::istream& is,
-    bool setEofFail=true,
-    readBehaviourEnum rb=rbFailIfNotEmpty
+    eofBehaviourEnum eb,
+    readBehaviourEnum rb
 ) {
     if (size()) {
         switch (rb) {
@@ -63,19 +118,20 @@ void read(
         Token nxtTkn(is);
         if (nxtTkn == Token::Fail) {
             readFail_ = true;
-            return ret;
+            break;
         }
         if (nxtTkn == Token::Eof) {
-            if (setEofFail) {
+            if (eb == ebFailOnEof) {
                 eofFail_ = true;
             }
-            return ret;       
+            break;       
         }
         if (nxtTkn == Token::semiColon) {
-            return ret;
+            break;
         }
-        ret.push_back(nxtTkn);
+        push_back(nxtTkn);
     }
+    readPos_ = 0;
 }
 
 
@@ -90,7 +146,7 @@ void ds::VecToken::debugWrite(std::ostream& os) const {
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const VecToken& vt) {
-    it = vt.cbegin();
+    auto it = vt.cbegin();
     if (it != vt.cend()) {
         os << *it;
         ++it;

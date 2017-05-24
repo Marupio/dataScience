@@ -3,7 +3,7 @@
 
 // ****** Static Member Data ****** //
 
-ds::Dictionary null;
+const ds::Dictionary ds::Dictionary::null;
 
 
 // ****** Constructors ****** //
@@ -151,12 +151,12 @@ const ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) con
 void ds::Dictionary::add(Entry&& e, bool overwrite) {
     std::string copyKeyword(e.keyword());
     auto it = hashedEntries_.find(copyKeyword);
-    if (it == hashedEntries_.end()) {
+    if (it != hashedEntries_.end()) {
         if (overwrite) {
             erase(copyKeyword);
         } else {
-            FatalError << "Cannot find Dictionary Entry for keyword '" << copyKeyword << "' in "
-                << "Dictionary '" << name_ << "'" << std::endl;
+            FatalError << "Keyword '" << copyKeyword << "' already exists in Dictionary '" << name_
+                << "'" << std::endl;
             abort();
         }
     }

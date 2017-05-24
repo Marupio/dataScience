@@ -30,7 +30,7 @@ public:
     // Static Member Data
 
         //- Null dictionary
-        static Dictionary null;
+        static const Dictionary null;
 
 
     // Constructors
