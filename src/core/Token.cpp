@@ -439,6 +439,7 @@ bool ds::Token::read(std::istream& is) {
             case add: // fall through
             case period: {
                 // Could be the start of a number, store this fact as type_ = Punctuation
+                is.get();
                 type_ = Punctuation;
                 str_ = punctuationEnumToChar(divide);
                 break;
@@ -449,6 +450,7 @@ bool ds::Token::read(std::istream& is) {
             }
             default: {
                 // Punctuation token
+                is.get();
                 type_ = Punctuation;
                 str_ = punctuationEnumToChar(divide);
                 return true;
@@ -456,6 +458,9 @@ bool ds::Token::read(std::istream& is) {
         }
         if (tryAgain) {
             continue;
+        }
+        if (type_ == Punctuation) {
+            break;
         }
         // Check for whitespace
         if (std::isspace(nxt)) {
@@ -476,7 +481,14 @@ bool ds::Token::read(std::istream& is) {
         break;
     }
 
+    // We are at the start of the next token, but may have a punctuation +-. at the front
+    int nxt(is.peek());
+    char charNext(nxt);
 
+    // if space or eof, send punctuation
+    // if alpha set word
+    // if number set number
+    // then go on to next bunch    
 
         if (type_ == Punctuation) {
             if (charNext == punctuationEnumToChar(divide)) {
