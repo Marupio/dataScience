@@ -5,20 +5,22 @@
 // ****** Constructors ****** //
 
 ds::Entry::Entry(Dictionary& parent, std::istream& is, bool requireSemiColonEnd):
+    type_(teUnknown),
     parent_(parent)
 {
     if (!getKeyword(is)) {
         return;
     }
     Token nextToken(is);
-    nextToken.putBack(is);
     if (nextToken == Token::Eof) {
         type_ = teEof;
+        nextToken.putBack(is);
         return;
     } else if (nextToken == Token::openScope) {
         type_ = teDict;
         dictPtr_.reset(new Dictionary(keyword_, parent, is));
     } else {
+        nextToken.putBack(is);
     	VecToken::eofBehaviourEnum eb =
     		requireSemiColonEnd ? VecToken::ebFailOnEof : VecToken::ebAllowEof;
         tokens_.read(is, eb, VecToken::rbFailIfNotEmpty);
@@ -123,6 +125,7 @@ bool ds::Entry::isNull() const {
 
 
 void ds::Entry::debugWrite(std::ostream& os) const {
+    os << "parentName = '" << parent_.name() << "' ";
 	switch (type_) {
 	case teUnknown: {
 		os << "UnknownEntryType";
@@ -132,12 +135,12 @@ void ds::Entry::debugWrite(std::ostream& os) const {
 		break;
 	}
 	case teDict: {
-		os << keyword_ << "\n";
+		os << "subDictionary '" << keyword_ << "'\n";
 		dictPtr_->debugWrite(os);
 		break;
 	}
 	case teTokens: {
-		os << keyword_ << " ";
+		os << "tokens '" << keyword_ << "' ";
 		tokens_.debugWrite(os);
 		break;
 	}
@@ -166,26 +169,28 @@ bool ds::Entry::getKeyword(std::istream& is) {
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Entry& e) {
+    int nspaces = ((e.parent_.depth()) + 1)*Dictionary::tabWidth;
+    os << std::string(nspaces, ' ');
 	switch (e.type_) {
-	case Entry::teUnknown: {
-		os << "UnknownEntryType";
-		break;
-	}
-	case Entry::teEof: {
-		break;
-	}
-	case Entry::teDict: {
-		os << e.keyword_ << "\n" << *e.dictPtr_;
-		break;
-	}
-	case Entry::teTokens: {
-		os << e.keyword_ << " " << e.tokens_;
-		break;
-	}
-	default: {
-		FatalError << "Unknown Entry type: " << e.type_ << std::endl;
-		abort();
-	} // end default
+    	case Entry::teUnknown: {
+    		os << e.keyword_ << " UnknownEntryType";
+    		break;
+    	}
+    	case Entry::teEof: {
+    		break;
+    	}
+    	case Entry::teDict: {
+    		os << e.keyword_ << "\n" << *e.dictPtr_;
+    		break;
+    	}
+    	case Entry::teTokens: {
+    		os << e.keyword_ << " " << e.tokens_ << Token::semiColon;
+    		break;
+    	}
+    	default: {
+    		FatalError << "Unknown Entry type: " << e.type_ << std::endl;
+    		abort();
+    	} // end default
 	} // end switch
     return os;
 }

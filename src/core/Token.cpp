@@ -390,6 +390,13 @@ double ds::Token::getDouble() const {
 }
 
 
+void ds::Token::debugWrite(std::ostream& os) const {
+    os << "str='" << str_ << "', type='" << typeEnumToString(type_) << "', pType='"
+        << punctuationEnumToChar(punctuation_) << "', int=" << integer_ << ", uint="
+        << uinteger_ << ", dbl='" << double_ << "'  ";
+}
+
+
 // ****** Private Member Functions ****** //
 
 bool ds::Token::read(std::istream& is) {
@@ -398,19 +405,39 @@ bool ds::Token::read(std::istream& is) {
         return false;
     }
     // Look for start of next token, avoid commented out sections
-    // '/'' could be 'divide', but it could also be a comment '//'' or '/*''
+    // '/' could be 'divide', but it could also be a comment '//' or '/*'
     while (true) {
         int nxt(is.peek());
-        char charNext(nxt);
-        punctuation_ = charToPunctuationEnum(charNext);
+        // Check for EOF
+        if (nxt == EOF) {
+            if (is.fail()) {
+                type_ = Fail;
+                return false;
+            } else {
+                type_ = Eof;
+                return true;
+            }
+        }
+        char nextChar(nxt);
+        punctuation_ = charToPunctuationEnum(nextChar);
         bool tryAgain = false;
         switch (punctuation_) {
             case divide: {
                 // Check for comment
                 is.get();
                 int nxtnxt(is.peek());
-                char charNextNext(nxtnxt);
-                punctuationEnum pe = charToPunctuationEnum(charNextNext);
+                // Check for EOF
+                if (nxtnxt == EOF) {
+                    if (is.fail()) {
+                        type_ = Fail;
+                        return false;
+                    } else {
+                        type_ = Eof;
+                        return true;
+                    }
+                }
+                char nextCharNext(nxtnxt);
+                punctuationEnum pe = charToPunctuationEnum(nextCharNext);
                 if (pe == divide) {
                     // Line comment
                     is.get();
@@ -431,7 +458,7 @@ bool ds::Token::read(std::istream& is) {
                 } else {
                     // Really is a divide punctuation
                     type_ = Punctuation;
-                    str_ = punctuationEnumToChar(divide);
+                    str_ += nextChar;
                     return true;
                 }
             } // end case divide
@@ -441,7 +468,7 @@ bool ds::Token::read(std::istream& is) {
                 // Could be the start of a number, store this fact as type_ = Punctuation
                 is.get();
                 type_ = Punctuation;
-                str_ = punctuationEnumToChar(divide);
+                str_ += nextChar;
                 break;
             }
             case unknownPunctuation: {
@@ -452,7 +479,7 @@ bool ds::Token::read(std::istream& is) {
                 // Punctuation token
                 is.get();
                 type_ = Punctuation;
-                str_ = punctuationEnumToChar(divide);
+                str_ += nextChar;
                 return true;
             }
         }
@@ -467,258 +494,60 @@ bool ds::Token::read(std::istream& is) {
             is.get();
             continue;
         }
-        // Check for EOF
-        if (nxt == EOF) {
-            if (is.fail()) {
-                type_ = Fail;
-                return false;
-            } else {
-                type_ = Eof;
-                return true;
-            }
-        }
         // Comments are cleared
         break;
     }
 
-    // We are at the start of the next token, but may have a punctuation +-. at the front
-    int nxt(is.peek());
-    char charNext(nxt);
-
-    // if space or eof, send punctuation
-    // if alpha set word
-    // if number set number
-    // then go on to next bunch    
-
-        if (type_ == Punctuation) {
-            if (charNext == punctuationEnumToChar(divide)) {
-                is.get();
-                type_ = UnknownType;
-                punctuation_ = unknownPunctuation;
-                if (!movePastEndOfLine(is)) {
-                    type_ = Fail;
-                    return false;
-                }
-            } else if (charNext == punctuationEnumToChar(multiply)) {
-                is.get();
-                type_ = UnknownType;
-                punctuation_ = unknownPunctuation;
-                moveToEndOfBlockComment(is);
-                continue;
-            } else {
-                // It is a divide punctuation
-                str_ = punctuationEnumToChar(divide);
-                return true;
-            }
-        }
-        if (std::isspace(nxt)) {
-            is.get();
-            continue;
-        }
-        if (nxt == EOF) {
-            if (is.fail()) {
-                type_ = Fail;
-                return false;
-            } else {
-                type_ = Eof;
-                return true;
-            }
-        }
-        if (charNext == punctuationEnumToChar(divide)) {
-            type_ = Punctuation;
-            punctuation_ = divide;
-            is.get();
-            continue;
-        }
-        break;
-    }
-
     // We are at the start of the next token
-    // We may be holding a punctuation +-. in case it's a number
-    char firstChar;
-    is.get(firstChar);
-    str_ += firstChar;
-    punctuation_ = charToPunctuationEnum(firstChar);
-    switch(punctuation_) {
-        case openString: {
-            getFullString(is);
-            type_ = String;
-            punctuation_ = unknownPunctuation;
-            return true;
-        }
-        case unknownPunctuation: // fall through
-        case period: // could be decimal number: fall through
-        case subtract: // could be negative number: fall through
-        case add: // could be explicitly positive number: fall through
-            break;
-        default: {
-            type_ = Punctuation;
-            return true;
-        }
+    //  * we have eliminated "string" tokens
+    //  * we have eliminated most punctuation tokens, but may have a punctuation +-. at the front
+    // First, check and get rid of front punctuation
+    int nxt(is.peek());
+    if (nxt == EOF) {
+        // Can only be a +-. punctuation, everything is set
+        return true;
     }
+    char nextChar(nxt);
 
-    bool numEncountered = false;
-    bool periodEncountered = punctuation_ == period;
-    bool exponentStarted = false;
-    bool exponentSigned = false;
-    bool exponentCompleted = false;
-    while (true) {
-        // Edge cases:
-        // * '-' could be 'subtract', but it could also be a number
-        // * '0'-'9' could be a number, but it could also be a word starting with a number
-        // * 'e' or 'E' could be exponentiation
-        // * '.' could be decimal, or a separator
-        int nxt = is.peek();
-        if (is.fail()) {
-            type_ = Fail;
-            return false;
-        }
-
-        // Ending a token:
-        // nxt == EOF, or isspace
-        // Type changes:
-        //  * Word to any punctuation
-        //  * any punctuation to alpha (handled)
-        //  * any punctuation except +-. to number
-        //  * number to any punctuation
-
-
-        if (nxt == EOF || std::isspace(nxt)) {
-            // End of token
-            if (exponentSigned || (exponentStarted && periodEncountered)) {
-                // Error - incomplete exponent, or word with punctuation
-            }
-            if (exponentStarted) {
-                // Just a number-started word ending with e
-                type_ = Word;
-                return true;
-            }
-            if (type_ == Word) {
-                return true;
-            }
-            if (numEncountered) {
-                if (exponentCompleted) {
-                    // double only
-                    double_ = std::stod(str_);
-                    type_ = Float;
-                    return true;
-                }
-                if (punctuation_ != subtract) {
-                    // uinteger_ is the basis of comparison
-                    uinteger_ = std::stoull(str_);
-                    integer_ = std::stoll(str_);
-                    double_ = std::stod(str_);
-                    if (uinteger_ == integer_) {
-                        if (uinteger_ == double_) {
-                            type_ = Float_Int_UInt;
-                            return true;
-                        } else {
-                            double_ = 0.;
-                            type_ = Int_UInt;
-                            return true;
-                        }
-                    } else {
-                        if (uinteger_ == double_) {
-                            type_ = Float_UInt;
-                            return true;
-                        } else {
-                            integer_ = 0.;
-                            type_ = UInt;
-                            return true;
-                        }
-                    }
-                } else {
-                    // integer_ is the basis of comparison
-                    integer_ = std::stoll(str_);
-                    double_ = std::stod(str_);
-                    if (integer_ == double_) {
-                        type_ = Float_Int;
-                        return true;
-                    }
-                    else {
-                        integer_ = 0;
-                        type_ = Float;
-                        return true;
-                    }
-                }
-            }
-            if (punctuation_ != unknownPunctuation) {
-                type_ = Punctuation;
-                return true;
-            }
-            // Should have captured all types of tokens by now, internal error if reached here
-            type_ = UnknownType;
-            return false;
-        }
-        char nextChar;
-        is.get(nextChar);
-        str_ += nextChar;
-
-        if (exponentStarted) {
-            if (std::isdigit(nextChar)) {
-                exponentStarted = false;
-                exponentSigned = false;
-                exponentCompleted = true;
-                continue;
-            }
-            if (
-                nextChar == punctuationEnumToChar(subtract)
-             || nextChar == punctuationEnumToChar(add)
-            ) {
-                if (exponentSigned) {
-                    FatalError << "Unexpected exponent pattern: '" << str_ << "'" << std::endl;
-                    abort();
-                } else {
-                    exponentSigned = true;
-                    continue;
-                }
-            }
-        }
-
-        if (std::isdigit(nextChar)) {
-            numEncountered = true;
-            continue;
-        }
-        if (nextChar == 'e' || nextChar == 'E') {
-            if (type_ == Word || !numEncountered) {
-                continue;
-            }
-            exponentStarted = true;
-            continue;
-        }
-
-        if (nextChar == punctuationEnumToChar(period)) {
-            if (periodEncountered) {
-                FatalError << "Unexpected number pattern: '" << str_ << "'" << std::endl;
-                abort();
-            } else if (type_ == Word) {
-                FatalError << "Puntuation not expected here: '" << str_ << "'" << std::endl;
-                abort();
-            } else {
-                periodEncountered = true;
-            }
-        }
-        if (std::isalpha(nextChar) || nextChar == '_') {
-            if (
-                periodEncountered
-             || punctuation_ == subtract
-             || punctuation_ == add
-             || exponentSigned
-            ) {
-                FatalError << "Unexpected word pattern '" << str_ << "'" << std::endl;
-                abort();
-            }
-            type_ = Word;
-            continue;
-        }
-        if (charToPunctuationEnum(nextChar) != unknownPunctuation) {
-            FatalError << "Punctuation not expected here: '" << str_ << "'" << std::endl;
-            abort();
+    if (type_ == Punctuation) {
+        if (std::isspace(nxt) || validWordFirstChar(nextChar)) {
+            // Can only be a +-. punctuation, everything is set
+            return true;
         } else {
-            FatalError << "Disallowed character in input stream: '" << str_ << "'" << std::endl;
+            // Temporarily use 'Float' type to indicate this is a number, not a word
+            type_ = Float;
+        }
+    } else {
+        if (validWordFirstChar(nextChar)) {
+            type_ = Word;
+        } else if (std::isdigit(nextChar)) {
+            // Temporarily use 'Float' type to indicate this is a number, not a word
+            type_ = Float;
+        } else {
+            str_ += nextChar;
+            FatalError << "Disallowed character in input stream. Character is code " << nxt
+                << ". Read: '" << str_ << "'" << std::endl;
             abort();
         }
     }
+
+    str_ += nextChar;
+    is.get();
+
+    // Now we have either a word or a number
+    if (type_ == Word) {
+        getFullWord(is);
+        return true;
+    }
+    #ifdef DSDEBUG
+    if(type_ != Float) {
+        FatalError << "Internal error - type_ should either be Float or Word at this point."
+            << std::endl;
+        abort();
+    }
+    #endif
+    getFullNumber(is);
+    return true;
 }
 
 
@@ -785,10 +614,179 @@ void ds::Token::getFullString(std::istream& is) {
 }
 
 
-void ds::Token::debugWrite(std::ostream& os) const {
-    os << "str='" << str_ << "', type='" << typeEnumToString(type_) << "', pType='"
-        << punctuationEnumToChar(punctuation_) << ", int=" << integer_ << ", uint="
-        << uinteger_ << ", dbl='" << double_ << "'  ";
+void ds::Token::getFullWord(std::istream& is) {
+    // First character is already taken, type is already Word
+    while (true) {
+        int nxt(is.peek());
+        if (nxt == EOF || std::isspace(nxt)) {
+            break;
+        }
+        char nextChar(nxt);
+        if (validWordNthChar(nextChar)) {
+            is.get();
+            str_ += nextChar;
+        } else {
+            break;
+        }
+    }
+}
+
+
+void ds::Token::getFullNumber(std::istream& is) {
+    // punctuation_ holds any preceding '+-.' or unknownPunctuation if none exist
+    // First numerical character is already taken
+    // type_ is set to Float, but needs to be changed as necessary
+
+    //- True if number already has a decimal
+    bool hasDecimal = punctuation_ == period;
+    //- True when 'e' or 'E' is encountered, but only until the next character
+    bool expStarted = false;
+    //- True when expStarted and '+' or '-' are encountered, next character must be digit
+    bool expSigned = false;
+    //- Exponent pattern complete, cannot encounter again
+    bool expCompleted = false;
+
+    while (true) {
+        int nxt(is.peek());
+        if (nxt == EOF || std::isspace(nxt)) {
+            break;
+        }
+        char nextChar(nxt);
+        if (nextChar == 'e' || nextChar == 'E') {
+            str_ += nextChar;
+            if (expStarted || expCompleted) {
+                FatalError << "Unrecognized exponent pattern: '" << str_ << "'" << std::endl;
+                abort();
+            }
+            expStarted = true;
+            is.get();
+            continue;
+        }
+        if (nextChar == '+' || nextChar == '-') {
+            str_ += nextChar;
+            if (!expStarted || expSigned || expCompleted) {
+                FatalError << "Unexpected '+' or '-' in number. Read: '" << str_ << "'"
+                    << std::endl;
+                abort();
+            }
+            expSigned = true;
+            is.get();
+            continue;
+        }
+        if (nextChar == '.') {
+            str_ += nextChar;
+            if (expStarted || expCompleted) {
+                FatalError  << "Decimal encountered after exponent in number. Read: '" << str_
+                    << std::endl;
+                abort();
+            }
+            if (hasDecimal) {
+                FatalError << "Decimal encountered twice in number. Read: '" << str_ << std::endl;
+                abort();
+            }
+            hasDecimal = true;
+            is.get();
+            continue;
+        }
+        if (std::isdigit(nxt)) {
+            if (expStarted) {
+                expCompleted = true;
+                expStarted = false;
+                expSigned = false;
+            }
+            str_ += nextChar;
+            is.get();
+            continue;
+        }
+        // nextChar is not number-related
+        break;
+    }
+
+    // Parse number
+    if (expStarted) {
+            FatalError << "Unexpected exponent pattern. Read: '" << str_ << "'" << std::endl;
+            abort();
+    }
+    if (expCompleted) {
+        // double_ is the basis of comparison
+        double_ = std::strtod(str_.c_str(), nullptr);
+        integer_ = double_;
+        if (punctuation_ == subtract) {
+            // Negative number only
+            if (integer_ == double_) {
+                type_ = Float_Int;
+                return;
+            } else {
+                integer_ = 0;
+                type_ = Float;
+                return;
+            }
+        } else {
+            uinteger_ = double_;
+            if (integer_ == double_) {
+                type_ = Float_Int_UInt;
+                return;
+            } else if (uinteger_ == double_) {
+                type_ = Float_UInt;
+                integer_ = 0;
+                return;
+            } else {
+                type_ = Float;
+                integer_ = 0;
+                uinteger_ = 0;
+                return;
+            }
+        }
+    }
+    if (punctuation_ != subtract) {
+        // uinteger_ is the basis of comparison
+        uinteger_ = std::strtoull(str_.c_str(), nullptr, 0);
+        integer_ = uinteger_;
+        double_ = uinteger_;
+        if (uinteger_ == integer_) {
+            if (uinteger_ == double_) {
+                type_ = Float_Int_UInt;
+                return;
+            } else {
+                double_ = 0.;
+                type_ = Int_UInt;
+                return;
+            }
+        } else {
+            integer_ = 0;
+            if (uinteger_ == double_) {
+                type_ = Float_UInt;
+                return;
+            } else {
+                double_ = 0;
+                type_ = UInt;
+                return;
+            }
+        }
+    } else {
+        // integer_ is the basis of comparison
+        integer_ = std::strtoll(str_.c_str(), nullptr, 0);
+        double_ = integer_;
+        if (integer_ == double_) {
+            type_ = Float_Int;
+            return;
+        }
+        else {
+            integer_ = 0;
+            type_ = Float;
+            return;
+        }
+    }
+}
+
+
+bool ds::Token::validWordFirstChar(char c) {
+    return (std::isalpha(c) || c == '_');
+}
+
+
+bool ds::Token::validWordNthChar(char c) {
+    return (std::isalpha(c) || c == '_' || std::isdigit(c));
 }
 
 

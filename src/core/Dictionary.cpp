@@ -5,16 +5,20 @@
 
 const ds::Dictionary ds::Dictionary::null;
 
+int ds::Dictionary::tabWidth(4);
+
 
 // ****** Constructors ****** //
 
 ds::Dictionary::Dictionary():
-    parent_(null)
+    parent_(null),
+    depth_(0)
 {}
 
 
 ds::Dictionary::Dictionary(std::istream& is):
-    parent_(null)
+    parent_(null),
+    depth_(0)
 {
     read(is);
 }
@@ -22,7 +26,8 @@ ds::Dictionary::Dictionary(std::istream& is):
 
 ds::Dictionary::Dictionary(const std::string& fileName):
     parent_(null),
-    name_(fileName)
+    name_(fileName),
+    depth_(0)
 {
     std::ifstream is(fileName);
     read(is);
@@ -31,7 +36,8 @@ ds::Dictionary::Dictionary(const std::string& fileName):
 
 ds::Dictionary::Dictionary(const std::string& name, const Dictionary& parent, std::istream& is):
     parent_(parent),
-    name_(parent.name() + ":" + name)
+    name_(parent.name() + ":" + name),
+    depth_(parent.depth() + 1)
 {
     read(is);
 }
@@ -67,6 +73,11 @@ ds::Dictionary::size_type ds::Dictionary::size() const noexcept {
 
 const std::string& ds::Dictionary::name() const {
     return name_;
+}
+
+
+int ds::Dictionary::depth() const {
+    return depth_;
 }
 
 
@@ -149,6 +160,9 @@ const ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) con
 
 
 void ds::Dictionary::add(Entry&& e, bool overwrite) {
+// std::cout << "Adding entry: [";
+// e.debugWrite(std::cout);
+// std::cout << "]" << std::endl;
     std::string copyKeyword(e.keyword());
     auto it = hashedEntries_.find(copyKeyword);
     if (it != hashedEntries_.end()) {
@@ -211,10 +225,12 @@ void ds::Dictionary::read(std::istream& is) {
 // ****** Global Operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Dictionary& d) {
+    int nspaces = Dictionary::tabWidth*d.depth_;
+    os << std::string(nspaces, ' ') << "{\n";
     for (auto it = d.cbegin(); it != d.cend(); ++it) {
         os << *it << "\n";
     }
-    os << std::endl;
+    os << std::string(nspaces, ' ') << '}';
     return os;
 }
 

@@ -189,6 +189,18 @@ private:
         //- Read istream into str_ until closeString character encountered
         void getFullString(std::istream& is);
 
+        //- Read istream into str_ until invalid word character is encountered
+        void getFullWord(std::istream& is);
+
+        //- Read istream into str_, parsing it into a number, and set the correct type and values
+        void getFullNumber(std::istream& is);
+
+        //- Returns true if c is a valid word first character
+        bool validWordFirstChar(char c);
+
+        //- Returns true if c is a valid word nth character
+        bool validWordNthChar(char c);
+
 
     // Private Member Data
 

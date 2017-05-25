@@ -32,6 +32,9 @@ public:
         //- Null dictionary
         static const Dictionary null;
 
+        //- Tab width
+        static int tabWidth;
+
 
     // Constructors
 
@@ -72,6 +75,9 @@ public:
 
             //- Return file name
             const std::string& name() const;
+
+            //- Return depth
+            int depth() const;
 
             //- True if keyword exists
             bool found(const std::string& keyword) const;
@@ -142,6 +148,9 @@ private:
         
         //- Hashed table for quick look-up
         std::unordered_map<std::string, Entry*> hashedEntries_;
+
+        //- Depth of sub-dictionary
+        int depth_;
 };
 
 } // end namespace
