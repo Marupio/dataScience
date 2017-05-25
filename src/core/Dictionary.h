@@ -50,6 +50,21 @@ public:
         //- Construct embedded dictionary from istream and name
         Dictionary(const std::string& name, const Dictionary& parent, std::istream& is);
 
+        // Rule of four
+        // depth_ complicates construction, default ones will not do
+
+            //- Copy constructor
+            Dictionary(const Dictionary& dict);
+
+            //- Move constructor
+            Dictionary(Dictionary&& dict);
+
+            //- Copy assignment operator
+            Dictionary operator=(const Dictionary& dict);
+
+            //- Move assignment operator
+            Dictionary operator=(Dictionary&& dict);
+
 
     // Public Member Functions
 
@@ -73,8 +88,17 @@ public:
 
         // Query
 
-            //- Return file name
-            const std::string& name() const;
+            //- Return parent
+            const Dictionary& parent() const;
+
+            //- Return full name: scopeName:keyName
+            std::string name() const;
+
+            //- Return scopeName
+            const std::string& scopeName() const;
+
+            //- Return keyName
+            const std::string& keyName() const;
 
             //- Return depth
             int depth() const;
@@ -107,12 +131,30 @@ public:
             //- Add entry to dictionary
             void add(Entry&& e, bool overwrite=false);
 
-            //- Add type to dictionary
+            //- Add keyword and associated stream to dictionary
+            void add(const std::string& keyword, std::istream& is, bool overwrite=false);
+
+            //- Add keyword and string to be parsed to dictionary
+            void add(const std::string& keyword, std::string& parseThis, bool overwrite=false);
+
+            //- Add string to dictionary (to be parsed by Entry)
+            //  Use formats:
+            //  * "keyword followed by other entries;"
+            //  * "keyword { subdictionary entries or empty }"
+            void add(const std::string& parseThis, bool overwrite=false);
+
+            // Add subdictionary - since Entry must own Dictionary, move constructor only
+            void add(const std::string& keyword, Dictionary&& subdict, bool overwrite=false);
+
+            //- Add templated type to dictionary
             template<class T>
-            void add(std::string& keyword, const T& val, bool overwrite=false);
+            void addType(std::string& keyword, const T& val, bool overwrite=false);
 
             //- Erase an entry
             void erase(const std::string& keyword, bool failOnNotFound=false);
+
+            //- Clear all entries
+            void clear();
 
 
         // Debug
@@ -139,9 +181,12 @@ private:
         //- Parent dictionary
         const Dictionary& parent_;
 
-        //- Associated file, with sub-dictionary context:
+        //- Associated file, with sub-dictionary context up to base level
         //  "/absolute/or/relative/path/to/file:subDictionary:subDictionary"
-        std::string name_;
+        std::string scopeName_;
+
+        //- Keyword associated with this dictionary.  It's full name is scopeName:keyword
+        std::string keyName_;
 
         //- Entry list, i.e. the data in the dictionary
         ListEntry entries_;

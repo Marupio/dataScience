@@ -1,4 +1,5 @@
 #include <fstream>
+#include <sstream>
 #include <Dictionary.h>
 
 // ****** Static Member Data ****** //
@@ -26,7 +27,7 @@ ds::Dictionary::Dictionary(std::istream& is):
 
 ds::Dictionary::Dictionary(const std::string& fileName):
     parent_(null),
-    name_(fileName),
+    keyName_(fileName),
     depth_(0)
 {
     std::ifstream is(fileName);
@@ -36,10 +37,51 @@ ds::Dictionary::Dictionary(const std::string& fileName):
 
 ds::Dictionary::Dictionary(const std::string& name, const Dictionary& parent, std::istream& is):
     parent_(parent),
-    name_(parent.name() + ":" + name),
+    scopeName_(parent.name()),
+    keyName_(name),
     depth_(parent.depth() + 1)
 {
     read(is);
+}
+
+
+ds::Dictionary::Dictionary(const Dictionary& dict):
+    parent_(null),
+    depth_(0)
+{
+    std::stringstream ss;
+    ss << dict;
+    read(ss);
+}
+
+
+ds::Dictionary::Dictionary(Dictionary&& dict):
+    parent_(null),
+    depth_(0)
+{
+    if (dict.depth_ > 0) {
+        // Use copy constructor, then remove from parent
+        *this = dict;
+        Dictionary& dictParent(const_cast<Dictionary&>(dict.parent_));
+        dictParent.erase(dict.keyName_);
+    } else {
+        scopeName_.swap(dict.scopeName_);
+        keyName_.swap(dict.keyName_);
+        entries_.swap(dict.entries_);
+        hashedEntries_.swap(dict.hashedEntries_);
+    }
+}
+
+
+ds::Dictionary ds::Dictionary::operator=(const Dictionary& dict)
+{
+    return Dictionary(dict);
+}
+
+
+ds::Dictionary ds::Dictionary::operator=(Dictionary&& dict)
+{
+    return Dictionary(std::move(dict));
 }
 
 
@@ -71,8 +113,23 @@ ds::Dictionary::size_type ds::Dictionary::size() const noexcept {
 }
 
 
-const std::string& ds::Dictionary::name() const {
-    return name_;
+const ds::Dictionary& ds::Dictionary::parent() const {
+    return parent_;
+}
+
+
+std::string ds::Dictionary::name() const {
+    return scopeName_ + ":" + keyName_;
+}
+
+
+const std::string& ds::Dictionary::scopeName() const {
+    return scopeName_;
+}
+
+
+const std::string& ds::Dictionary::keyName() const {
+    return keyName_;
 }
 
 
@@ -101,7 +158,7 @@ ds::Entry::typeEnum ds::Dictionary::foundType(const std::string& keyword) const 
 const ds::Entry& ds::Dictionary::lookup(const std::string& keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
-        FatalError << "Cannot find keyword '" << keyword << "' in Dictionary '" << name_ << "'"
+        FatalError << "Cannot find keyword '" << keyword << "' in Dictionary '" << name() << "'"
             << std::endl;
         abort();
     }
@@ -121,7 +178,7 @@ const ds::VecToken& ds::Dictionary::lookupTokens(const std::string& keyword) con
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         FatalError << "Cannot find Tokens Entry for keyword '" << keyword << "' in Dictionary '"
-            << name_ << "'" << std::endl;
+            << name() << "'" << std::endl;
         abort();
     }
     return (*it).second->tokens();
@@ -141,7 +198,7 @@ ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.end()) {
         FatalError << "Cannot find Dictionary Entry for keyword '" << keyword << "' in Dictionary '"
-            << name_ << "'" << std::endl;
+            << name() << "'" << std::endl;
         abort();
     }
     return (*it).second->dict();
@@ -152,7 +209,7 @@ const ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) con
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         FatalError << "Cannot find Dictionary Entry for keyword '" << keyword << "' in Dictionary '"
-            << name_ << "'" << std::endl;
+            << name() << "'" << std::endl;
         abort();
     }
     return (*it).second->dict();
@@ -160,16 +217,13 @@ const ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) con
 
 
 void ds::Dictionary::add(Entry&& e, bool overwrite) {
-// std::cout << "Adding entry: [";
-// e.debugWrite(std::cout);
-// std::cout << "]" << std::endl;
     std::string copyKeyword(e.keyword());
     auto it = hashedEntries_.find(copyKeyword);
     if (it != hashedEntries_.end()) {
         if (overwrite) {
             erase(copyKeyword);
         } else {
-            FatalError << "Keyword '" << copyKeyword << "' already exists in Dictionary '" << name_
+            FatalError << "Keyword '" << copyKeyword << "' already exists in Dictionary '" << name()
                 << "'" << std::endl;
             abort();
         }
@@ -179,12 +233,38 @@ void ds::Dictionary::add(Entry&& e, bool overwrite) {
 }
 
 
+void ds::Dictionary::add(const std::string& keyword, std::istream& is, bool overwrite) {
+    Entry e(*this, keyword, is);
+    add(std::move(e), overwrite);
+}
+
+
+void ds::Dictionary::add(const std::string& keyword, std::string& parseThis, bool overwrite) {
+    std::stringstream is(parseThis);
+    Entry e(*this, keyword, is);
+    add(std::move(e), overwrite);
+}
+
+
+void ds::Dictionary::add(const std::string& parseThis, bool overwrite) {
+    std::stringstream is(parseThis);
+    Entry e(*this, is);
+    add(std::move(e), overwrite);
+}
+
+
+void ds::Dictionary::add(const std::string& keyword, Dictionary&& subdict, bool overwrite) {
+    Entry e(*this, std::move(subdict));
+    add(std::move(e), overwrite);
+}
+
+
 void ds::Dictionary::erase(const std::string& keyword, bool failOnNotFound) {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         if (failOnNotFound) {
             FatalError << "Cannot find Dictionary Entry for keyword '" << keyword << "' in Dictionary '"
-                << name_ << "'" << std::endl;
+                << name() << "'" << std::endl;
             abort();
         } else {
             return;
@@ -197,6 +277,12 @@ void ds::Dictionary::erase(const std::string& keyword, bool failOnNotFound) {
         }
     }
     hashedEntries_.erase(it);
+}
+
+
+void ds::Dictionary::clear() {
+    hashedEntries_.clear();
+    entries_.clear();
 }
 
 
@@ -235,7 +321,14 @@ std::ostream& ds::operator<<(std::ostream& os, const Dictionary& d) {
 }
 
 
-std::istream& ds::operator>>(std::istream& is, Dictionary& d);
+std::istream& ds::operator>>(std::istream& is, Dictionary& d) {
+    if (d.entries_.size()) {
+        FatalError << "Dictionary " << d.name() << "non-empty" << std::endl;
+        abort();
+    }
+    d = Dictionary(is);
+    return is;
+}
 
 
 // ****** END ****** //

@@ -33,6 +33,17 @@ public:
         //- Construct from istream and parent dictionary
         Entry(Dictionary& parent, std::istream& is, bool requireSemiColonEnd=true);
 
+        //- Construct given keyword and istream
+        Entry(
+            Dictionary& parent,
+            const std::string& keyword,
+            std::istream& is,
+            bool requireSemiColonEnd=true
+        );
+
+        // Construct from subdictionary
+        Entry(Dictionary& parent, Dictionary&& subDict);
+
 
     // Public Member Functions
 
@@ -87,6 +98,9 @@ private:
 
     // Private Member Functions
 
+        //- Parse istream
+        void read(std::istream& is, bool requireSemiColonEnd);
+
         //- Read keyword from istream
         //  Returns false if not valid, or not found
         bool getKeyword(std::istream& is);
@@ -107,7 +121,7 @@ private:
         VecToken tokens_;
 
         //- Parent dictionary
-        const Dictionary& parent_;
+        Dictionary& parent_;
     
 };
 

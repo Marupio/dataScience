@@ -10,87 +10,90 @@ int main()
 {
     Dictionary dict("testDict");
     bool quit = false;
+    Dictionary* dictPtr(&dict);
     while(!quit) {
-        std::cout << "Current dictionary = [\n" << dict << "\n]" << std::endl;
-        std::cout << "\nSelect action:\n1 - found\n2 - foundType\n3 - lookup\n4 - isTokens"
-            << "\n5 - lookupTokens\n6 - isDict\n7 - lookupDict\n"
-            << "0 - quit\n"
+        std::cout << "Current dictionary = [\n" << *dictPtr << "\n]" << std::endl;
+        std::cout << "\nSelect action:"
+            << "name, scopeName, keyName, depth, found, foundType, lookup, isTokens, lookupTokens, "
+            << "isDict,\nlookupDict, reset (to top dict level), add, add, erase, clear, debugWrite"
+            << ", quit\n"
             << "What do you want to do? ";
-        int action;
+        std::string action;
         std::cin >> action;
-        switch (action) {
-            case 1: {
-                std::cout << "found(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                std::cout << "Result is " << dict.found(key) << std::endl;
-                break;
-            }
-            case 2: {
-                std::cout << "foundType(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                std::cout << "Result is " << Entry::typeEnumToString(dict.foundType(key))
-                    << std::endl;
-                break;
-            }
-            case 3: {
-                std::cout << "lookup(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                const Entry& e(dict.lookup(key));
-                std::cout << "Result is [";
-                e.debugWrite(std::cout);
-                std::cout << "]" << std::endl;
-                break;
-            }
-            case 4: {
-                std::cout << "isTokens(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                std::cout << "Result is " << dict.isTokens(key) << std::endl;
-                break;
-            }
-            case 5: {
-                std::cout << "lookupTokens(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                const VecToken& vt(dict.lookupTokens(key));
-                std::cout << "Result is [";
-                vt.debugWrite(std::cout);
-                std::cout << "]" << std::endl;
-                break;
-            }
-            case 6: {
-                std::cout << "isDict(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                std::cout << "Result is " << dict.isDict(key) << std::endl;
-                break;
-            }
-            case 7: {
-                std::cout << "lookupDict(key): What is key? ";
-                std::string key;
-                std::cin >> key;
-                const Dictionary& subDict(dict.lookupDict(key));
-                std::cout << "Result is [" << subDict << "]" << std::endl;
-                break;
-            }
-            case 0: {
-                quit = true;
-                break;
-            }
-            default: {
-                std::cout << "Unrecognized command" << std::endl;
-
-                break;
-            }
+        if (action == "name") {
+            std::cout << "Result = [" << dictPtr->name() << "]" << std::endl;
+        } else if (action == "scopeName") {
+            std::cout << "Result = [" << dictPtr->scopeName() << "]" << std::endl;
+        } else if (action == "keyName") {
+            std::cout << "Result = [" << dictPtr->keyName() << "]" << std::endl;
+        } else if (action == "depth") {
+            std::cout << "Result = [" << dictPtr->depth() << "]" << std::endl;
+        } else if (action == "found") {
+            std::cout << "found(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            std::cout << "Result = [" << dictPtr->found(key) << "]" << std::endl;
+        } else if (action == "foundType") {
+            std::cout << "foundType(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            std::cout << "Result = [" << Entry::typeEnumToString(dictPtr->foundType(key)) << "]"
+                << std::endl;
+        } else if (action == "lookup") {
+            std::cout << "lookup(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            const Entry& e(dictPtr->lookup(key));
+            std::cout << "Result = [";
+            e.debugWrite(std::cout);
+            std::cout << "]" << std::endl;
+        } else if (action == "isTokens") {
+            std::cout << "isTokens(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            std::cout << "Result = [" << dictPtr->isTokens(key) << "]" << std::endl;
+        } else if (action == "lookupTokens") {
+            std::cout << "lookupTokens(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            const VecToken& vt(dictPtr->lookupTokens(key));
+            std::cout << "Result = [" << vt << "]" << std::endl;
+        } else if (action == "isDict") {
+            std::cout << "isDict(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            std::cout << "Result = [" << dictPtr->isDict(key) << "]" << std::endl;
+        } else if (action == "lookupDict") {
+            std::cout << "lookupDict(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            dictPtr = &(dictPtr->lookupDict(key));
+        } else if (action == "reset") {
+            dictPtr = &dict;
+        } else if (action == "add") {
+            std::cout << "add(key, string): What is key? ";
+            std::string key;
+            std::cin >> key;
+            std::cout << "What is string? ";
+            std::string str;
+            std::cin >> str;
+            dictPtr->add(key, str);
+        } else if (action == "erase") {
+            std::cout << "erase(key): What is key? ";
+            std::string key;
+            std::cin >> key;
+            dictPtr->erase(key);
+        } else if (action == "clear") {
+            dictPtr->clear();
+        } else if (action == "debugWrite") {
+            std::cout << "Result is: [\n";
+            dictPtr->debugWrite(std::cout);
+            std::cout << "\n]";
+        } else if (action == "quit") {
+            quit = true;
+        } else {
+            std::cout << "Unrecognized command: [" << action << "]" << std::endl;
         }
     }
-    std::ofstream os("output");
-    dict.debugWrite(os);
-    os << "-------------" << std::endl;
-    os << dict << std::endl;
-//    std::cout << dict << std::endl;
     return 0;
 }

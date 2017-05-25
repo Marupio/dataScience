@@ -11,27 +11,30 @@ ds::Entry::Entry(Dictionary& parent, std::istream& is, bool requireSemiColonEnd)
     if (!getKeyword(is)) {
         return;
     }
-    Token nextToken(is);
-    if (nextToken == Token::Eof) {
-        type_ = teEof;
-        nextToken.putBack(is);
-        return;
-    } else if (nextToken == Token::openScope) {
-        type_ = teDict;
-        dictPtr_.reset(new Dictionary(keyword_, parent, is));
-    } else {
-        nextToken.putBack(is);
-    	VecToken::eofBehaviourEnum eb =
-    		requireSemiColonEnd ? VecToken::ebFailOnEof : VecToken::ebAllowEof;
-        tokens_.read(is, eb, VecToken::rbFailIfNotEmpty);
-        if (!tokens_.good()) {
-            FatalError << "Error reading token stream for keyword '" << keyword_ << "' in "
-                << "Dictionary '" << parent_.name() << "'. Read:\n" << tokens_ << std::endl;
-            abort();
-        }
-        type_ = teTokens;
-    }
+    read(is, requireSemiColonEnd);
 }
+
+
+ds::Entry::Entry(
+    Dictionary& parent,
+    const std::string& keyword,
+    std::istream& is,
+    bool requireSemiColonEnd
+):
+    keyword_(keyword),
+    type_(teUnknown),
+    parent_(parent)
+{
+    read(is, requireSemiColonEnd);
+}
+
+
+ds::Entry::Entry(Dictionary& parent, Dictionary&& subDict):
+    keyword_(subDict.keyName()),
+    type_(teDict),
+    dictPtr_(new Dictionary(std::move(subDict))),
+    parent_(parent)
+{}
 
 
 // ****** Public Member Functions ****** //
@@ -154,6 +157,29 @@ void ds::Entry::debugWrite(std::ostream& os) const {
 
 
 // ****** Private Member Functions ****** //
+
+void ds::Entry::read(std::istream& is, bool requireSemiColonEnd) {
+    Token nextToken(is);
+    if (nextToken == Token::Eof) {
+        type_ = teEof;
+        nextToken.putBack(is);
+        return;
+    } else if (nextToken == Token::openScope) {
+        type_ = teDict;
+        dictPtr_.reset(new Dictionary(keyword_, parent_, is));
+    } else {
+        nextToken.putBack(is);
+        VecToken::eofBehaviourEnum eb =
+            requireSemiColonEnd ? VecToken::ebFailOnEof : VecToken::ebAllowEof;
+        tokens_.read(is, eb, VecToken::rbFailIfNotEmpty);
+        if (!tokens_.good()) {
+            FatalError << "Error reading token stream for keyword '" << keyword_ << "' in "
+                << "Dictionary '" << parent_.name() << "'. Read:\n" << tokens_ << std::endl;
+            abort();
+        }
+        type_ = teTokens;
+    }
+}
 
 bool ds::Entry::getKeyword(std::istream& is) {
     Token nextToken(is);
