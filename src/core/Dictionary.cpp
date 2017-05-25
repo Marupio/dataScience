@@ -119,7 +119,11 @@ const ds::Dictionary& ds::Dictionary::parent() const {
 
 
 std::string ds::Dictionary::name() const {
-    return scopeName_ + ":" + keyName_;
+    if (depth_ == 0) {
+        return keyName_;
+    } else {
+        return scopeName_ + ":" + keyName_;
+    }
 }
 
 
