@@ -141,6 +141,16 @@ ds::Card::Card(std::istream& is):
 }
 
 
+ds::Card::Card(VecToken& vt):
+    value_(unknownValue),
+    suit_(unknownSuit)
+{
+    std::stringstream ss;
+    ss << vt;
+    ss >> *this;
+}
+
+
 // ****** Public Member Functions ******
 
 ds::CardVal ds::Card::readCharToValue(char value) {

@@ -45,10 +45,10 @@ public:
         Dictionary(std::istream& is);
 
         //- Construct from file
-        Dictionary(const std::string& fileName);
+        Dictionary(std::string fileName);
 
         //- Construct embedded dictionary from istream and name
-        Dictionary(const std::string& name, const Dictionary& parent, std::istream& is);
+        Dictionary(std::string name, const Dictionary& parent, std::istream& is);
 
         // Rule of four
         // depth_ complicates construction, default ones will not do
@@ -104,26 +104,34 @@ public:
             int depth() const;
 
             //- True if keyword exists
-            bool found(const std::string& keyword) const;
+            bool found(std::string keyword) const;
 
             //- Returns entry type, including unknown if not found
-            Entry::typeEnum foundType(const std::string& keyword) const;
+            Entry::typeEnum foundType(std::string keyword) const;
 
             //- Return associated entry, fail if not found
-            const Entry& lookup(const std::string& keyword) const;
+            const Entry& lookupEntry(std::string keyword) const;
 
             //- True if entry is a token stream, false if not found
-            bool isTokens(const std::string& keyword) const;
+            bool isTokens(std::string keyword) const;
 
             //- Lookup token stream
-            const VecToken& lookupTokens(const std::string& keyword) const;
+            const VecToken& lookupTokens(std::string keyword) const;
 
             //- True if entry is a sub-dictionary
-            bool isDict(const std::string& keyword) const; 
+            bool isDict(std::string keyword) const; 
 
             //- Lookup sub-dictionary
-            Dictionary& lookupDict(const std::string& keyword);
-            const Dictionary& lookupDict(const std::string& keyword) const;
+            Dictionary& lookupDict(std::string keyword);
+            const Dictionary& lookupDict(std::string keyword) const;
+
+            //- Lookup a templated type from the dictionary
+            template<class T>
+            T lookup(std::string keyword);
+
+            //- Lookup a templated type from the dictionary, return defaultVal if not found
+            template<class T>
+            T lookupOrDefault(std::string keyword, T defaultVal);
 
 
         // Edit
@@ -132,26 +140,26 @@ public:
             void add(Entry&& e, bool overwrite=false);
 
             //- Add keyword and associated stream to dictionary
-            void add(const std::string& keyword, std::istream& is, bool overwrite=false);
+            void add(std::string keyword, std::istream& is, bool overwrite=false);
 
             //- Add keyword and string to be parsed to dictionary
-            void add(const std::string& keyword, std::string& parseThis, bool overwrite=false);
+            void add(std::string keyword, std::string parseThis, bool overwrite=false);
 
             //- Add string to dictionary (to be parsed by Entry)
             //  Use formats:
             //  * "keyword followed by other entries;"
             //  * "keyword { subdictionary entries or empty }"
-            void add(const std::string& parseThis, bool overwrite=false);
+            void add(std::string parseThis, bool overwrite=false);
 
             // Add subdictionary - since Entry must own Dictionary, move constructor only
-            void add(const std::string& keyword, Dictionary&& subdict, bool overwrite=false);
+            void add(std::string keyword, Dictionary&& subdict, bool overwrite=false);
 
             //- Add templated type to dictionary
             template<class T>
-            void addType(std::string& keyword, const T& val, bool overwrite=false);
+            void addType(std::string keyword, const T& val, bool overwrite=false);
 
             //- Erase an entry
-            void erase(const std::string& keyword, bool failOnNotFound=false);
+            void erase(std::string keyword, bool failOnNotFound=false);
 
             //- Clear all entries
             void clear();
@@ -197,6 +205,14 @@ private:
         //- Depth of sub-dictionary
         int depth_;
 };
+
+// Template Specialisations
+template<>
+bool ds::Dictionary::lookup(std::string keyword);
+
+template<>
+bool ds::Dictionary::lookupOrDefault(std::string keyword, bool defaultVal);
+
 
 } // end namespace
 

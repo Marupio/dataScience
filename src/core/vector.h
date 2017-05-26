@@ -1,8 +1,8 @@
 #ifndef vector_h
 #define vector_h
 
-#include <error.h>
 #include <vector>
+#include <error.h>
 
 namespace ds {
 

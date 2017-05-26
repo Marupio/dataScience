@@ -3,7 +3,6 @@
 #ifndef Card_h
 #define Card_h
 
-#include <string>
 #include <types.h>
 #include <Suit.h>
 
@@ -82,6 +81,9 @@ public:
         
         //- Construct from istream
         Card(std::istream& is);
+
+        //- Construct from VecToken
+        Card(VecToken& vt);
     
 
     //- Destructor

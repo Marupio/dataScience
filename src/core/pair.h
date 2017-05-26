@@ -1,7 +1,6 @@
 #ifndef pair_h
 #define pair_h
 
-#include <error.h>
 #include <utility>
 
 namespace ds {

@@ -1,5 +1,4 @@
 #include <fstream>
-#include <sstream>
 #include <Dictionary.h>
 
 // ****** Static Member Data ****** //
@@ -25,7 +24,7 @@ ds::Dictionary::Dictionary(std::istream& is):
 }
 
 
-ds::Dictionary::Dictionary(const std::string& fileName):
+ds::Dictionary::Dictionary(std::string fileName):
     parent_(null),
     keyName_(fileName),
     depth_(0)
@@ -35,7 +34,7 @@ ds::Dictionary::Dictionary(const std::string& fileName):
 }
 
 
-ds::Dictionary::Dictionary(const std::string& name, const Dictionary& parent, std::istream& is):
+ds::Dictionary::Dictionary(std::string name, const Dictionary& parent, std::istream& is):
     parent_(parent),
     scopeName_(parent.name()),
     keyName_(name),
@@ -142,7 +141,7 @@ int ds::Dictionary::depth() const {
 }
 
 
-bool ds::Dictionary::found(const std::string& keyword) const {
+bool ds::Dictionary::found(std::string keyword) const {
     if (hashedEntries_.find(keyword) == hashedEntries_.cend()) {
         return false;
     }
@@ -150,7 +149,7 @@ bool ds::Dictionary::found(const std::string& keyword) const {
 }
 
 
-ds::Entry::typeEnum ds::Dictionary::foundType(const std::string& keyword) const {
+ds::Entry::typeEnum ds::Dictionary::foundType(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         return Entry::teUnknown;
@@ -159,7 +158,7 @@ ds::Entry::typeEnum ds::Dictionary::foundType(const std::string& keyword) const 
 }
 
 
-const ds::Entry& ds::Dictionary::lookup(const std::string& keyword) const {
+const ds::Entry& ds::Dictionary::lookupEntry(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         FatalError << "Cannot find keyword '" << keyword << "' in Dictionary '" << name() << "'"
@@ -169,7 +168,7 @@ const ds::Entry& ds::Dictionary::lookup(const std::string& keyword) const {
     return *(*it).second;
 }
 
-bool ds::Dictionary::isTokens(const std::string& keyword) const {
+bool ds::Dictionary::isTokens(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         return false;
@@ -178,7 +177,7 @@ bool ds::Dictionary::isTokens(const std::string& keyword) const {
 }
 
 
-const ds::VecToken& ds::Dictionary::lookupTokens(const std::string& keyword) const {
+const ds::VecToken& ds::Dictionary::lookupTokens(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         FatalError << "Cannot find Tokens Entry for keyword '" << keyword << "' in Dictionary '"
@@ -189,7 +188,7 @@ const ds::VecToken& ds::Dictionary::lookupTokens(const std::string& keyword) con
 }
 
 
-bool ds::Dictionary::isDict(const std::string& keyword) const {
+bool ds::Dictionary::isDict(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         return false;
@@ -198,7 +197,7 @@ bool ds::Dictionary::isDict(const std::string& keyword) const {
 }
 
 
-ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) {
+ds::Dictionary& ds::Dictionary::lookupDict(std::string keyword) {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.end()) {
         FatalError << "Cannot find Dictionary Entry for keyword '" << keyword << "' in Dictionary '"
@@ -209,7 +208,7 @@ ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) {
 }
 
 
-const ds::Dictionary& ds::Dictionary::lookupDict(const std::string& keyword) const {
+const ds::Dictionary& ds::Dictionary::lookupDict(std::string keyword) const {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         FatalError << "Cannot find Dictionary Entry for keyword '" << keyword << "' in Dictionary '"
@@ -237,33 +236,34 @@ void ds::Dictionary::add(Entry&& e, bool overwrite) {
 }
 
 
-void ds::Dictionary::add(const std::string& keyword, std::istream& is, bool overwrite) {
+void ds::Dictionary::add(std::string keyword, std::istream& is, bool overwrite) {
     Entry e(*this, keyword, is);
     add(std::move(e), overwrite);
 }
 
 
-void ds::Dictionary::add(const std::string& keyword, std::string& parseThis, bool overwrite) {
+void ds::Dictionary::add(std::string keyword, std::string parseThis, bool overwrite) {
     std::stringstream is(parseThis);
+    // read(is);
     Entry e(*this, keyword, is);
     add(std::move(e), overwrite);
 }
 
 
-void ds::Dictionary::add(const std::string& parseThis, bool overwrite) {
+void ds::Dictionary::add(std::string parseThis, bool overwrite) {
     std::stringstream is(parseThis);
     Entry e(*this, is);
     add(std::move(e), overwrite);
 }
 
 
-void ds::Dictionary::add(const std::string& keyword, Dictionary&& subdict, bool overwrite) {
+void ds::Dictionary::add(std::string keyword, Dictionary&& subdict, bool overwrite) {
     Entry e(*this, std::move(subdict));
     add(std::move(e), overwrite);
 }
 
 
-void ds::Dictionary::erase(const std::string& keyword, bool failOnNotFound) {
+void ds::Dictionary::erase(std::string keyword, bool failOnNotFound) {
     auto it = hashedEntries_.find(keyword);
     if (it == hashedEntries_.cend()) {
         if (failOnNotFound) {
@@ -311,6 +311,32 @@ void ds::Dictionary::read(std::istream& is) {
     }
 }
 
+// ****** Template Specialisations ****** //
+
+namespace ds
+{
+
+template<>
+bool ds::Dictionary::lookup(std::string keyword) {
+    const VecToken& vt = lookupTokens(keyword);
+    vt.assertSize(1);
+    return vt[0].getBool();
+
+}
+
+template<>
+bool ds::Dictionary::lookupOrDefault(std::string keyword, bool defaultVal) {
+    if (found(keyword)) {
+        const VecToken& vt = lookupTokens(keyword);
+        vt.assertSize(1);
+        return vt[0].getBool();
+    } else {
+        return defaultVal;
+    }
+}
+
+
+} // end namespace
 
 // ****** Global Operators ****** //
 
@@ -326,11 +352,12 @@ std::ostream& ds::operator<<(std::ostream& os, const Dictionary& d) {
 
 
 std::istream& ds::operator>>(std::istream& is, Dictionary& d) {
-    if (d.entries_.size()) {
-        FatalError << "Dictionary " << d.name() << "non-empty" << std::endl;
-        abort();
-    }
-    d = Dictionary(is);
+    d.read(is);
+    // if (d.entries_.size()) {
+    //     FatalError << "Dictionary " << d.name() << "non-empty" << std::endl;
+    //     abort();
+    // }
+    // d = Dictionary(is);
     return is;
 }
 

@@ -2,7 +2,7 @@
 #define Entry_h
 
 #include <memory>
-#include <VecToken.h>
+#include <types.h>
 
 namespace ds
 {

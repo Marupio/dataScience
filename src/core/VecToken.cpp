@@ -73,6 +73,15 @@ const ds::Token& ds::VecToken::get() const {
 }
 
 
+void ds::VecToken::assertSize(size_t n) const {
+    if (size() != n) {
+        FatalError << "Expecting " << n << " tokens, got " << size() << ". They are:\n" << *this
+            << std::endl;
+        abort();
+    }
+}
+
+
 void ds::VecToken::unget() const {
     if (!readPos_) {
         FatalError << "Attempting to unget at beginning of VecToken" << std::endl;
@@ -143,6 +152,39 @@ void ds::VecToken::debugWrite(std::ostream& os) const {
 }
 
 
+// ****** Template Specialisations ****** //
+
+namespace ds
+{
+
+template<>
+void ds::VecToken::assertGet(Token::typeEnum t) const {
+    const Token& nextToken(get());
+    if (nextToken == t) {
+        return;
+    }
+    FatalError << "Expecting '" << Token::typeEnumToString(t) << "', got '" << nextToken << "'. "
+        << "Full token list is:\n"
+        << *this << std::endl;
+    abort();
+}
+
+
+template<>
+void ds::VecToken::assertGet(Token::punctuationEnum pe) const {
+    const Token& nextToken(get());
+    if (nextToken == pe) {
+        return;
+    }
+    FatalError << "Expecting '" << Token::punctuationEnumToChar(pe) << "', got '" << nextToken
+        << "'. Full token list is:\n"
+        << *this << std::endl;
+    abort();
+}
+
+} // end namespace
+
+
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const VecToken& vt) {
@@ -156,5 +198,6 @@ std::ostream& ds::operator<<(std::ostream& os, const VecToken& vt) {
     }
     return os;
 }
+
 
 // ****** END ****** //

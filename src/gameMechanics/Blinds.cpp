@@ -19,6 +19,17 @@ ds::Blinds::Blinds(Money ant, Money sb, Money bb, int st):
 {}
 
 
+ds::Blinds::Blinds(VecToken& vt)
+{
+    vt.assertGet(Token::openBracket);
+    ante = vt.get().getFloat();
+    smallBlind = vt.get().getFloat();
+    bigBlind = vt.get().getFloat();
+    startTime = vt.get().getFloat();
+    vt.assertGet(Token::closeBracket);
+}
+
+
 // ****** Global operators ****** //
 
 std::ostream& ds::operator<<(std::ostream& os, const Blinds& c) {

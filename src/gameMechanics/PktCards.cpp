@@ -66,6 +66,13 @@ ds::PktCards::PktCards(std::istream& is) {
 }
 
 
+ds::PktCards::PktCards(VecToken& vt) {
+    std::stringstream ss;
+    ss << vt;
+    ss >> *this;
+}
+
+
 // ****** Member Functions ****** //
 
 bool ds::PktCards::has(const Card& cd) const {

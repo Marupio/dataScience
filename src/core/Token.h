@@ -135,6 +135,12 @@ public:
             bool isPunctuation() const;
             punctuationEnum getPunctuation() const;
 
+            //- Returns true if string is any of:
+            //  * True:  1, T, TRUE,  Y, YES, ON  (case insensitive)
+            //  * False: 0, F, FALSE, N, NO,  OFF (case insensitive)
+            bool isBool() const;
+            bool getBool() const;
+
             //- True if is a stand-alone set of alpha-numeric characters with no whitespace
             bool isWord() const;
             std::string getWord() const;
@@ -224,6 +230,8 @@ bool operator==(const Token& t, Token::typeEnum te);
 bool operator==(Token::typeEnum te, const Token& t);
 bool operator==(const Token& t, Token::punctuationEnum pe);
 bool operator==(Token::punctuationEnum pe, const Token& t);
+bool operator==(const Token& t, char c);
+bool operator==(char c, const Token& t);
 bool operator==(const Token& t, const std::string& str);
 bool operator==(const std::string& str, const Token& t);
 bool operator==(const Token& t, unsigned short num);

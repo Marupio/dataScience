@@ -40,6 +40,9 @@ public:
             const std::vector<std::vector<std::vector<short>>>&
                 losingTurnPredict() const;
 
+            //- Clear databases
+            void clear();
+
         // Action
         
             //- Bet option for player interface

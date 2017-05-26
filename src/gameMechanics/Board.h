@@ -39,6 +39,9 @@ public:
         
         //- Construct from istream
         Board(std::istream& is);
+
+        //- Construct from VecToken
+        Board(VecToken& vt);
     
 
     //- Destructor

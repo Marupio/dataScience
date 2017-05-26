@@ -1,0 +1,13 @@
+-- Log in as super user
+sudo -u postgres bash
+psql
+
+-- Log in as dsuser
+su - dsuser
+psql dsdata
+
+-- Show approximate number of rows in all tables
+SELECT schemaname,relname,n_live_tup 
+  FROM pg_stat_user_tables 
+  ORDER BY n_live_tup DESC;
+

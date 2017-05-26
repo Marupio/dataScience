@@ -37,6 +37,9 @@ public:
         //- Construct from istream
         PktVals(std::istream& is);
 
+        //- Construct from VecToken
+        PktVals(VecToken& vt);
+
 
     //- Destructor
     ~PktVals() {}

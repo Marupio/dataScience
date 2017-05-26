@@ -91,6 +91,28 @@ ds::AllCallPlayer::losingTurnPredict() const {
 }
 
 
+void ds::AllCallPlayer::clear() {
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningFlopRank_);
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningTurnRank_);
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningRiverRank_);
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingFlopRank_);
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingTurnRank_);
+    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingRiverRank_);
+    std::vector<std::vector<std::vector<short>>>(
+        324, std::vector<std::vector<short>>(0)
+    ).swap(winningFlopPredict_);
+    std::vector<std::vector<std::vector<short>>>(
+        324, std::vector<std::vector<short>>(0)
+    ).swap(winningTurnPredict_);
+    std::vector<std::vector<std::vector<short>>>(
+        324, std::vector<std::vector<short>>(0)
+    ).swap(losingFlopPredict_);
+    std::vector<std::vector<std::vector<short>>>(
+        324, std::vector<std::vector<short>>(0)
+    ).swap(losingTurnPredict_);
+}
+
+
 void ds::AllCallPlayer::observeEvent(eventEnum event) {
     switch (event) {
     case Player::evFlop: {

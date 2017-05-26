@@ -1,3 +1,4 @@
+#include <cctype>
 #include <Token.h>
 
 const ds::Token ds::Token::eofToken;
@@ -174,6 +175,57 @@ bool ds::Token::isPunctuation() const {
 
 ds::Token::punctuationEnum ds::Token::getPunctuation() const {
     return punctuation_;
+}
+
+
+bool ds::Token::isBool() const {
+    std::string tmp = str_;
+    for (auto it = tmp.begin(); it != tmp.end(); ++it) {
+        *it = std::toupper(*it);
+    }
+    return
+        tmp == "1"
+     || tmp == "0"
+     || tmp == "Y"
+     || tmp == "N"
+     || tmp == "YES"
+     || tmp == "NO"
+     || tmp == "T"
+     || tmp == "F"
+     || tmp == "TRUE"
+     || tmp == "FALSE"
+     || tmp == "ON"
+     || tmp == "OFF";
+}
+
+bool ds::Token::getBool() const {
+    std::string tmp = str_;
+    for (auto it = tmp.begin(); it != tmp.end(); ++it) {
+        *it = std::toupper(*it);
+    }
+    if (
+        tmp == "1"
+     || tmp == "Y"
+     || tmp == "YES"
+     || tmp == "T"
+     || tmp == "TRUE"
+     || tmp == "ON"
+    ) {
+        return true;
+    } else if (
+        tmp == "0"
+     || tmp == "N"
+     || tmp == "NO"
+     || tmp == "F"
+     || tmp == "FALSE"
+     || tmp == "OFF"
+    ) {
+        return false;
+    } else {
+        FatalError << "Expecting a bool (0,1,N,Y,YES,NO,T,F,TRUE,FALSE,ON,OFF). Got '" << str_
+            << "'." << std::endl;
+        abort();
+    }
 }
 
 
@@ -821,6 +873,16 @@ bool ds::operator==(const Token& t, Token::punctuationEnum pe) {
 
 bool ds::operator==(Token::punctuationEnum pe, const Token& t) {
     return t.punctuation() == pe;
+}
+
+
+bool ds::operator==(const Token& t, char c) {
+    return t.str().at(0) == c;
+}
+
+
+bool ds::operator==(char c, const Token& t) {
+    return t.str().at(0) == c;
 }
 
 

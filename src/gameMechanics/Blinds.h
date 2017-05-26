@@ -28,6 +28,9 @@ struct Blinds {
         //- Construct from components
         Blinds(Money ant, Money sb, Money bb, int st);
 
+        //- Construct from VecToken
+        Blinds(VecToken& vt);
+
     
     // Friend functions
     friend std::ostream& operator<<(std::ostream& os, const Blinds& c);

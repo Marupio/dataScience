@@ -1,3 +1,4 @@
+
 #include <algorithm>
 #include <Board.h>
 
@@ -36,6 +37,14 @@ ds::Board::Board(VecDeckInd vd) {
 ds::Board::Board(std::istream& is) {
     reserveSpace();
     is >> *this;
+}
+
+
+ds::Board::Board(VecToken& vt) {
+    reserveSpace();
+    std::stringstream ss;
+    ss << vt;
+    ss >> *this;
 }
 
 

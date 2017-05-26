@@ -1,5 +1,4 @@
 #include <fstream>
-#include <sstream>
 #include <Table.h>
 #include <osRelated.h>
 #include <HandRanker.h>
@@ -26,12 +25,13 @@ ds::Table::Table(
     size_t nSeats,
     const Blinds& blinds,
     bool allowFastFolds,
-    int dramaticPause
+    int dramaticPause,
+    std::string randomiser
 ):
     Seats(nSeats),
     tableId_(0),
     tableIdSet_(false),
-    deck_(entropy),
+    deck_(entropy, randomiser),
     dealer_(seated_.begin()),
     blinds_(&blinds),
     nextBlinds_(nullptr),
@@ -421,6 +421,7 @@ bool ds::Table::takeBets(SeatedPlayer player, Money initTotalBet) {
         }
         auto itPushed = pushedMoney_.find(player);
         if (itPushed != pushedMoney_.end()) {
+
             Money alreadyPushed = itPushed->first;
             #ifdef DSDEBUG
             if (alreadyPushed != (*player)->pushedMoney()) {
@@ -487,7 +488,7 @@ bool ds::Table::takeBets(SeatedPlayer player, Money initTotalBet) {
                 continue;
             }
 
-            if (newlyPushed > 0) {
+            if (newlyPushed > SMALL) {
                 pushedMoney_.push_back(PushedMoney(newlyPushed, player));
                 if (newlyPushed > totalBet) {
                     totalBet = newlyPushed;
@@ -512,6 +513,7 @@ bool ds::Table::takeBets(SeatedPlayer player, Money initTotalBet) {
                 }
             } else {
                 shareAction(player, Player::acCheck, totalBet);
+                nActiveNotAllIn++;
             }
         }
         nextCardedPlayer(player);
@@ -768,8 +770,7 @@ void ds::Table::raiseHelper(
 
 
 void ds::Table::activateAllInShowDown() {
-    SeatedPlayer player(dealer_);
-    nextCardedPlayer(player);
+    SeatedPlayer player(firstCardedPlayer(dealer_));
     SeatedPlayer startedAt(player);
     do {
         (*player)->showPocket();

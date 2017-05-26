@@ -53,7 +53,8 @@ public:
             size_t nSeats,
             const Blinds& blinds,
             bool allowFastFolds,
-            int dramaticPause
+            int dramaticPause,
+            std::string randomiser = std::string()
         );
 
     

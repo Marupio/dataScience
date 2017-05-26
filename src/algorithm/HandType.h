@@ -1,7 +1,6 @@
 #ifndef HandType_h
 #define HandType_h
 
-#include <string>
 #include <types.h>
 #include <Board.h>
 #include <PktCards.h>

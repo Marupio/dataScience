@@ -1,6 +1,5 @@
 #include <Entry.h>
 #include <Dictionary.h>
-#include <VecToken.h>
 
 // ****** Constructors ****** //
 

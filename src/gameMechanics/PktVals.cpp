@@ -38,6 +38,13 @@ ds::PktVals::PktVals(std::istream& is) {
 }
 
 
+ds::PktVals::PktVals(VecToken& vt) {
+    std::stringstream ss;
+    ss << vt;
+    ss >> *this;
+}
+
+
 // ****** Member functions ****** //
 
 bool ds::PktVals::has(CardVal cv) const {

@@ -186,15 +186,3 @@ install_targets(
     ${BIN_DIR}
     makeAllCallTables
 )
-
-
-add_executable(
-    makeAllCallTablesNoMultiThreading
-    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllCallTables/makeAllCallTablesNoMultiThreading.cpp
-)
-target_link_libraries(makeAllCallTablesNoMultiThreading core pthread ${PQLIBS})
-install_targets(
-    ${BIN_DIR}
-    makeAllCallTablesNoMultiThreading
-)
-

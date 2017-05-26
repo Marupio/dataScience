@@ -57,6 +57,13 @@ public:
         //  Returns Eof token when at end
         const Token& get() const;
 
+        //- Get next token, and ensure it equals t
+        template<class T>
+        void assertGet(T t) const;
+
+        //- Assert that the size is the given size
+        void assertSize(size_t n) const;
+
         //- Attempts to decrement read position by one, fails if already at start
         void unget() const;
 
@@ -69,6 +76,9 @@ public:
             eofBehaviourEnum eb=ebFailOnEof,
             readBehaviourEnum rb=rbFailIfNotEmpty
         );
+
+
+    // Debug
 
         //- Debug write
         void debugWrite(std::ostream& os) const;
@@ -93,6 +103,16 @@ private:
 };
 
 
+// Template specialisations
+
+template<>
+void VecToken::assertGet(Token::typeEnum& t) const;
+
+template<>
+void VecToken::assertGet(Token::punctuationEnum& pe) const;
+
 } // end namespace
+
+#include <VecTokenTemplates.cpp>
 
 #endif // VecToken_h

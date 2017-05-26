@@ -58,6 +58,9 @@ public:
         //- Construct from istream
         PktCards(std::istream& is);
 
+        //- Construct from VecToken
+        PktCards(VecToken& vt);
+
 
     //- Destructor
     ~PktCards() {}

@@ -1,8 +1,10 @@
 #ifndef types_h
 #define types_h
 
+#include <error.h>
 #include <pair.h>
 #include <vector.h>
+#include <VecToken.h>
 
 namespace ds {
 

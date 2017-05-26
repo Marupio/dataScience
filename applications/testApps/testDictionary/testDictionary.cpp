@@ -1,7 +1,5 @@
 #include <climits>
 #include <fstream>
-#include <string>
-#include <sstream>
 #include <Dictionary.h>
 #include <dsConfig.h>
 
@@ -14,9 +12,9 @@ int main()
     while(!quit) {
         std::cout << "Current dictionary = [\n" << *dictPtr << "\n]" << std::endl;
         std::cout << "\nSelect action:"
-            << "name, scopeName, keyName, depth, found, foundType, lookup, isTokens, lookupTokens, "
-            << "isDict,\nlookupDict, reset (to top dict level), add, add, erase, clear, debugWrite"
-            << ", quit\n"
+            << "name, scopeName, keyName, depth, found, foundType, lookupEntry, isTokens, "
+            << "lookupTokens, isDict,\nlookupDict, reset (to top dict level), add, erase, clear, "
+            << "debugWrite, quit\n"
             << "What do you want to do? ";
         std::string action;
         std::cin >> action;
@@ -39,11 +37,11 @@ int main()
             std::cin >> key;
             std::cout << "Result = [" << Entry::typeEnumToString(dictPtr->foundType(key)) << "]"
                 << std::endl;
-        } else if (action == "lookup") {
-            std::cout << "lookup(key): What is key? ";
+        } else if (action == "lookupEntry") {
+            std::cout << "lookupEntry(key): What is key? ";
             std::string key;
             std::cin >> key;
-            const Entry& e(dictPtr->lookup(key));
+            const Entry& e(dictPtr->lookupEntry(key));
             std::cout << "Result = [";
             e.debugWrite(std::cout);
             std::cout << "]" << std::endl;
@@ -77,6 +75,9 @@ int main()
             std::cout << "What is string? ";
             std::string str;
             std::cin >> str;
+            std::string tmp;
+            std::getline(std::cin, tmp);
+            str += tmp;
             dictPtr->add(key, str);
         } else if (action == "erase") {
             std::cout << "erase(key): What is key? ";
