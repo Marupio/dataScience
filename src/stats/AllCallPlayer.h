@@ -17,31 +17,26 @@ public:
         AllCallPlayer();
     
         //- Construct from components
-        AllCallPlayer(size_t id, const std::string& name);
+        AllCallPlayer(
+            size_t id,
+            const std::string& name,
+            const std::string& schemaName,
+            const std::string& tableName
+        );
 
 
     // Public Member Functions
 
-        // Access
-        
-            //- Access databases
-            const std::vector<std::vector<short>>& winningFlopRank() const;
-            const std::vector<std::vector<short>>& winningTurnRank() const;
-            const std::vector<std::vector<short>>& winningRiverRank() const;
-            const std::vector<std::vector<short>>& losingFlopRank() const;
-            const std::vector<std::vector<short>>& losingTurnRank() const;
-            const std::vector<std::vector<short>>& losingRiverRank() const;
-            const std::vector<std::vector<std::vector<short>>>&
-                winningFlopPredict() const;
-            const std::vector<std::vector<std::vector<short>>>&
-                winningTurnPredict() const;
-            const std::vector<std::vector<std::vector<short>>>&
-                losingFlopPredict() const;
-            const std::vector<std::vector<std::vector<short>>>&
-                losingTurnPredict() const;
+        // Initialisation
 
-            //- Clear databases
-            void clear();
+            //- Initialise with id, name, schema and table name
+            void initialise(
+                size_t newId,
+                const std::string& name,
+                const std::string& schemaName,
+                const std::string& tableName
+            );
+
 
         // Action
         
@@ -76,25 +71,16 @@ private:
 
     // Private Member Data
 
+        //- Database schema and table names
+        std::string schemaName_;
+        std::string tableName_;
+
         //- Transient data
         short flopRank_;
         short turnRank_;
         short riverRank_;
         std::vector<short> flopPredict_;
         std::vector<short> turnPredict_;
-
-        //- Databases
-        std::vector<std::vector<short>> winningFlopRank_;
-        std::vector<std::vector<short>> winningTurnRank_;
-        std::vector<std::vector<short>> winningRiverRank_;
-        std::vector<std::vector<short>> losingFlopRank_;
-        std::vector<std::vector<short>> losingTurnRank_;
-        std::vector<std::vector<short>> losingRiverRank_;
-
-        std::vector<std::vector<std::vector<short>>> winningFlopPredict_;
-        std::vector<std::vector<std::vector<short>>> winningTurnPredict_;
-        std::vector<std::vector<std::vector<short>>> losingFlopPredict_;
-        std::vector<std::vector<std::vector<short>>> losingTurnPredict_;
 };
 
 } // end namespace

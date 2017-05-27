@@ -1,115 +1,39 @@
+#include <pqxx/pqxx>
+
 #include <AllCallPlayer.h>
 #include <Table.h>
 #include <HandRanker.h>
 
 // ****** Constructors ****** //
 
-ds::AllCallPlayer::AllCallPlayer():
-    Player(),
-    winningFlopRank_(324, std::vector<short>(0)),
-    winningTurnRank_(324, std::vector<short>(0)),
-    winningRiverRank_(324, std::vector<short>(0)),
-    losingFlopRank_(324, std::vector<short>(0)),
-    losingTurnRank_(324, std::vector<short>(0)),
-    losingRiverRank_(324, std::vector<short>(0)),
-    winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    winningTurnPredict_(324, std::vector<std::vector<short>>(0)),
-    losingFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    losingTurnPredict_(324, std::vector<std::vector<short>>(0))
+ds::AllCallPlayer::AllCallPlayer()
 {}
 
 
-ds::AllCallPlayer::AllCallPlayer(size_t id, const std::string& name):
+ds::AllCallPlayer::AllCallPlayer
+(
+    size_t id,
+    const std::string& name,
+    const std::string& schemaName,
+    const std::string& tableName
+):
     Player(id, name),
-    winningFlopRank_(324, std::vector<short>(0)),
-    winningTurnRank_(324, std::vector<short>(0)),
-    winningRiverRank_(324, std::vector<short>(0)),
-    losingFlopRank_(324, std::vector<short>(0)),
-    losingTurnRank_(324, std::vector<short>(0)),
-    losingRiverRank_(324, std::vector<short>(0)),
-    winningFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    winningTurnPredict_(324, std::vector<std::vector<short>>(0)),
-    losingFlopPredict_(324, std::vector<std::vector<short>>(0)),
-    losingTurnPredict_(324, std::vector<std::vector<short>>(0))
+    schemaName_(schemaName),
+    tableName_(tableName)
 {}
 
 
 // ****** Public Member Functions ****** //
 
-const std::vector<std::vector<short>>&
-ds::AllCallPlayer::winningFlopRank() const {
-    return winningFlopRank_;
-}
-
-
-const std::vector<std::vector<short>>& ds::AllCallPlayer::winningTurnRank() const {
-    return winningTurnRank_;
-}
-
-
-const std::vector<std::vector<short>>& ds::AllCallPlayer::winningRiverRank() const {
-    return winningRiverRank_;
-}
-
-
-const std::vector<std::vector<short>>& ds::AllCallPlayer::losingFlopRank() const {
-    return losingFlopRank_;
-}
-
-
-const std::vector<std::vector<short>>& ds::AllCallPlayer::losingTurnRank() const {
-    return losingTurnRank_;
-}
-
-
-const std::vector<std::vector<short>>& ds::AllCallPlayer::losingRiverRank() const {
-    return losingRiverRank_;
-}
-
-
-const std::vector<std::vector<std::vector<short>>>&
-ds::AllCallPlayer::winningFlopPredict() const {
-    return winningFlopPredict_;
-}
-
-
-const std::vector<std::vector<std::vector<short>>>&
-ds::AllCallPlayer::winningTurnPredict() const {
-    return winningTurnPredict_;
-}
-
-
-const std::vector<std::vector<std::vector<short>>>&
-ds::AllCallPlayer::losingFlopPredict() const {
-    return losingFlopPredict_;
-}
-
-
-const std::vector<std::vector<std::vector<short>>>&
-ds::AllCallPlayer::losingTurnPredict() const {
-    return losingTurnPredict_;
-}
-
-
-void ds::AllCallPlayer::clear() {
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningFlopRank_);
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningTurnRank_);
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(winningRiverRank_);
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingFlopRank_);
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingTurnRank_);
-    std::vector<std::vector<short>>(324, std::vector<short>(0)).swap(losingRiverRank_);
-    std::vector<std::vector<std::vector<short>>>(
-        324, std::vector<std::vector<short>>(0)
-    ).swap(winningFlopPredict_);
-    std::vector<std::vector<std::vector<short>>>(
-        324, std::vector<std::vector<short>>(0)
-    ).swap(winningTurnPredict_);
-    std::vector<std::vector<std::vector<short>>>(
-        324, std::vector<std::vector<short>>(0)
-    ).swap(losingFlopPredict_);
-    std::vector<std::vector<std::vector<short>>>(
-        324, std::vector<std::vector<short>>(0)
-    ).swap(losingTurnPredict_);
+void ds::AllCallPlayer::initialise(
+    size_t newId,
+    const std::string& name,
+    const std::string& schemaName,
+    const std::string& tableName
+) {
+    setIdAndName(newId, name);
+    schemaName_ = schemaName;
+    tableName_ = tableName;
 }
 
 
@@ -142,29 +66,54 @@ void ds::AllCallPlayer::observeEvent(eventEnum event) {
 
 void ds::AllCallPlayer::observeResults() {
     copyPkt_.sort();
-    const short suitedOffset = copyPkt_.suited() ? 168 : 0;
-    size_t hashIndex =
-        (copyPkt_.second.value() - 2)*13
-      + copyPkt_.first.value() - 2
-      + suitedOffset;
+    std::stringstream hand;
+    hand << Card::valueToWriteChar(copyPkt_.first.value())
+        << Card::valueToWriteChar(copyPkt_.second.value());
+    if (!copyPkt_.pairs()) {
+        if (copyPkt_.suited()) {
+            hand << 's';
+        } else {
+            hand << 'u';
+        }
+    }
+    char won;
     if (summary().rewardedMoney > SMALL) {
-        // I won
-        winningFlopRank_[hashIndex].push_back(flopRank_);
-        winningTurnRank_[hashIndex].push_back(turnRank_);
-        winningRiverRank_[hashIndex].push_back(riverRank_);
-        winningFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
-        winningTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
-        flopPredict_.clear();
-        turnPredict_.clear();
+        won = 't';
     } else {
-        // I lost
-        losingFlopRank_[hashIndex].push_back(flopRank_);
-        losingTurnRank_[hashIndex].push_back(turnRank_);
-        losingRiverRank_[hashIndex].push_back(riverRank_);
-        losingFlopPredict_[hashIndex].push_back(std::move(flopPredict_));
-        losingTurnPredict_[hashIndex].push_back(std::move(turnPredict_));
-        flopPredict_.clear();
-        turnPredict_.clear();
+        won = 'f';
+    }
+    try {
+        pqxx::connection C("dbname = dsdata user = dsuser password = 123 \
+        hostaddr = 127.0.0.1 port = 5432");
+        if (!C.is_open()) {
+            FatalError << "Can't open database, player id " << summary().id << ", '"
+                << summary().name << "'" << std::endl;
+            abort();
+        }
+        std::stringstream sql;
+        sql << "INSERT INTO " << schemaName_ << "." << tableName_ << "(hand,won,flop_rank,turn_rank"
+            << ",river_rank,flop_predict,turn_predict) VALUES ('" << hand.str() << "','" << won
+            << "'," << flopRank_ << "," << turnRank_ << "," << riverRank_ << ",'{";
+        auto itf = flopPredict_.cbegin();
+        sql << *itf;
+        for (++itf; itf != flopPredict_.cend(); ++itf) {
+            sql << "," << *itf;
+        }
+        sql << "}','{";
+        auto itt = turnPredict_.cbegin();
+        sql << *itt;
+        for (++itt; itt != turnPredict_.cend(); ++itt) {
+            sql << "," << *itt;
+        }
+        sql << "}');";
+        pqxx::work W(C);
+        W.exec(sql.str().c_str());
+        W.commit();
+        C.disconnect ();
+    } catch (const std::exception &e) {
+        FatalError << "Database write failure, player id " << summary().id << ", '"
+            << summary().name << "', error: '" << e.what() << "'" << std::endl;
+        abort();
     }
 }
 
