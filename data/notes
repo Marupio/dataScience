@@ -1,0 +1,84 @@
+******************
+* AllCall tables *
+******************
+
+Preflop
+    Inputs [1]:
+        * Hand (e.g. AKu, 87s, 44)
+    Outputs:
+        * % Chance of winning
+
+Flop
+    Inputs [99]:
+        * Hand (e.g. AKu, 87s, 44)
+        * Hand rank
+        * Rank predict array metadata
+            ** Mean
+            ** Standard Deviation
+            ** Skewness
+            ** RPA accumulation array [47]
+            ** RPA accumulation sum array [47]
+    Outputs:
+        * % Chance of winning
+
+Turn
+    Inputs [97]:
+        * Hand (e.g. AKu, 87s, 44)
+        * Hand rank
+        * Rank predict array metadata
+            ** Mean
+            ** Standard Deviation
+            ** Skewness
+            ** RPA accumulation array [46]
+            ** RPA accumulation sum array [46]
+    Outputs:
+        * % Chance of winning
+
+River
+    Inputs [95]:
+        * Hand (e.g. AKu, 87s, 44)
+        * Hand rank
+        * Rank predict array metadata
+            ** Mean
+            ** Standard Deviation
+            ** Skewness
+            ** RPA accumulation array [45]
+            ** RPA accumulation sum array [45]
+    Outputs:
+        * % Chance of winning
+
+
+*****************
+* Full analysis *
+*****************
+
+Preflop
+    Inputs:
+        * Position (button, SB, BB, UTG, early, mid, late)
+        * Phase of game (tournaments may have distinct phases)
+        * Hand (e.g. AKu, 87s, 44)
+        * Stack size (nBigBlinds)
+        * Other players
+            * nFolded
+            * nActed and relative aggression (nBigBlinds)
+            * nYetToAct
+        * Modifiers
+            * Player behaviour statistics previously gathered
+    Outputs:
+        * A measure of hand strength (% chance of winning)
+        * A value associated with hand strength (nBigBlinds)
+
+Flop
+    Inputs
+        * Position (button, FTA, early, mid, late, LTA)
+        * Phase of game (tournaments may have distinct phases)
+        * Rank
+        //* Rank predict array
+        * Rank predict array metadata
+            ** Mean
+            ** Standard Deviation
+            ** Skewness
+            ** RPA accumulation array [47]
+            ** RPA accumulation sum array [47]
+        * Other players
+
