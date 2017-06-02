@@ -66,6 +66,8 @@ message (STATUS "BIN_DIR is ${LIB_DIR}")
 find_package(PostgreSQL REQUIRED)
 set (pqxx_DIR ${CMAKE_MODULE_PATH})
 find_package(pqxx REQUIRED)
+# set (dlib_DIR ${CMAKE_MODULE_PATH})
+# find_package(dlib REQUIRED)
 
 message (STATUS "PostgreSQL_LIBRARIES is ${PostgreSQL_LIBRARIES}")
 message (STATUS "PostgreSQL_INCLUDE_DIRS is ${PostgreSQL_INCLUDE_DIRS}")

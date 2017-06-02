@@ -32,12 +32,11 @@ COMPONENTS - COMPLETED
     * Provides an exact rank given a set of hole cards and board
 * Cryptographically secure pseudo random number generator (CSPRNG) and interface
 * postgres interface for handling statistics and other generated data
-
-
-COMPONENTS - IN-PROGRESS
-
 * Dictionary, Entry, Token, Itstream classes for easy file input / output and settings management.
 
+COMPONENTS - IN PROGRESS
+
+* Integration with dlib for analysis of simulation runs, and creation of useful look-up tables.
 
 COMPONENTS - TODO
 

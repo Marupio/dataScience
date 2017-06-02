@@ -59,3 +59,5 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha512.c
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtlsInterface/Csprng.cpp
 )
+
+include (${CMAKE_CURRENT_SOURCE_DIR}/importedCode/dlib/dlib/cmake)
