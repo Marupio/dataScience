@@ -15,6 +15,24 @@ DESCRIPTION
 This is a No-Limit Texas Hold-em Poker analysis tool & game engine based in C++11.
 
 
+INSTALLATION
+
+* Install git
+* Install postgres and create user dsuser with password 123 and access to database dsdata
+* Install psqxx
+* Clone this repository: git clone [repoAddress], where:
+    [repoAddress] is the address provided by bitbucket, just under the word Overview
+* This repository uses submodules, so execute:
+    * git submodule init
+    * git submodule update
+* cd dataScience; mkdir build_opt; cd build_opt
+* Check if your CPU supports: AVX, SSE4, or SSE2 instructions.
+    * If it does, append -DUSE_XXX_INSTRUCTIONS=1 where XXX is AVX, SSE4 or SSE2
+    * Only choose one of these, prefer the given order
+* cmake .. -Dopt=ON [add -DUSE... option if applicable]
+* make
+
+
 DEPENDENCIES
 
 Requires postgres to be installed on user's machine
@@ -33,10 +51,13 @@ COMPONENTS - COMPLETED
 * Cryptographically secure pseudo random number generator (CSPRNG) and interface
 * postgres interface for handling statistics and other generated data
 * Dictionary, Entry, Token, Itstream classes for easy file input / output and settings management.
+* Integration with dlib for analysis of simulation runs, and creation of useful look-up tables.
+
 
 COMPONENTS - IN PROGRESS
 
-* Integration with dlib for analysis of simulation runs, and creation of useful look-up tables.
+* Extracting meta-data from all-call tables, and study of krr-classification algorithm
+
 
 COMPONENTS - TODO
 
@@ -60,7 +81,6 @@ COMPONENTS - TODO
 * Create player database framework
 
 * Create interface with online game
-
 
 
 
