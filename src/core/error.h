@@ -20,4 +20,24 @@
     << "    Function: " << FUNCTION_NAME << "\n" \
     << "    Location: " << __FILE__ << ":" << __LINE__ << "\n\n"
 
+namespace ds {
+
+class dsException: public std::exception {
+
+public:
+    dsException(): what_("Unknown exception") {}
+    dsException(const char* what): what_(what) {}
+    dsException(std::string what): what_(what) {}
+    virtual const char* what() const throw() {
+        return what_.c_str();
+    }
+
+private:
+    std::string what_;
+};
+
+} // end namespace
+
 #endif
+
+// ****** END ****** //

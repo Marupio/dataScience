@@ -66,16 +66,7 @@ void ds::AllCallPlayer::observeEvent(eventEnum event) {
 
 void ds::AllCallPlayer::observeResults() {
     copyPkt_.sort();
-    std::stringstream hand;
-    hand << Card::valueToWriteChar(copyPkt_.first.value())
-        << Card::valueToWriteChar(copyPkt_.second.value());
-    if (!copyPkt_.pairs()) {
-        if (copyPkt_.suited()) {
-            hand << 's';
-        } else {
-            hand << 'u';
-        }
-    }
+    std::string hand(copyPkt_.startingHandName());
     char won;
     if (summary().rewardedMoney > SMALL) {
         won = 't';
@@ -92,7 +83,7 @@ void ds::AllCallPlayer::observeResults() {
         }
         std::stringstream sql;
         sql << "INSERT INTO " << schemaName_ << "." << tableName_ << "(hand,won,flop_rank,turn_rank"
-            << ",river_rank,flop_predict,turn_predict) VALUES ('" << hand.str() << "','" << won
+            << ",river_rank,flop_predict,turn_predict) VALUES ('" << hand << "','" << won
             << "'," << flopRank_ << "," << turnRank_ << "," << riverRank_ << ",'{";
         auto itf = flopPredict_.cbegin();
         sql << *itf;

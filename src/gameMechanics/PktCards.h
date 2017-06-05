@@ -98,6 +98,11 @@ public:
             CardVal highestValue() const;
             CardVal highestValue(CardVal avoid) const;
 
+            //- Returns starting hand name.  Format is:
+            //  * Pairs: "88", "TT", etc.
+            //  * Suited: "AKs", "T2s", etc.
+            //  * Unsuited: "T9u", "72u", etc.
+            std::string startingHandName() const;
 
         // Edit
         

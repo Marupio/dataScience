@@ -186,3 +186,14 @@ install_targets(
     ${BIN_DIR}
     makeAllCallTables
 )
+
+
+add_executable(
+    analyseAllCallTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/analyseAllCallTables/analyseAllCallTables.cpp
+)
+target_link_libraries(analyseAllCallTables core pthread ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    analyseAllCallTables
+)

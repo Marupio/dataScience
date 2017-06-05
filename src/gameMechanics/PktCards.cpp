@@ -125,6 +125,21 @@ ds::CardVal ds::PktCards::highestValue(CardVal avoid) const {
 }
 
 
+std::string ds::PktCards::startingHandName() const {
+    std::stringstream hand;
+    hand << Card::valueToWriteChar(first.value())
+        << Card::valueToWriteChar(second.value());
+    if (!pairs()) {
+        if (suited()) {
+            hand << 's';
+        } else {
+            hand << 'u';
+        }
+    }
+    return hand.str();
+}
+
+
 void ds::PktCards::swap() {
     Card temp = first;
     first = second;

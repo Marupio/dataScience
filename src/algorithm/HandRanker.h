@@ -56,6 +56,9 @@ public:
         //  Suitable only after the flop and before the river.
         void predict(std::vector<short>& pa);
 
+        //- Convert postgres array to vector of values
+        static std::vector<short> readPredictString(std::string& pa);
+
         //- Return array of rank values based on what the flop might be
         //  Suitable only when the board is empty
         void predictFlop(std::vector<short>& pa);
