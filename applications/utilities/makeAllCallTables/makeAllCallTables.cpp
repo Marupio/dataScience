@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
                 << "river_rank      smallint not null, "
                 << "flop_predict    smallint[] not null, "
                 << "turn_predict    smallint[] not null "
-                << ")";
+                << ");";
             pqxx::work W(C);
             W.exec(sql.str().c_str());
             W.commit();

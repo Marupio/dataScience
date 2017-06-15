@@ -82,6 +82,173 @@ void ds::VecToken::assertSize(size_t n) const {
 }
 
 
+Token::punctuationEnum ds::VecToken::assertGetPunctuation() const {
+    const Token& nextToken(get());
+    if (!nextToken.isPunctuation()) {
+        FatalError << "Expecting punctuation, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getPunctuation();
+}
+
+
+bool ds::VecToken::assertGetBool() const {
+    const Token& nextToken(get());
+    if (!nextToken.isBool()) {
+        FatalError << "Expecting boolean, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getBool();
+}
+
+
+
+std::ds::VecToken::string assertGetWord() {
+    const Token& nextToken(get());
+    if (!nextToken.isWord()) {
+        FatalError << "Expecting word, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getWord();
+}
+
+
+
+std::ds::VecToken::string assertGetString() {
+    const Token& nextToken(get());
+    if (!nextToken.isString()) {
+        FatalError << "Expecting string, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getString();
+}
+
+
+
+short ds::VecToken::assertGetShort() const {
+    const Token& nextToken(get());
+    if (!nextToken.isInt()) {
+        FatalError << "Expecting short, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getShort();
+}
+
+
+
+int ds::VecToken::assertGetInt() const {
+    const Token& nextToken(get());
+    if (!nextToken.isInt()) {
+        FatalError << "Expecting int, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getInt();
+}
+
+
+
+long ds::VecToken::assertGetLong() const {
+    const Token& nextToken(get());
+    if (!nextToken.isInt()) {
+        FatalError << "Expecting long, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getLong();
+}
+
+
+
+long long ds::VecToken::assertGetLongLong() const {
+    const Token& nextToken(get());
+    if (!nextToken.isInt()) {
+        FatalError << "Expecting long long, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getLongLong();
+}
+
+
+
+unsigned short ds::VecToken::assertGetUShort() const {
+    const Token& nextToken(get());
+    if (!nextToken.isUInt()) {
+        FatalError << "Expecting ushort, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getUShort();
+}
+
+
+
+unsigned int ds::VecToken::assertGetUInt() const {
+    const Token& nextToken(get());
+    if (!nextToken.isUInt()) {
+        FatalError << "Expecting uint, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getUInt();
+}
+
+
+
+unsigned long ds::VecToken::assertGetULong() const {
+    const Token& nextToken(get());
+    if (!nextToken.isUInt()) {
+        FatalError << "Expecting ulong, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getULong();
+}
+
+
+
+unsigned long long ds::VecToken::assertGetULongLong() const {
+    const Token& nextToken(get());
+    if (!nextToken.isUInt()) {
+        FatalError << "Expecting ulonglong, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getULongLong();
+}
+
+
+
+float ds::VecToken::assertGetFloat() const {
+    const Token& nextToken(get());
+    if (!nextToken.isFloat()) {
+        FatalError << "Expecting float, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getFloat();
+}
+
+
+
+double ds::VecToken::assertGetDouble() const {
+    const Token& nextToken(get());
+    if (!nextToken.isFloat()) {
+        FatalError << "Expecting double, got '" << nextToken << "'. Full token list is:\n"
+            << *this << std::endl;
+        abort();
+    }
+    return nextToken.getDouble();
+}
+
+
+
 void ds::VecToken::unget() const {
     if (!readPos_) {
         FatalError << "Attempting to unget at beginning of VecToken" << std::endl;

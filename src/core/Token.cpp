@@ -20,10 +20,32 @@ ds::Token::Token(std::istream& is):
     double_(0)
 {
     read(is);
-    // if (!read(is)) {
-    //     FatalError << "Token read failure. Got '" << str_ "'" << std::endl;
-    //     abort();
-    // }
+}
+
+
+ds::Token::Token(char chr):
+    type_(UnknownType),
+    punctuation_(unknownPunctuation),
+    integer_(0),
+    uinteger_(0),
+    double_(0)
+{
+    // Simple char read algorithm
+    str_ += chr;
+    punctuation_ = charToPunctuationEnum(chr);
+    if (punctuation_ != unknownPunctuation)
+    {
+        type_ = Punctuation;
+    } else if (validWordFirstChar(chr)) {
+        type_ = Word;
+    } else if (isdigit(chr)) {
+        type_ = Float_Int_UInt;
+        integer_ = std::strtoll(str_.c_str(), nullptr, 0);
+        uinteger_ = integer_;
+        double_ = integer_;
+    } else {
+        type_ = Fail;
+    }
 }
 
 

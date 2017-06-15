@@ -57,12 +57,40 @@ public:
         //  Returns Eof token when at end
         const Token& get() const;
 
+        //- Assert that the size is the given size
+        void assertSize(size_t n) const;
+
+        //- Get the next token and ensure it isPunctuation
+        Token::punctuationEnum assertGetPunctuation() const;
+
+        //- Get the next token and ensure it isBool
+        bool assertGetBool() const;
+
+        //- Get the next token and ensure it isWord
+        std::string assertGetWord();
+
+        //- Get the next token and ensure it isString
+        std::string assertGetString();
+
+        //- Get the next token and ensure it isInt
+        short assertGetShort() const;
+        int assertGetInt() const;
+        long assertGetLong() const;
+        long long assertGetLongLong() const;
+
+        //- Get the next token and ensure it isUInt
+        unsigned short assertGetUShort() const;
+        unsigned int assertGetUInt() const;
+        unsigned long assertGetULong() const;
+        unsigned long long assertGetULongLong() const;
+
+        //- Get the next token and ensure it isFloat
+        float assertGetFloat() const;
+        double assertGetDouble() const;
+
         //- Get next token, and ensure it equals t
         template<class T>
         void assertGet(T t) const;
-
-        //- Assert that the size is the given size
-        void assertSize(size_t n) const;
 
         //- Attempts to decrement read position by one, fails if already at start
         void unget() const;

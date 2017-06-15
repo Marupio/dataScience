@@ -1,7 +1,10 @@
-##ifndef pqxxInterface_H
+#ifndef pqxxInterface_H
 #define pqxxInterface_H
 
 #include <pqxx/pqxx>
+
+namespace ds
+{
 
 class pqxxInterface {
 
@@ -9,23 +12,15 @@ public:
 
     // Constructors
 
-        pqxxInterface():
-            C_("dbname = dsdata user = dsuser password = 123 hostaddr = 127.0.0.1 port = 5432")
-        {
-            checkConnection();
-        }
+        //- Construct null - this fails because no connection will be open, and connection options
+        //  cannot be modified
+        // pqxxInterface();
 
-        pqxxInterface(const std::string& opt):
-            C_(opt)
-        {
-            checkConnection();
-        }
+        //- Construct with connection parameters
+        pqxxInterface(const std::string& opt);
 
-        pqxxInterface(const char opt[]):
-            C_(opt)
-        {
-            checkConnection();
-        }
+        //- Construct with connection parameters
+        pqxxInterface(const char opt[]);
 
 
     // Public Member Functions
@@ -33,75 +28,56 @@ public:
         // Query
 
             //- Returns true if schema exists
-            bool foundSchema(std::string schemaName) {
-                try {
-                    std::stringstream sql;
-                    sql << "SELECT schema_name FROM information_schema.schemata "
-                        << "WHERE schema_name = '" << schemaName << "';";
-                    pqxx::nontransaction N(C_);
-                    pqxx::result R(N.exec(sql));
-                    if (R.size()) {
-                        return true;
-                    }
-                    return false;
-                } catch (const std::exception &e) {
-                    FatalError << e.what() << std::endl;
-                    abort();
-                }
-            }
+            bool foundSchema(std::string schemaName);
 
             //- Returns true if schemaName.tableName exists
-            bool foundSchemaTable(std::string schemaName, std::string tableName)
-            {
-                try {
-                    std::stringstream sql;
-                    sql << "SELECT c.oid, "
-                        << "  n.nspname, "
-                        << "  c.relname "
-                        << "FROM pg_catalog.pg_class c "
-                        << "     LEFT JOIN pg_catalog.pg_namespace n "
-                        << "        ON n.oid = c.relnamespace "
-                        << "WHERE c.relname ~ '^(" << tableName << ")$' "
-                        << "  AND n.nspname ~ '^(" << schemaName << ")$';";
-
-                    pqxx::nontransaction N(C_);
-                    pqxx::result R(N.exec(sql));
-                    if (R.size()) {
-                        return true;
-                    }
-                    return false;
-                } catch (const std::exception &e) {
-                    FatalError << e.what() << std::endl;
-                    abort();
-                }
-            }
+            bool foundSchemaTable(std::string schemaName, std::string tableName);
 
 
         // Edit - work (i.e. void returning)
 
-            void createSchema(std::string schemaName) {
-                try {
-                    std::stringstream sql;
-                    sql << "CREATE SCHEMA " << schemaName << ";";
-                    pqxx::work W(C_);
-                    W.exec(sql.str().c_str());
-                    W.commit();
-                } catch (const std::exception &e) {
-                    FatalError << e.what() << std::endl;
-                    abort();
-                }
-            }
+            //- Create schema, fails if already exists
+            void createSchema(std::string schemaName);
 
-            void createTable(std::string tableDetails) {
-                try {
-                    pqxx::work W(C);
-                    W.exec(tableDetails.c_str());
-                    W.commit();
-                } catch (const std::exception &e) {
-                    FatalError << e.what() << std::endl;
-                    abort();
-                }
-            }
+            //- Create schema.table given headings and data types
+            //  Fails if table already exists
+            void createTable
+            (
+                std::string schemaName,
+                std::string tableName,
+                std::vector<std::string> headings,
+                std::vector<std::string> dataTypes
+            );
+
+            //- Create schema.table given headings and data types
+            //  Fails if table already exists
+            void createTable
+            (
+                std::string schemaName,
+                std::string tableName,
+                std::vector<std::pair<std::string>> headingsAndTypes
+            );
+
+            //- Drop schema.table, fails if it does not exist
+            void dropTable(std::string schemaName, std::string tableName);
+
+            //- Perform general SQL work
+            void work(std::string sqlCommand);
+            void work(std::stringstream sqlCommand);
+
+            //- Perform general SQL query
+            pqxx::result result(std::string sqlQuery);
+            pqxx::result result(std::stringstream sqlQuery);
+
+            //- Convert postgresql array into a vector
+            template <class T>
+            static std::vector<T> readArray(
+                std::string arrayStr,
+                char openChar = '{',
+                char closeChar = '}',
+                char delim = ','
+            );
+
 
 private:
 
@@ -116,11 +92,123 @@ private:
             abort();
         }
 
+        //- Used by readArray
+        template <class T>
+        static std::vector<T> readArrayFromVecTokens(
+            VecToken& vt,
+            T (vt::*assertGetFn)(),
+            char openChar,
+            char closeChar,
+            char delim
+        );
+
+
     // Private member data
 
         //- Connection to database
         pqxx::connection C_;
 };
 
+template <>
+static std::vector<bool> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+// Assumed to be getString, as postgres requires strings enclosed in ""
+template <>
+static std::vector<std::string> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<short> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<int> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<long> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<long long> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<unsigned short> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<unsigned int> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<unsigned long> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<unsigned long long> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<float> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+template <>
+static std::vector<double> readArray(
+    std::string arrayStr,
+    char openChar = '{',
+    char closeChar = '}',
+    char delim = ','
+);
+
+
+} // end namespace
+
+#include <pqxxInterfaceTemplate.cpp>
 
 #endif // pqxxInterface_H

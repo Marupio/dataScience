@@ -97,6 +97,8 @@ public:
         //- Construct from istream
         Token(std::istream& is);
 
+        //- Construct from char
+        Token(char chr);
 
     // Public Member Functions
 
