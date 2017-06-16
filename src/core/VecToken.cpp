@@ -82,7 +82,7 @@ void ds::VecToken::assertSize(size_t n) const {
 }
 
 
-Token::punctuationEnum ds::VecToken::assertGetPunctuation() const {
+ds::Token::punctuationEnum ds::VecToken::assertGetPunctuation() const {
     const Token& nextToken(get());
     if (!nextToken.isPunctuation()) {
         FatalError << "Expecting punctuation, got '" << nextToken << "'. Full token list is:\n"
@@ -105,7 +105,7 @@ bool ds::VecToken::assertGetBool() const {
 
 
 
-std::ds::VecToken::string assertGetWord() {
+std::string ds::VecToken::assertGetWord() const {
     const Token& nextToken(get());
     if (!nextToken.isWord()) {
         FatalError << "Expecting word, got '" << nextToken << "'. Full token list is:\n"
@@ -117,7 +117,7 @@ std::ds::VecToken::string assertGetWord() {
 
 
 
-std::ds::VecToken::string assertGetString() {
+std::string ds::VecToken::assertGetString() const {
     const Token& nextToken(get());
     if (!nextToken.isString()) {
         FatalError << "Expecting string, got '" << nextToken << "'. Full token list is:\n"

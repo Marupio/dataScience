@@ -1,4 +1,4 @@
-#include <pqxx/pqxx>
+#include <pqxxInterface.h>
 
 #include <AllCallPlayer.h>
 #include <Table.h>
@@ -73,39 +73,28 @@ void ds::AllCallPlayer::observeResults() {
     } else {
         won = 'f';
     }
-    try {
-        pqxx::connection C("dbname = dsdata user = dsuser password = 123 \
-        hostaddr = 127.0.0.1 port = 5432");
-        if (!C.is_open()) {
-            FatalError << "Can't open database, player id " << summary().id << ", '"
-                << summary().name << "'" << std::endl;
-            abort();
-        }
-        std::stringstream sql;
-        sql << "INSERT INTO " << schemaName_ << "." << tableName_ << "(hand,won,flop_rank,turn_rank"
-            << ",river_rank,flop_predict,turn_predict) VALUES ('" << hand << "','" << won
-            << "'," << flopRank_ << "," << turnRank_ << "," << riverRank_ << ",'{";
-        auto itf = flopPredict_.cbegin();
-        sql << *itf;
-        for (++itf; itf != flopPredict_.cend(); ++itf) {
-            sql << "," << *itf;
-        }
-        sql << "}','{";
-        auto itt = turnPredict_.cbegin();
-        sql << *itt;
-        for (++itt; itt != turnPredict_.cend(); ++itt) {
-            sql << "," << *itt;
-        }
-        sql << "}');";
-        pqxx::work W(C);
-        W.exec(sql.str().c_str());
-        W.commit();
-        C.disconnect ();
-    } catch (const std::exception &e) {
-        FatalError << "Database write failure, player id " << summary().id << ", '"
-            << summary().name << "', error: '" << e.what() << "'" << std::endl;
-        abort();
+
+    pqxxInterface db(
+        "dbname = dsdata user = dsuser password = 123 hostaddr = 127.0.0.1 port = 5432"
+    );
+
+    std::stringstream sql;
+    sql << "INSERT INTO " << schemaName_ << "." << tableName_ << "(hand,won,flop_rank,turn_rank"
+        << ",river_rank,flop_predict,turn_predict) VALUES ('" << hand << "','" << won
+        << "'," << flopRank_ << "," << turnRank_ << "," << riverRank_ << ",'{";
+    auto itf = flopPredict_.cbegin();
+    sql << *itf;
+    for (++itf; itf != flopPredict_.cend(); ++itf) {
+        sql << "," << *itf;
     }
+    sql << "}','{";
+    auto itt = turnPredict_.cbegin();
+    sql << *itt;
+    for (++itt; itt != turnPredict_.cend(); ++itt) {
+        sql << "," << *itt;
+    }
+    sql << "}');";
+    db.work(sql);
 }
 
 

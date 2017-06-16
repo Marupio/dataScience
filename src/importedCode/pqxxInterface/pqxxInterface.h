@@ -3,6 +3,8 @@
 
 #include <pqxx/pqxx>
 
+#include <VecToken.h>
+
 namespace ds
 {
 
@@ -21,6 +23,9 @@ public:
 
         //- Construct with connection parameters
         pqxxInterface(const char opt[]);
+
+    //- Destructor
+    ~pqxxInterface();
 
 
     // Public Member Functions
@@ -55,7 +60,7 @@ public:
             (
                 std::string schemaName,
                 std::string tableName,
-                std::vector<std::pair<std::string>> headingsAndTypes
+                std::vector<std::pair<std::string, std::string>> headingsAndTypes
             );
 
             //- Drop schema.table, fails if it does not exist
@@ -84,19 +89,13 @@ private:
     // Private Member Functions
 
         //- Confirm connection is open, or throw error
-        void checkConnection() {
-            if (C_.isOpen()) {
-                return;
-            }
-            FatalError << "Can't open database" << std::endl;
-            abort();
-        }
+        void checkConnection();
 
         //- Used by readArray
         template <class T>
         static std::vector<T> readArrayFromVecTokens(
             VecToken& vt,
-            T (vt::*assertGetFn)(),
+            T (VecToken::*assertGetFn)() const,
             char openChar,
             char closeChar,
             char delim
@@ -110,105 +109,105 @@ private:
 };
 
 template <>
-static std::vector<bool> readArray(
+std::vector<bool> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 // Assumed to be getString, as postgres requires strings enclosed in ""
 template <>
-static std::vector<std::string> readArray(
+std::vector<std::string> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<short> readArray(
+std::vector<short> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<int> readArray(
+std::vector<int> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<long> readArray(
+std::vector<long> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<long long> readArray(
+std::vector<long long> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<unsigned short> readArray(
+std::vector<unsigned short> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<unsigned int> readArray(
+std::vector<unsigned int> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<unsigned long> readArray(
+std::vector<unsigned long> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<unsigned long long> readArray(
+std::vector<unsigned long long> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<float> readArray(
+std::vector<float> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 template <>
-static std::vector<double> readArray(
+std::vector<double> pqxxInterface::readArray(
     std::string arrayStr,
-    char openChar = '{',
-    char closeChar = '}',
-    char delim = ','
+    char openChar,
+    char closeChar,
+    char delim
 );
 
 
 } // end namespace
 
-#include <pqxxInterfaceTemplate.cpp>
+#include <pqxxInterfaceTemplates.cpp>
 
 #endif // pqxxInterface_H

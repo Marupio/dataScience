@@ -67,10 +67,10 @@ public:
         bool assertGetBool() const;
 
         //- Get the next token and ensure it isWord
-        std::string assertGetWord();
+        std::string assertGetWord() const;
 
         //- Get the next token and ensure it isString
-        std::string assertGetString();
+        std::string assertGetString() const;
 
         //- Get the next token and ensure it isInt
         short assertGetShort() const;

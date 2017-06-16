@@ -878,6 +878,11 @@ std::ostream& ds::operator<<(std::ostream& os, const Token::punctuationEnum& tpe
 }
 
 
+bool ds::operator==(const Token& ta, const Token& tb) {
+    return ta.str() == tb.str();
+}
+
+
 bool ds::operator==(const Token& t, Token::typeEnum te) {
     return t.type() == te;
 }

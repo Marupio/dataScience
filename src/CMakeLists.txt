@@ -19,6 +19,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/stats
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtlsInterface
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/pqxxInterface
 )
 
 add_library(
@@ -58,6 +59,7 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha256.c
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/sha512.c
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtlsInterface/Csprng.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/pqxxInterface/pqxxInterface.cpp
 )
 
 include (${CMAKE_CURRENT_SOURCE_DIR}/importedCode/dlib/dlib/cmake)

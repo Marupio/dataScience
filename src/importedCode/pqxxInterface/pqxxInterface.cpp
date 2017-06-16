@@ -23,6 +23,13 @@ ds::pqxxInterface::pqxxInterface(const char opt[]):
 }
 
 
+// ****** Destructor ****** //
+
+ds::pqxxInterface::~pqxxInterface() {
+    C_.disconnect();
+}
+
+
 // ****** Public Member Functions ****** //
 
 bool ds::pqxxInterface::foundSchema(std::string schemaName) {
@@ -74,7 +81,7 @@ void ds::pqxxInterface::createSchema(std::string schemaName) {
     sql << "CREATE SCHEMA " << schemaName << ";";
     try {
         pqxx::work W(C_);
-        W.exec(sql.str().c_str());
+        W.exec(sql);
         W.commit();
     } catch (const std::exception &e) {
         FatalError << e.what() << std::endl;
@@ -91,28 +98,26 @@ void ds::pqxxInterface::createTable
 ) {
     if (headings.size() != dataTypes.size()) {
         FatalError << "Size mismatch, headings (" << headings.size() << ") and "
-            << "datatypes (" << datatypes.size() << ").  They are:\n headings:\n"
+            << "dataTypes (" << dataTypes.size() << ").  They are:\n headings:\n"
             << headings << "\ndataTypes:\n" << dataTypes << std::endl;
         abort();
     }
     std::stringstream sql;
     sql << "CREATE TABLE " << schemaName << "." << tableName << " (";
-    std::pair<std::vector<std::string>, std::vector<std::string>> itPair(
-        headings.cbegin(),
-        dataTypes.cbegin()
-    );
-    sql << *itPair.first() << " " << *itPair.second();
+    std::pair<std::vector<std::string>::const_iterator, std::vector<std::string>::const_iterator>
+        itPair(headings.cbegin(), dataTypes.cbegin());
+    sql << *itPair.first << " " << *itPair.second;
     for (
-        ++itPair.first(), ++itPair.second();
-        itPair.first() != headings.cend();
-        ++itPair.first(), ++itPair.second()
+        ++itPair.first, ++itPair.second;
+        itPair.first != headings.cend();
+        ++itPair.first, ++itPair.second
     ) {
-         sql << ", " << *itPair.first() << " " << *itPair.second();
+         sql << ", " << *itPair.first << " " << *itPair.second;
     }
     sql << ");";
     try {
         pqxx::work W(C_);
-        W.exec(tableDetails.c_str());
+        W.exec(sql);
         W.commit();
     } catch (const std::exception &e) {
         FatalError << e.what() << std::endl;
@@ -125,23 +130,19 @@ void ds::pqxxInterface::createTable
 (
     std::string schemaName,
     std::string tableName,
-    std::vector<std::pair<std::string>> headingsAndTypes
+    std::vector<std::pair<std::string, std::string>> headingsAndTypes
 ) {
     std::stringstream sql;
     sql << "CREATE TABLE " << schemaName << "." << tableName << " (";
     auto it(headingsAndTypes.cbegin());
-    sql << *itPair.first() << " " << itPair.second();
-    for (
-        ++itPair.first(), ++itPair.second();
-        itPair.first() != headings.cend();
-        ++itPair.first(), ++itPair.second()
-    ) {
-         sql << ", " << *itPair.first() << " " << itPair.second();
+    sql << it->first << " " << it->second;
+    for (++it; it != headingsAndTypes.cend(); ++it) {
+         sql << ", " << it->first << " " << it->second;
     }
     sql << ");";
     try {
         pqxx::work W(C_);
-        W.exec(tableDetails.c_str());
+        W.exec(sql);
         W.commit();
     } catch (const std::exception &e) {
         FatalError << e.what() << std::endl;
@@ -155,7 +156,7 @@ void ds::pqxxInterface::dropTable(std::string schemaName, std::string tableName)
     sql << "DROP TABLE " << schemaName << "." << tableName << ";";
     try {
         pqxx::work W(C_);
-        W.exec(tableDetails.c_str());
+        W.exec(sql);
         W.commit();
     } catch (const std::exception &e) {
         FatalError << e.what() << std::endl;
@@ -167,7 +168,7 @@ void ds::pqxxInterface::dropTable(std::string schemaName, std::string tableName)
 void ds::pqxxInterface::work(std::string sqlCommand) {
     try {
         pqxx::work W(C_);
-        W.exec(sqlCommand.c_str());
+        W.exec(sqlCommand);
         W.commit();
     } catch (const std::exception &e) {
         FatalError << e.what() << std::endl;
@@ -183,7 +184,7 @@ void ds::pqxxInterface::work(std::stringstream sqlCommand) {
 
 pqxx::result ds::pqxxInterface::result(std::string sqlQuery) {
     pqxx::nontransaction N(C_);
-    return pqxx::result(N.exec(sql));
+    return pqxx::result(N.exec(sqlQuery));
 }
 
 
@@ -195,7 +196,7 @@ pqxx::result ds::pqxxInterface::result(std::stringstream sqlQuery) {
 // ****** Private Member Functions ****** //
 
 void ds::pqxxInterface::checkConnection() {
-    if (C_.isOpen()) {
+    if (C_.is_open()) {
         return;
     }
     FatalError << "Can't open database" << std::endl;
@@ -206,7 +207,7 @@ void ds::pqxxInterface::checkConnection() {
 // ****** Template Specialisations ****** //
 
 template <>
-static std::vector<bool> ds::pqxxInterface::readArray(
+std::vector<bool> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -225,7 +226,7 @@ static std::vector<bool> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<std::string> ds::pqxxInterface::readArray(
+std::vector<std::string> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -244,7 +245,7 @@ static std::vector<std::string> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<short> ds::pqxxInterface::readArray(
+std::vector<short> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -263,7 +264,7 @@ static std::vector<short> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<int> ds::pqxxInterface::readArray(
+std::vector<int> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -282,7 +283,7 @@ static std::vector<int> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<long> ds::pqxxInterface::readArray(
+std::vector<long> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -301,7 +302,7 @@ static std::vector<long> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<long long> ds::pqxxInterface::readArray(
+std::vector<long long> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -320,7 +321,7 @@ static std::vector<long long> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<unsigned short> ds::pqxxInterface::readArray(
+std::vector<unsigned short> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -339,7 +340,7 @@ static std::vector<unsigned short> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<unsigned int> ds::pqxxInterface::readArray(
+std::vector<unsigned int> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -358,7 +359,7 @@ static std::vector<unsigned int> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<unsigned long> ds::pqxxInterface::readArray(
+std::vector<unsigned long> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -377,7 +378,7 @@ static std::vector<unsigned long> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<unsigned long long> ds::pqxxInterface::readArray(
+std::vector<unsigned long long> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -396,7 +397,7 @@ static std::vector<unsigned long long> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<float> ds::pqxxInterface::readArray(
+std::vector<float> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,
@@ -415,7 +416,7 @@ static std::vector<float> ds::pqxxInterface::readArray(
 
 
 template <>
-static std::vector<double> ds::pqxxInterface::readArray(
+std::vector<double> ds::pqxxInterface::readArray(
     std::string arrayStr,
     char openChar,
     char closeChar,

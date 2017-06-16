@@ -8,6 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/stats
     ${CMAKE_SOURCE_DIR}/src/importedCode
     ${CMAKE_SOURCE_DIR}/src/importedCode/mbedtlsInterface
+    ${CMAKE_SOURCE_DIR}/src/importedCode/pqxxInterface
     ${PROJECT_BINARY_DIR}
 )
 

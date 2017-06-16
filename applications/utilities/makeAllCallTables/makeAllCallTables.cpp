@@ -4,8 +4,7 @@
 #include <list>
 #include <thread>
 
-#include <pqxx/pqxx>
-
+#include <pqxxInterface.h>
 #include <EntropyInterface.h>
 
 #include <dsConfig.h>
@@ -43,89 +42,34 @@ int main(int argc, char *argv[]) {
 
     std::string tableName("allcall_" + std::to_string(nSeats));
 
-    try {
-        pqxx::connection C("dbname = dsdata user = dsuser password = 123 \
-        hostaddr = 127.0.0.1 port = 5432");
-        if (C.is_open()) {
-            std::cout << "Opened database successfully: " << C.dbname()
-            << std::endl;
-        } else {
-            std::cout << "Can't open database" << std::endl;
-            return 1;
-        }
-        
-        //- Check if schema exists
-        bool schemaExists = false;
-        {
-            std::stringstream sql;
-            sql << "SELECT schema_name FROM information_schema.schemata "
-                << "WHERE schema_name = '" << schemaName << "';";
-            pqxx::nontransaction N(C);
-            pqxx::result R(N.exec(sql));
-            if (R.size()) {
-                schemaExists = true;
-            }
+    {
+        pqxxInterface db(
+            "dbname = dsdata user = dsuser password = 123 hostaddr = 127.0.0.1 port = 5432"
+        );
+
+        if (!db.foundSchema(schemaName)) {
+            db.createSchema(schemaName);
         }
 
-        // Create schema if it doesn't exist
-        if (!schemaExists) {
-            std::stringstream sql;
-            sql << "CREATE SCHEMA " << schemaName << ";";
-            pqxx::work W(C);
-            W.exec(sql.str().c_str());
-            W.commit();
-        }
-
-        //- Check if table exists
-        bool tableExists = false;
-        {
-            std::stringstream sql;
-            sql << "SELECT c.oid, "
-                << "  n.nspname, "
-                << "  c.relname "
-                << "FROM pg_catalog.pg_class c "
-                << "     LEFT JOIN pg_catalog.pg_namespace n "
-                << "        ON n.oid = c.relnamespace "
-                << "WHERE c.relname ~ '^(" << tableName << ")$' "
-                << "  AND n.nspname ~ '^(" << schemaName << ")$';";
-
-            pqxx::nontransaction N(C);
-            pqxx::result R(N.exec(sql));
-            if (R.size()) {
-                tableExists = true;
-            }
-        }
-
-        // Drop table if it exists and overwriting is allowed
+        bool tableExists = db.foundSchemaTable(schemaName, tableName);
         if (tableExists && overwrite) {
-            std::stringstream sql;
-            sql << "DROP TABLE " << schemaName << "." << tableName << ";";
-            pqxx::work W(C);
-            W.exec(sql.str().c_str());
-            W.commit();
+            db.dropTable(schemaName, tableName);
         }
 
         if (!tableExists || overwrite) {
-            std::stringstream sql;
-            sql << "CREATE TABLE " << schemaName << "." << tableName << " ("
-                << "id              bigserial primary key, "
-                << "hand            varchar(3) not null, "
-                << "won             bool not null, "
-                << "flop_rank       smallint not null, "
-                << "turn_rank       smallint not null, "
-                << "river_rank      smallint not null, "
-                << "flop_predict    smallint[] not null, "
-                << "turn_predict    smallint[] not null "
-                << ");";
-            pqxx::work W(C);
-            W.exec(sql.str().c_str());
-            W.commit();
+            std::vector<std::pair<std::string, std::string>> headingsAndTypes =
+                {
+                    {"id", "bigserial primary key"},
+                    {"hand", "varchar(3) not null"},
+                    {"won", "bool not null"},
+                    {"flop_rank", "smallint not null"},
+                    {"turn_rank", "smallint not null"},
+                    {"river_rank", "smallint not null"},
+                    {"flop_predict", "smallint[] not null"},
+                    {"turn_predict", "smallint[] not null"}
+                }
+            db.createTable(schemaName, tableName, headingsAndTypes);
         }
-
-        C.disconnect ();
-    } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
     }
 
     EntropyInterface entropy;
@@ -144,7 +88,7 @@ int main(int argc, char *argv[]) {
 
     // Create tables
     std::list<Table> tables;
-    
+
     // Create tables and seat players, set starting chips
     size_t tableI = 0;
     auto itP = players.begin();
@@ -177,7 +121,7 @@ int main(int argc, char *argv[]) {
                     std::thread(startThread, std::ref(*itT), nTableIters)
                 );
             }
-     
+
             for (size_t ti = 0; ti < nTables; ++ti) {
                 tableThread[ti].join();
             }
@@ -187,6 +131,6 @@ int main(int argc, char *argv[]) {
         }
     }
     std::cout << "\nDone.\n" << std::endl;
-    
+
     return 0;
 }

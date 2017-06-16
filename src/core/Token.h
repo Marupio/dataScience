@@ -228,6 +228,7 @@ private:
 
 std::ostream& operator<<(std::ostream& os, const Token::punctuationEnum& tpe);
 
+bool operator==(const Token& ta, const Token& tb);
 bool operator==(const Token& t, Token::typeEnum te);
 bool operator==(Token::typeEnum te, const Token& t);
 bool operator==(const Token& t, Token::punctuationEnum pe);
