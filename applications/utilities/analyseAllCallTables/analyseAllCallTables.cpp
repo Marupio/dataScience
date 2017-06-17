@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             sql << "SELECT * from " << schemaName << "." << tableName << " WHERE hand = 'AA'";
             sql << "AND won = 't' AND flop_rank > 95;";
             pqxx::result R(
-                pqxx.result(sql)
+                db.result(sql)
             );
             for (pqxx::result::const_iterator c = R.begin(); c != R.end(); ++c) {
                 std::cout << "ID = " << c[0].as<long long>() << "\n"
@@ -74,6 +74,9 @@ int main(int argc, char *argv[]) {
                     << "river_rank = " << c[5].as<short>() << "\n"
                     << "flop_predict = " << c[6].as<std::string>() << "\n"
                     << "turn_predict = " << c[7].as<std::string>() << std::endl;
+                std::vector<short> flopPredict =
+                    pqxxInterface::readArray<short>(c[6].as<std::string>());
+                std::cout << "flopPredict = " << flopPredict << std::endl;
             }
         }
     }

@@ -111,6 +111,8 @@ public:
         //- Debug write
         void debugWrite(std::ostream& os) const;
 
+        //- Error write - writes out token list, putting * * around readPos
+        void errorWrite(std::ostream& os) const;
 
     // Friend functions
     friend std::ostream& operator<<(std::ostream& out, const VecToken& vt);

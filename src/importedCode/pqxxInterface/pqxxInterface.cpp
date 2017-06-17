@@ -177,7 +177,7 @@ void ds::pqxxInterface::work(std::string sqlCommand) {
 }
 
 
-void ds::pqxxInterface::work(std::stringstream sqlCommand) {
+void ds::pqxxInterface::work(std::stringstream& sqlCommand) {
     work(sqlCommand.str());
 }
 
@@ -188,7 +188,7 @@ pqxx::result ds::pqxxInterface::result(std::string sqlQuery) {
 }
 
 
-pqxx::result ds::pqxxInterface::result(std::stringstream sqlQuery) {
+pqxx::result ds::pqxxInterface::result(std::stringstream& sqlQuery) {
     return result(sqlQuery.str());
 }
 

@@ -68,11 +68,11 @@ public:
 
             //- Perform general SQL work
             void work(std::string sqlCommand);
-            void work(std::stringstream sqlCommand);
+            void work(std::stringstream& sqlCommand);
 
             //- Perform general SQL query
             pqxx::result result(std::string sqlQuery);
-            pqxx::result result(std::stringstream sqlQuery);
+            pqxx::result result(std::stringstream& sqlQuery);
 
             //- Convert postgresql array into a vector
             template <class T>

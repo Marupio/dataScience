@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
                     {"river_rank", "smallint not null"},
                     {"flop_predict", "smallint[] not null"},
                     {"turn_predict", "smallint[] not null"}
-                }
+                };
             db.createTable(schemaName, tableName, headingsAndTypes);
         }
     }

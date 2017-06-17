@@ -85,8 +85,9 @@ void ds::VecToken::assertSize(size_t n) const {
 ds::Token::punctuationEnum ds::VecToken::assertGetPunctuation() const {
     const Token& nextToken(get());
     if (!nextToken.isPunctuation()) {
-        FatalError << "Expecting punctuation, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting punctuation, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getPunctuation();
@@ -96,8 +97,9 @@ ds::Token::punctuationEnum ds::VecToken::assertGetPunctuation() const {
 bool ds::VecToken::assertGetBool() const {
     const Token& nextToken(get());
     if (!nextToken.isBool()) {
-        FatalError << "Expecting boolean, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting boolean, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getBool();
@@ -108,8 +110,9 @@ bool ds::VecToken::assertGetBool() const {
 std::string ds::VecToken::assertGetWord() const {
     const Token& nextToken(get());
     if (!nextToken.isWord()) {
-        FatalError << "Expecting word, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting word, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getWord();
@@ -120,8 +123,9 @@ std::string ds::VecToken::assertGetWord() const {
 std::string ds::VecToken::assertGetString() const {
     const Token& nextToken(get());
     if (!nextToken.isString()) {
-        FatalError << "Expecting string, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting string, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getString();
@@ -132,8 +136,9 @@ std::string ds::VecToken::assertGetString() const {
 short ds::VecToken::assertGetShort() const {
     const Token& nextToken(get());
     if (!nextToken.isInt()) {
-        FatalError << "Expecting short, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting short, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getShort();
@@ -144,8 +149,9 @@ short ds::VecToken::assertGetShort() const {
 int ds::VecToken::assertGetInt() const {
     const Token& nextToken(get());
     if (!nextToken.isInt()) {
-        FatalError << "Expecting int, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting int, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getInt();
@@ -156,8 +162,9 @@ int ds::VecToken::assertGetInt() const {
 long ds::VecToken::assertGetLong() const {
     const Token& nextToken(get());
     if (!nextToken.isInt()) {
-        FatalError << "Expecting long, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting long, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getLong();
@@ -168,8 +175,9 @@ long ds::VecToken::assertGetLong() const {
 long long ds::VecToken::assertGetLongLong() const {
     const Token& nextToken(get());
     if (!nextToken.isInt()) {
-        FatalError << "Expecting long long, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting long long, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getLongLong();
@@ -180,8 +188,9 @@ long long ds::VecToken::assertGetLongLong() const {
 unsigned short ds::VecToken::assertGetUShort() const {
     const Token& nextToken(get());
     if (!nextToken.isUInt()) {
-        FatalError << "Expecting ushort, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting ushort, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getUShort();
@@ -192,8 +201,9 @@ unsigned short ds::VecToken::assertGetUShort() const {
 unsigned int ds::VecToken::assertGetUInt() const {
     const Token& nextToken(get());
     if (!nextToken.isUInt()) {
-        FatalError << "Expecting uint, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting uint, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getUInt();
@@ -204,8 +214,9 @@ unsigned int ds::VecToken::assertGetUInt() const {
 unsigned long ds::VecToken::assertGetULong() const {
     const Token& nextToken(get());
     if (!nextToken.isUInt()) {
-        FatalError << "Expecting ulong, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting ulong, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getULong();
@@ -216,8 +227,9 @@ unsigned long ds::VecToken::assertGetULong() const {
 unsigned long long ds::VecToken::assertGetULongLong() const {
     const Token& nextToken(get());
     if (!nextToken.isUInt()) {
-        FatalError << "Expecting ulonglong, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting ulonglong, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getULongLong();
@@ -228,8 +240,9 @@ unsigned long long ds::VecToken::assertGetULongLong() const {
 float ds::VecToken::assertGetFloat() const {
     const Token& nextToken(get());
     if (!nextToken.isFloat()) {
-        FatalError << "Expecting float, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting float, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getFloat();
@@ -240,8 +253,9 @@ float ds::VecToken::assertGetFloat() const {
 double ds::VecToken::assertGetDouble() const {
     const Token& nextToken(get());
     if (!nextToken.isFloat()) {
-        FatalError << "Expecting double, got '" << nextToken << "'. Full token list is:\n"
-            << *this << std::endl;
+        FatalError << "Expecting double, got '" << nextToken << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
         abort();
     }
     return nextToken.getDouble();
@@ -319,6 +333,30 @@ void ds::VecToken::debugWrite(std::ostream& os) const {
 }
 
 
+void ds::VecToken::errorWrite(std::ostream& os) const {
+    auto it = cbegin();
+    auto rp = readPos();
+    if (rp != cbegin()) {
+        --rp;
+    }
+    if (it != cend()) {
+        if (it == rp) {
+            os << "*" << *it << "*";
+        } else {
+            os << *it;
+        }
+        ++it;
+    }
+    for (; it != cend(); ++it) {
+        if (it == rp) {
+            os << "*" << *it << "*";
+        } else {
+            os << *it;
+        }
+    }
+}
+
+
 // ****** Template Specialisations ****** //
 
 namespace ds
@@ -331,8 +369,9 @@ void ds::VecToken::assertGet(Token::typeEnum t) const {
         return;
     }
     FatalError << "Expecting '" << Token::typeEnumToString(t) << "', got '" << nextToken << "'. "
-        << "Full token list is:\n"
-        << *this << std::endl;
+        << "Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
     abort();
 }
 
@@ -344,8 +383,9 @@ void ds::VecToken::assertGet(Token::punctuationEnum pe) const {
         return;
     }
     FatalError << "Expecting '" << Token::punctuationEnumToChar(pe) << "', got '" << nextToken
-        << "'. Full token list is:\n"
-        << *this << std::endl;
+        << "'. Full token list is:\n";
+        errorWrite(std::cerr);
+        std::cerr << std::endl;
     abort();
 }
 
