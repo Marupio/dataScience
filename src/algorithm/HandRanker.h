@@ -52,16 +52,33 @@ public:
         //  *** Located in HandRankerRank.cpp
         short rank();
 
+        //- Return all possible riverRanks given an empty board.
+        //  Array size will be 108100 of shorts in range (0..1078)
+        //  Does not sort result
+        //  *** Located in HandRankerPredict.cpp
+        std::vector<short> predictPreFlopToRiver();
+
+        //- Return all possible riverRanks after flop is showing
+        //  Array size will be 2162 of shorts in range (0..1078)
+        //  Does not sort result
+        //  *** Located in HandRankerPredict.cpp
+        std::vector<short> predictFlopToRiver();
+
+        //- Return all possible riverRanks after flop is showing
+        //  Array size will be 46 of shorts in range (0..1078)
+        //  Does not sort result
+        //  *** Located in HandRankerPredict.cpp
+        std::vector<short> predictTurnToRiver();
+
         //- Return array of rank values based on what the next card might be
         //  Suitable only after the flop and before the river.
-        void predict(std::vector<short>& pa);
-
-        //- Convert postgres array to vector of values
-        static std::vector<short> readPredictString(std::string& pa);
+        //  *** Located in HandRankerPredict.cpp
+        void predictAndSort(std::vector<short>& pa);
 
         //- Return array of rank values based on what the flop might be
         //  Suitable only when the board is empty
-        void predictFlop(std::vector<short>& pa);
+        //  *** Located in HandRankerPredict.cpp
+        void predictFlopAndSort(std::vector<short>& pa);
 
         //- Helper for compare
         //  Finds kickers, if any, given the provided hand type

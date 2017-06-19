@@ -42,13 +42,13 @@ void ds::AllCallPlayer::observeEvent(eventEnum event) {
     case Player::evFlop: {
         HandRanker hr(table().board(), copyPkt_);
         flopRank_ = hr.rank();
-        hr.predict(flopPredict_);
+        hr.predictAndSort(flopPredict_);
         break;
     }
     case Player::evTurn: {
         HandRanker hr(table().board(), copyPkt_);
         turnRank_ = hr.rank();
-        hr.predict(turnPredict_);
+        hr.predictAndSort(turnPredict_);
         break;
     }
     case Player::evRiver: {

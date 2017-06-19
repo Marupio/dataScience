@@ -108,7 +108,7 @@ void makePreFlopData(
     Board bd;
     HandRanker hr(bd, pkt);
     std::vector<short> pa;
-    hr.predictFlop(pa);
+    hr.predictFlopAndSort(pa);
     {
         std::ofstream os(filename);//, std::ofstream::binary);
         for (auto it = pa.cbegin(); it != pa.cend(); ++it) {

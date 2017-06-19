@@ -2,6 +2,19 @@
 * AllCall tables *
 ******************
 
+I've got it.  It all boils down to riverRank.  Run enough simulations so you have sufficient data
+for a given riverRank and handType: % chance of winning at a given riverRank.
+Then run hand rank predictions down to the river, and that array gives the number of occurences of
+each riverRank, and that gives you an aggregate of your chance of winning.
+
+Preflop aggregate should be equivalent to total wins vs losses.
+
+So I need to write handRanker predictors:
+* preflop-->river (size = 108100)
+* flop-->river (size = 2162)
+* turn-->river (size = 46) <-- I already have this function.
+
+
 Preflop
     Inputs [1]:
         * Hand (e.g. AKu, 87s, 44)
