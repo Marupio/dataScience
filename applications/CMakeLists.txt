@@ -179,6 +179,17 @@ install_targets(
 
 
 add_executable(
+    makePreFlopToRiverPredictions
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makePreFlopToRiverPredictions/makePreFlopToRiverPredictions.cpp
+)
+target_link_libraries(makePreFlopToRiverPredictions core ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    makePreFlopToRiverPredictions
+)
+
+
+add_executable(
     makeAllCallTables
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeAllCallTables/makeAllCallTables.cpp
 )

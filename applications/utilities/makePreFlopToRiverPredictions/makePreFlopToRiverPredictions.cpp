@@ -7,23 +7,24 @@
 #include <HandRanker.h>
 #include <PktCards.h>
 
-std::string schemaName("staticData");
-std::string tableName("preFlopToRiver");
+std::string schemaName("staticdata");
+std::string tableName("prefloptoriver");
+
+using namespace ds;
 
 void writePreFlopData(PktCards& pkt, pqxxInterface& db, int chen) {
+    std::string hand = pkt.startingHandName();
     Board bd;
     HandRanker hr(bd, pkt);
     std::vector<short> pa = hr.predictPreFlopToRiver();
+    std::vector<short> hist = HandRanker::paToHistogram(pa);
+    std::cout << "    max = " << hist.size() << std::endl;
     std::stringstream sql;
-                {"id", "bigserial primary key"},
-                {"hand", "varchar(3) not null"},
-                {"chen", "smallint not null"},
-                {"preflop_to_river", "smallint[] not null"}
-    sql << "INSERT INTO " << schemaName << "." << tableName << "(hand,chen,preflop_to_river) "
-        << "VALUES ('" << hand << "','" << chen << ",'{";
-    auto it = pa.cbegin();
+    sql << "INSERT INTO " << schemaName << "." << tableName << "(hand,chen,pftr_histogram) "
+        << "VALUES ('" << hand << "'," << chen << ",'{";
+    auto it = hist.cbegin();
     sql << *it;
-    for (++it; it != pa.cend(); ++it) {
+    for (++it; it != hist.cend(); ++it) {
         sql << "," << *it;
     }
     sql << "}');";
@@ -51,13 +52,14 @@ int main(int argc, char *argv[]) {
                 {"id", "bigserial primary key"},
                 {"hand", "varchar(3) not null"},
                 {"chen", "smallint not null"},
-                {"preflop_to_river", "smallint[] not null"}
+                {"pftr_histogram", "smallint[] not null"}
             };
         db.createTable(schemaName, tableName, headingsAndTypes);
 
         for (CardVal cvA = Card::ace; cvA > Card::lowAce; --cvA) {
-            std::cout << "Working on " << Card::valueToWriteChar(cvA) << std::endl;
             for (CardVal cvB = cvA; cvB > Card::lowAce; --cvB) {
+                std::cout << "Working on " << Card::valueToWriteChar(cvA)
+                    << Card::valueToWriteChar(cvB) << std::endl;
                 int chen = 0;
                 if (cvA <= 10) {
                     chen = cvA/2;
@@ -97,14 +99,12 @@ int main(int argc, char *argv[]) {
                 // Unsuited first
                 {
                     PktCards pkt(cvA, Card::clubs, cvB, Card::diamonds);
-                    std::string handType = pkt.handType();
                     writePreFlopData(pkt, db, chen);
                 }
                 if (cvA != cvB) {
                     // Suited next
                     chen += 2;
                     PktCards pkt(cvA, Card::clubs, cvB, Card::clubs);
-                    std::string handType = pkt.handType();
                     writePreFlopData(pkt, db, chen);
                 }
             }

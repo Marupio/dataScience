@@ -1,3 +1,265 @@
 flop 897
 turn 1122
 river 1078
+
+Actual river maxima
+Working on AA
+    max = 838
+Working on AK
+    max = 1120
+    max = 1120
+Working on AQ
+    max = 1125
+    max = 1125
+Working on AJ
+    max = 1130
+    max = 1130
+Working on AT
+    max = 1135
+    max = 1135
+Working on A9
+    max = 1140
+    max = 1140
+Working on A8
+    max = 1140
+    max = 1140
+Working on A7
+    max = 1120
+    max = 1120
+Working on A6
+    max = 1125
+    max = 1125
+Working on A5
+    max = 1130
+    max = 1130
+Working on A4
+    max = 1135
+    max = 1135
+Working on A3
+    max = 1140
+    max = 1140
+Working on A2
+    max = 1140
+    max = 1140
+Working on KK
+    max = 896
+Working on KQ
+    max = 1145
+    max = 1144
+Working on KJ
+    max = 1150
+    max = 1149
+Working on KT
+    max = 1155
+    max = 1154
+Working on K9
+    max = 1160
+    max = 1159
+Working on K8
+    max = 1160
+    max = 1159
+Working on K7
+    max = 1140
+    max = 1140
+Working on K6
+    max = 1145
+    max = 1144
+Working on K5
+    max = 1150
+    max = 1149
+Working on K4
+    max = 1155
+    max = 1154
+Working on K3
+    max = 1160
+    max = 1159
+Working on K2
+    max = 1160
+    max = 1159
+Working on QQ
+    max = 899
+Working on QJ
+    max = 1164
+    max = 1162
+Working on QT
+    max = 1169
+    max = 1167
+Working on Q9
+    max = 1174
+    max = 1172
+Working on Q8
+    max = 1174
+    max = 1172
+Working on Q7
+    max = 1160
+    max = 1159
+Working on Q6
+    max = 1132
+    max = 1131
+Working on Q5
+    max = 1164
+    max = 1162
+Working on Q4
+    max = 1169
+    max = 1167
+Working on Q3
+    max = 1174
+    max = 1172
+Working on Q2
+    max = 1174
+    max = 1172
+Working on JJ
+    max = 904
+Working on JT
+    max = 1177
+    max = 1174
+Working on J9
+    max = 1182
+    max = 1179
+Working on J8
+    max = 1182
+    max = 1179
+Working on J7
+    max = 1174
+    max = 1172
+Working on J6
+    max = 1147
+    max = 1144
+Working on J5
+    max = 1151
+    max = 1149
+Working on J4
+    max = 1177
+    max = 1174
+Working on J3
+    max = 1182
+    max = 1179
+Working on J2
+    max = 1182
+    max = 1179
+Working on TT
+    max = 908
+Working on T9
+    max = 1184
+    max = 1180
+Working on T8
+    max = 1184
+    max = 1180
+Working on T7
+    max = 1182
+    max = 1179
+Working on T6
+    max = 1161
+    max = 1157
+Working on T5
+    max = 1141
+    max = 1136
+Working on T4
+    max = 1164
+    max = 1161
+Working on T3
+    max = 1184
+    max = 1180
+Working on T2
+    max = 1184
+    max = 1180
+Working on 99
+    max = 1001
+Working on 98
+    max = 1184
+    max = 1180
+Working on 97
+    max = 1184
+    max = 1180
+Working on 96
+    max = 1169
+    max = 1164
+Working on 95
+    max = 1149
+    max = 1143
+Working on 94
+    max = 1149
+    max = 1143
+Working on 93
+    max = 1167
+    max = 1162
+Working on 92
+    max = 1184
+    max = 1180
+Working on 88
+    max = 1058
+Working on 87
+    max = 1184
+    max = 1180
+Working on 86
+    max = 1169
+    max = 1167
+Working on 85
+    max = 1166
+    max = 1167
+Working on 84
+    max = 1166
+    max = 1167
+Working on 83
+    max = 1171
+    max = 1171
+Working on 82
+    max = 1173
+    max = 1172
+Working on 77
+    max = 1106
+Working on 76
+    max = 1203
+    max = 1204
+Working on 75
+    max = 1203
+    max = 1204
+Working on 74
+    max = 1203
+    max = 1204
+Working on 73
+    max = 1202
+    max = 1201
+Working on 72
+    max = 1207
+    max = 1206
+Working on 66
+    max = 1109
+Working on 65
+    max = 1203
+    max = 1204
+Working on 64
+    max = 1203
+    max = 1204
+Working on 63
+    max = 1202
+    max = 1201
+Working on 62
+    max = 1204
+    max = 1204
+Working on 55
+    max = 1153
+Working on 54
+    max = 1218
+    max = 1218
+Working on 53
+    max = 1218
+    max = 1218
+Working on 52
+    max = 1218
+    max = 1218
+Working on 44
+    max = 1196
+Working on 43
+    max = 1218
+    max = 1218
+Working on 42
+    max = 1218
+    max = 1218
+Working on 33
+    max = 1218
+Working on 32
+    max = 1215
+    max = 1215
+Working on 22
+    max = 1225

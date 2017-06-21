@@ -48,38 +48,6 @@ public:
             const PktCards& pktB
         );
 
-        //- Return the exact ranking of the pocket cards among all possibilities
-        //  *** Located in HandRankerRank.cpp
-        short rank();
-
-        //- Return all possible riverRanks given an empty board.
-        //  Array size will be 108100 of shorts in range (0..1078)
-        //  Does not sort result
-        //  *** Located in HandRankerPredict.cpp
-        std::vector<short> predictPreFlopToRiver();
-
-        //- Return all possible riverRanks after flop is showing
-        //  Array size will be 2162 of shorts in range (0..1078)
-        //  Does not sort result
-        //  *** Located in HandRankerPredict.cpp
-        std::vector<short> predictFlopToRiver();
-
-        //- Return all possible riverRanks after flop is showing
-        //  Array size will be 46 of shorts in range (0..1078)
-        //  Does not sort result
-        //  *** Located in HandRankerPredict.cpp
-        std::vector<short> predictTurnToRiver();
-
-        //- Return array of rank values based on what the next card might be
-        //  Suitable only after the flop and before the river.
-        //  *** Located in HandRankerPredict.cpp
-        void predictAndSort(std::vector<short>& pa);
-
-        //- Return array of rank values based on what the flop might be
-        //  Suitable only when the board is empty
-        //  *** Located in HandRankerPredict.cpp
-        void predictFlopAndSort(std::vector<short>& pa);
-
         //- Helper for compare
         //  Finds kickers, if any, given the provided hand type
         //  ** Located in HandRankerGetKickers.cpp
@@ -88,6 +56,48 @@ public:
             const PktCards& pkt,
             const HandType& ht
         );
+
+        //- Return the exact ranking of the pocket cards among all possibilities
+        //  *** Located in HandRankerRank.cpp
+        short rank();
+
+
+        // Predict functions based on river rank
+
+            //- Return all possible riverRanks given an empty board.
+            //  Array size will be 108100 of shorts in range (0..1078)
+            //  Does not sort result
+            //  *** Located in HandRankerPredict.cpp
+            std::vector<short> predictPreFlopToRiver();
+
+            //- Return all possible riverRanks after flop is showing
+            //  Array size will be 2162 of shorts in range (0..1078)
+            //  Does not sort result
+            //  *** Located in HandRankerPredict.cpp
+            std::vector<short> predictFlopToRiver();
+
+            //- Return all possible riverRanks after flop is showing
+            //  Array size will be 46 of shorts in range (0..1078)
+            //  Does not sort result
+            //  *** Located in HandRankerPredict.cpp
+            std::vector<short> predictTurnToRiver();
+
+            //- Convert predict array into a histogram of values with spacing = 1
+            //  *** Located in HandRankerPredict.cpp
+            static std::vector<short> paToHistogram(std::vector<short> pa, short max=0);
+
+
+        // Old predict functions
+
+            //- Return array of rank values based on what the next card might be
+            //  Suitable only after the flop and before the river.
+            //  *** Located in HandRankerPredict.cpp
+            void predictAndSort(std::vector<short>& pa);
+
+            //- Return array of rank values based on what the flop might be
+            //  Suitable only when the board is empty
+            //  *** Located in HandRankerPredict.cpp
+            void predictFlopAndSort(std::vector<short>& pa);
 
 
 private:

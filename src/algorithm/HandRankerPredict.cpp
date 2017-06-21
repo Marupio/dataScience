@@ -76,6 +76,20 @@ std::vector<short> ds::HandRanker::predictTurnToRiver() {
 }
 
 
+std::vector<short> ds::HandRanker::paToHistogram(std::vector<short> pa, short max) {
+    if (max == 0) {
+        for (auto it = pa.cbegin(); it != pa.cend(); ++it) {
+            max = std::max(*it, max);
+        }
+    }
+    std::vector<short> res(max+1, 0);
+    for (auto it = pa.cbegin(); it != pa.cend(); ++it) {
+        res[*it]++;
+    }
+    return res;
+}
+
+
 void ds::HandRanker::predictAndSort
 (
     std::vector<short>& pa
