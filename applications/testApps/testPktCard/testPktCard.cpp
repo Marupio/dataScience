@@ -6,6 +6,12 @@
 using namespace ds;
 int main()
 {
+    for (size_t cshi = 0; cshi < PktCards::nStartingHands; ++cshi) {
+        size_t shi = PktCards::cshiToShi[cshi];
+        PktCards pkt(PktCards::makeStartingHand(cshi));
+        std::cout << "cshi = " << cshi << ", shi = " << shi << ", pkt = " << pkt << ", starting "
+            << "hand name = " << pkt.startingHandName() << std::endl;
+    }
     std::cout << "Constructing from deckIndex..." << std::endl;
     for (short i = 0; i < 20; ++i) {
         DeckInd diA(std::rand()%52);

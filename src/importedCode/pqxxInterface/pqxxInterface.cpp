@@ -1,5 +1,8 @@
 #include <pqxxInterface.h>
 
+#include <algorithm>
+
+
 // ****** Constructors ****** //
 
 // ds::pqxxInterface::pqxxInterface():
@@ -52,6 +55,8 @@ bool ds::pqxxInterface::foundSchema(std::string schemaName) {
 
 bool ds::pqxxInterface::foundSchemaTable(std::string schemaName, std::string tableName)
 {
+    std::transform(schemaName.begin(), schemaName.end(), schemaName.begin(), ::tolower);
+    std::transform(tableName.begin(), tableName.end(), tableName.begin(), ::tolower);
     try {
         std::stringstream sql;
         sql << "SELECT c.oid, "
@@ -77,6 +82,7 @@ bool ds::pqxxInterface::foundSchemaTable(std::string schemaName, std::string tab
 
 
 void ds::pqxxInterface::createSchema(std::string schemaName) {
+    std::transform(schemaName.begin(), schemaName.end(), schemaName.begin(), ::tolower);
     std::stringstream sql;
     sql << "CREATE SCHEMA " << schemaName << ";";
     try {
@@ -102,17 +108,28 @@ void ds::pqxxInterface::createTable
             << headings << "\ndataTypes:\n" << dataTypes << std::endl;
         abort();
     }
+    std::transform(schemaName.begin(), schemaName.end(), schemaName.begin(), ::tolower);
+    std::transform(tableName.begin(), tableName.end(), tableName.begin(), ::tolower);
     std::stringstream sql;
     sql << "CREATE TABLE " << schemaName << "." << tableName << " (";
     std::pair<std::vector<std::string>::const_iterator, std::vector<std::string>::const_iterator>
         itPair(headings.cbegin(), dataTypes.cbegin());
-    sql << *itPair.first << " " << *itPair.second;
+    std::string lhead = *itPair.first;
+    std::string ltype = *itPair.second;
+    std::transform(lhead.begin(), lhead.end(), lhead.begin(), ::tolower);
+    std::transform(ltype.begin(), ltype.end(), ltype.begin(), ::tolower);
+
+    sql << lhead << " " << ltype;
     for (
         ++itPair.first, ++itPair.second;
         itPair.first != headings.cend();
         ++itPair.first, ++itPair.second
     ) {
-         sql << ", " << *itPair.first << " " << *itPair.second;
+        lhead = *itPair.first;
+        ltype = *itPair.second;
+        std::transform(lhead.begin(), lhead.end(), lhead.begin(), ::tolower);
+        std::transform(ltype.begin(), ltype.end(), ltype.begin(), ::tolower);
+        sql << ", " << lhead << " " << ltype;
     }
     sql << ");";
     try {
@@ -132,6 +149,8 @@ void ds::pqxxInterface::createTable
     std::string tableName,
     std::vector<std::pair<std::string, std::string>> headingsAndTypes
 ) {
+    std::transform(schemaName.begin(), schemaName.end(), schemaName.begin(), ::tolower);
+    std::transform(tableName.begin(), tableName.end(), tableName.begin(), ::tolower);
     std::stringstream sql;
     sql << "CREATE TABLE " << schemaName << "." << tableName << " (";
     auto it(headingsAndTypes.cbegin());
@@ -152,6 +171,8 @@ void ds::pqxxInterface::createTable
 
 
 void ds::pqxxInterface::dropTable(std::string schemaName, std::string tableName) {
+    std::transform(schemaName.begin(), schemaName.end(), schemaName.begin(), ::tolower);
+    std::transform(tableName.begin(), tableName.end(), tableName.begin(), ::tolower);
     std::stringstream sql;
     sql << "DROP TABLE " << schemaName << "." << tableName << ";";
     try {

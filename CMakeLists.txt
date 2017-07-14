@@ -29,7 +29,7 @@ endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX")
 
-if (optimized)
+if (opt)
     SET (DS_DEBUG_OPTION "${DS_DEBUG_DISABLED}")
     message(STATUS "Compiling ${DS_DEBUG_OPTION} version")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -g")

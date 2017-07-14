@@ -15,8 +15,19 @@ class PktCards
 {
 public:
 
+    // Public static data
 
-    // Constructors
+        //- Valid startingHandIndices
+        //  i.e. compactToStartingHandIndex[compactStartingHandIndex] = startingHandIndex
+        //  where:
+        //  * startingHandIndex is from 0..300 with gaps
+        //  * compactStartingHandIndex is from 0..168 with no gaps
+        static const size_t nStartingHands = 169;
+        static const std::array<size_t, 169> cshiToShi;
+        static const std::array<size_t, 301> shiToCshi;
+
+
+     // Constructors
 
         //- Construct null
         PktCards();
@@ -104,6 +115,18 @@ public:
             //  * Unsuited: "T9u", "72u", etc.
             std::string startingHandName() const;
 
+            //- Returns a unique index value for a starting hand type
+            //  For use with tables associated with starting hand type
+            size_t startingHandIndex() const;
+
+            //- Returns compact version of startingHandIndex
+            size_t compactStartingHandIndex() const;
+
+            //- Make starting hand from compact starting hand index (0..168)
+            //  Uses clubs as suited, and clubs hearts as unsuited.
+            static PktCards makeStartingHand(short compactStartingHandIndex);
+
+
         // Edit
         
             //- Switch pocket cards first to second
@@ -118,7 +141,7 @@ public:
             //- Return PktVals with suit stripped out
             PktVals values() const;
 
-            //- Return PktVals with suit stripped out
+            //- Return PktVals with suit stripped out, with largest value in first
             PktVals sortedValues() const;
 
 

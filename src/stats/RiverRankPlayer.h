@@ -1,23 +1,23 @@
-// Calls down to the river, saves stats to database
+// Calls down to the river, saves hand, river rank, and won to database
 // Manages stack size
-#ifndef AllCallPlayer_h
-#define AllCallPlayer_h
+#ifndef RiverRankPlayer_h
+#define RiverRankPlayer_h
 
 #include <Player.h>
 
 namespace ds {
 
-class AllCallPlayer: public Player {
+class RiverRankPlayer: public Player {
 
 public:
 
     // Constructors
     
         //- Construct null
-        AllCallPlayer();
+        RiverRankPlayer();
     
         //- Construct from components
-        AllCallPlayer(
+        RiverRankPlayer(
             size_t id,
             const std::string& name,
             const std::string& schemaName,

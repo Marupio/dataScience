@@ -17,7 +17,7 @@ void writePreFlopData(PktCards& pkt, pqxxInterface& db, int chen) {
     Board bd;
     HandRanker hr(bd, pkt);
     std::vector<short> pa = hr.predictPreFlopToRiver();
-    std::vector<short> hist = HandRanker::paToHistogram(pa);
+    std::vector<int> hist = HandRanker::paToHistogram(pa);
     std::cout << "    max = " << hist.size() << std::endl;
     std::stringstream sql;
     sql << "INSERT INTO " << schemaName << "." << tableName << "(hand,chen,pftr_histogram) "
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
                 {"id", "bigserial primary key"},
                 {"hand", "varchar(3) not null"},
                 {"chen", "smallint not null"},
-                {"pftr_histogram", "smallint[] not null"}
+                {"pftr_histogram", "int[] not null"}
             };
         db.createTable(schemaName, tableName, headingsAndTypes);
 

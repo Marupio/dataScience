@@ -69,6 +69,17 @@ install_targets(
 
 
 add_executable(
+    testGeneral
+    ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testGeneral/testGeneral.cpp
+)
+target_link_libraries(testGeneral core ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    testGeneral
+)
+
+
+add_executable(
     testHandRankerCompare_Input
     ${CMAKE_CURRENT_SOURCE_DIR}/testApps/testHandRanker/testHandRankerCompare_Input.cpp
 )
@@ -201,6 +212,17 @@ install_targets(
 
 
 add_executable(
+    makeRiverRankTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/makeRiverRankTables/makeRiverRankTables.cpp
+)
+target_link_libraries(makeRiverRankTables core pthread ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    makeRiverRankTables
+)
+
+
+add_executable(
     analyseAllCallTables
     ${CMAKE_CURRENT_SOURCE_DIR}/utilities/analyseAllCallTables/analyseAllCallTables.cpp
 )
@@ -208,4 +230,26 @@ target_link_libraries(analyseAllCallTables core pthread ${PQLIBS})
 install_targets(
     ${BIN_DIR}
     analyseAllCallTables
+)
+
+
+add_executable(
+    analysePreFlopToRiverTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/analysePreFlopToRiverTables/analysePreFlopToRiverTables.cpp
+)
+target_link_libraries(analysePreFlopToRiverTables core pthread ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    analysePreFlopToRiverTables
+)
+
+
+add_executable(
+    analyseRiverRankTables
+    ${CMAKE_CURRENT_SOURCE_DIR}/utilities/analyseRiverRankTables/analyseRiverRankTables.cpp
+)
+target_link_libraries(analyseRiverRankTables core pthread ${PQLIBS})
+install_targets(
+    ${BIN_DIR}
+    analyseRiverRankTables
 )

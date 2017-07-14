@@ -48,6 +48,7 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/PktMask.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/algorithm/StraightCompleters.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/stats/AllCallPlayer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/stats/RiverRankPlayer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/aes.c
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/aesni.c
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/mbedtls/ctr_drbg.c
@@ -62,4 +63,4 @@ add_library(
     ${CMAKE_CURRENT_SOURCE_DIR}/importedCode/pqxxInterface/pqxxInterface.cpp
 )
 
-include (${CMAKE_CURRENT_SOURCE_DIR}/importedCode/dlib/dlib/cmake)
+#include (${CMAKE_CURRENT_SOURCE_DIR}/importedCode/dlib/dlib/cmake)

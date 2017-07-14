@@ -199,6 +199,18 @@ public:
             CardVal highestFlushValue() const;
 
 
+        // Related to perfect hashing function
+
+            //- Return perfect hash for this board in a river state
+            //  Range:  0..(48^5-1) =   0..254803967
+            //  nTotal: 48^5 =          254803968
+            //  nValid: nCr(52,5) =     2598960
+            //  nElements: nCr(47,2) =  1081
+            int perfectRiverHash() const;
+
+            //- 
+            static Board makeBoardFromHash();
+
     // Operators
     
     // Friend functions

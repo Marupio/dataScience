@@ -9,7 +9,7 @@ std::vector<short> ds::HandRanker::predictPreFlopToRiver() {
         abort();
     }
     std::vector<short> pa;
-    pa.reserve(108100);
+    pa.reserve(preFlopPredictSize_);
     DeckMask dm(bd_, pkt_);
     for (auto itA = dm.cbegin(); itA != dm.cend(); ++itA) {
         for (auto itB = itA + 1; itB != dm.cend(); ++itB) {
@@ -38,7 +38,7 @@ std::vector<short> ds::HandRanker::predictFlopToRiver() {
         abort();
     }
     std::vector<short> pa;
-    pa.reserve(2162);
+    pa.reserve(maxRiverRank_);
     DeckMask dm(bd_, pkt_);
     size_t paSize = dm.size()*(dm.size() - 1)*(dm.size() - 2);
     pa.reserve(paSize);
@@ -64,7 +64,7 @@ std::vector<short> ds::HandRanker::predictTurnToRiver() {
     }
     DeckMask dm(bd_, pkt_);
     std::vector<short> pa;
-    pa.reserve(dm.size());
+    pa.reserve(turnPredictSize_);
     for (auto it = dm.cbegin(); it != dm.cend(); ++it) {
         cbd_ = bd_;
         cbd_.river(*it);
@@ -76,13 +76,13 @@ std::vector<short> ds::HandRanker::predictTurnToRiver() {
 }
 
 
-std::vector<short> ds::HandRanker::paToHistogram(std::vector<short> pa, short max) {
+std::vector<int> ds::HandRanker::paToHistogram(std::vector<short> pa, short max) {
     if (max == 0) {
         for (auto it = pa.cbegin(); it != pa.cend(); ++it) {
             max = std::max(*it, max);
         }
     }
-    std::vector<short> res(max+1, 0);
+    std::vector<int> res(max+1, 0);
     for (auto it = pa.cbegin(); it != pa.cend(); ++it) {
         res[*it]++;
     }

@@ -336,6 +336,19 @@ ds::CardVal ds::Board::highestFlushValue() const {
 }
 
 
+int ds::Board::perfectRiverHash() const {
+    if (cards_.size() != maxCardsOnBoard_) {
+        FatalError << "Requires board to be at river, board contains: " << cards_ << std::endl;
+        abort();
+    }
+
+    VecDeckInd vdi;
+    vdi.reserve(5);
+    for (auto)
+}
+
+
+
 // ****** Private member functions ****** //
 
 void ds::Board::reserveSpace() {

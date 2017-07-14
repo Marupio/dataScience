@@ -14,10 +14,6 @@
 
 using namespace ds;
 
-void startThread(Table& tbl, int n) {
-    tbl.playNThenPause(n);
-}
-
 
 int main(int argc, char *argv[]) {
 
@@ -31,13 +27,7 @@ int main(int argc, char *argv[]) {
     // Read inputSettings
     Dictionary inputDict(prefix);
     std::string schemaName(inputDict.lookup<std::string>("schemaName"));
-    size_t nTables(inputDict.lookup<size_t>("nTables"));
     size_t nSeats(inputDict.lookup<size_t>("nSeats"));
-    int nTableIters(inputDict.lookup<size_t>("nTableIters"));
-    int nResets(inputDict.lookup<size_t>("nResets"));
-    bool tableLogging(inputDict.lookup<bool>("tableLogging"));
-    bool overwrite(inputDict.lookup<bool>("overwrite"));
-    bool multiThreading(inputDict.lookup<bool>("multiThreading"));
 
     std::string tableName("allcall_" + std::to_string(nSeats));
 

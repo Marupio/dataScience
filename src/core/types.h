@@ -9,6 +9,8 @@
 namespace ds {
 
 // Typedefs
+typedef float Scalar;
+
 typedef short DeckInd;
 typedef std::vector<DeckInd> VecDeckInd;
 typedef std::vector<VecDeckInd> VecVecDeckInd;

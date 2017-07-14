@@ -1,7 +1,7 @@
 #include <cctype>
 #include <PktMask.h>
 
-// Static data
+// ****** Public Static Data ****** //
 
 #include <PktMaskDeckIndices.h>
 #include <PktMaskDeckIndicesToPocketMask.h>
