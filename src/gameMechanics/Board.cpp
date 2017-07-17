@@ -336,6 +336,92 @@ ds::CardVal ds::Board::highestFlushValue() const {
 }
 
 
+int ds::Board::perfectFlopHash() const {
+    if (cards_.size() != flopSize_) {
+        FatalError << "Requires board to be at flop, board contains: " << cards_ << std::endl;
+        abort();
+    }
+
+    VecDeckInd vdi;
+    vdi.reserve(3);
+    for (auto it = cbegin(); it != cend(); ++it) {
+        vdi.push_back(it->deckIndex());
+    }
+    std::sort(vdi.rbegin(), vdi.rend());
+    int hash = 0;
+    auto it = vdi.cbegin();
+    for (int offset = 2; offset > 0; --offset) {
+        hash += *it - offset;
+        hash *= 50;
+        ++it;
+    }
+    hash += *it;
+    return hash;
+}
+
+
+ds::Board ds::Board::makeBoardFromFlopHash(int hash) {
+    int c = hash%50;
+    hash -= c;
+    hash /= 50;
+    int b = hash%50 + 1;
+    hash -= b - 1;
+    hash /= 50;
+    int a = hash + 2;
+    VecDeckInd vdi;
+    vdi.reserve(3);
+    vdi.push_back(a);
+    vdi.push_back(b);
+    vdi.push_back(c);
+    return Board(vdi);
+}
+
+
+int ds::Board::perfectTurnHash() const {
+    if (cards_.size() != sizeBeforeRiver_) {
+        FatalError << "Requires board to be at turn, board contains: " << cards_ << std::endl;
+        abort();
+    }
+
+    VecDeckInd vdi;
+    vdi.reserve(4);
+    for (auto it = cbegin(); it != cend(); ++it) {
+        vdi.push_back(it->deckIndex());
+    }
+    std::sort(vdi.rbegin(), vdi.rend());
+    int hash = 0;
+    auto it = vdi.cbegin();
+    for (int offset = 3; offset > 0; --offset) {
+        hash += *it - offset;
+        hash *= 49;
+        ++it;
+    }
+    hash += *it;
+    return hash;
+}
+
+
+ds::Board ds::Board::makeBoardFromTurnHash(int hash) {
+    int d = hash%49;
+    hash -= d;
+    hash /= 49;
+    int c = hash%49 + 1;
+    hash -= c - 1;
+    hash /= 49;
+    int b = hash%49 + 2;
+    hash -= b - 2;
+    hash /= 49;
+    int a = hash + 3;
+    VecDeckInd vdi;
+    vdi.reserve(4);
+    vdi.push_back(a);
+    vdi.push_back(b);
+    vdi.push_back(c);
+    vdi.push_back(d);
+    return Board(vdi);
+}
+
+
 int ds::Board::perfectRiverHash() const {
     if (cards_.size() != maxCardsOnBoard_) {
         FatalError << "Requires board to be at river, board contains: " << cards_ << std::endl;
@@ -344,9 +430,45 @@ int ds::Board::perfectRiverHash() const {
 
     VecDeckInd vdi;
     vdi.reserve(5);
-    for (auto)
+    for (auto it = cbegin(); it != cend(); ++it) {
+        vdi.push_back(it->deckIndex());
+    }
+    std::sort(vdi.rbegin(), vdi.rend());
+    int hash = 0;
+    auto it = vdi.cbegin();
+    for (int offset = 4; offset > 0; --offset) {
+        hash += *it - offset;
+        hash *= 48;
+        ++it;
+    }
+    hash += *it;
+    return hash;
 }
 
+
+ds::Board ds::Board::makeBoardFromRiverHash(int hash) {
+    int e = hash%48;
+    hash -= e;
+    hash /= 48;
+    int d = hash%48 + 1;
+    hash -= d - 1;
+    hash /= 48;
+    int c = hash%48 + 2;
+    hash -= c - 2;
+    hash /= 48;
+    int b = hash%48 + 3;
+    hash -= b -3;
+    hash /= 48;
+    int a = hash + 4;
+    VecDeckInd vdi;
+    vdi.reserve(5);
+    vdi.push_back(a);
+    vdi.push_back(b);
+    vdi.push_back(c);
+    vdi.push_back(d);
+    vdi.push_back(e);
+    return Board(vdi);
+}
 
 
 // ****** Private member functions ****** //

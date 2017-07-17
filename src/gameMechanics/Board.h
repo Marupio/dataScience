@@ -201,15 +201,43 @@ public:
 
         // Related to perfect hashing function
 
-            //- Return perfect hash for this board in a river state
-            //  Range:  0..(48^5-1) =   0..254803967
-            //  nTotal: 48^5 =          254803968
-            //  nValid: nCr(52,5) =     2598960
-            //  nElements: nCr(47,2) =  1081
-            int perfectRiverHash() const;
+            // Flop hash
 
-            //- 
-            static Board makeBoardFromHash();
+                //- Return perfect hash for this board in a flop state
+                //  Range:  0..(50^3-1) =   0..12499
+                //  nTotal: 50^3 =          12500
+                //  nValid: nCr(52,3) =     22100
+                //  nElements: nCr(49,2) =  1176
+                int perfectFlopHash() const;
+
+                //- Construct a board, given a perfect flop hash
+                static Board makeBoardFromFlopHash(int hash);
+
+
+            // Turn hash
+
+                //- Return perfect hash for this board in a turn state
+                //  Range:  0..(50^4-1) =   0..5764800
+                //  nTotal: 49^4 =          5764801
+                //  nValid: nCr(52,3) =     22100
+                //  nElements: nCr(48,2) =  1128
+                int perfectTurnHash() const;
+
+                //- Construct a board, given a perfect turn hash
+                static Board makeBoardFromTurnHash(int hash);
+
+
+            // River hash
+
+                //- Return perfect hash for this board in a river state
+                //  Range:  0..(48^5-1) =   0..254803967
+                //  nTotal: 48^5 =          254803968
+                //  nValid: nCr(52,5) =     2598960
+                //  nElements: nCr(47,2) =  1081
+                int perfectRiverHash() const;
+
+                //- Construct a board, given a perfect river hash
+                static Board makeBoardFromRiverHash(int hash);
 
     // Operators
     
