@@ -48,6 +48,29 @@ ds::Board::Board(VecToken& vt) {
 }
 
 
+ds::Board::Board(DeckInd dA, DeckInd dB, DeckInd dC) {
+    reserveSpace();
+    flop(dA, dB, dC);
+}
+
+
+ds::Board::Board(DeckInd dA, DeckInd dB, DeckInd dC, DeckInd dD) {
+    reserveSpace();
+    flop(dA, dB, dC);
+    turn(dD);
+}
+
+
+ds::Board::Board(DeckInd dA, DeckInd dB, DeckInd dC, DeckInd dD, DeckInd dE) {
+    reserveSpace();
+    flop(dA, dB, dC);
+    turn(dD);
+    river(dD);
+}
+
+
+
+
 // ****** Public member functions ****** //
 
 void ds::Board::flop(const VecDeckInd& vd) {

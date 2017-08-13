@@ -42,7 +42,16 @@ public:
 
         //- Construct from VecToken
         Board(VecToken& vt);
-    
+
+        //- Construct from deck indices at flop state
+        Board(DeckInd dA, DeckInd dB, DeckInd dC);
+
+        //- Construct from deck indices at turn state
+        Board(DeckInd dA, DeckInd dB, DeckInd dC, DeckInd dD);
+
+        //- Construct from deck indices at river state
+        Board(DeckInd dA, DeckInd dB, DeckInd dC, DeckInd dD, DeckInd dE);
+
 
     //- Destructor
     ~Board() {}
