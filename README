@@ -1,3 +1,20 @@
+WHAT IS THIS?
+
+This is a Poker analysis tool I worked on, entirely for fun.
+
+It has C++98 styled coding, but uses C++11 for its multithreading.
+
+
+PROSPECTIVE EMPLOYER: KEY TAKE-AWAYS
+
+What I want you to take away from this project is:
+
+* This is what a library written by me in C++98 style looks like
+	* This is my first C++ code that wasn't within the OpenFOAM ecosystem
+* The app interacts with a postgres database to handle large amounts of data
+* The entire library supports multithreading; some simulation apps use it
+
+ORIGINAL README below:
 ************************
 * Data Science Project *
 ************************
